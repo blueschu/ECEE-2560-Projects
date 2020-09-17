@@ -17,8 +17,8 @@
 // Using anonymous namespace to give symbols internal linkage.
 namespace {
 struct CodeTestCase {
-    std::vector<Code::Digit> code;
-    std::vector<Code::Digit> guess;
+    Code code;
+    Code guess;
     std::size_t correct;
     std::size_t incorrect;
 };
@@ -39,18 +39,15 @@ int main()
     std::size_t case_number{0};
 
     for (const CodeTestCase& test_case : test_cases) {
-        const Code code(test_case.code);
-        const Code guess(test_case.guess);
-
-        const auto correct = code.checkCorrect(guess);
-        const auto incorrect = code.checkIncorrect(guess);
+        const auto correct = test_case.code.checkCorrect(test_case.guess);
+        const auto incorrect = test_case.code.checkIncorrect(test_case.guess);
 
         if (correct == test_case.correct && incorrect == test_case.incorrect) {
             std::cout << "Case " << case_number << " OK\n";
         } else {
             std::cout << "Case " << case_number << " FAILED:\n"
-                      << "Code:  " << code << '\n'
-                      << "Guess: " << guess << '\n'
+                      << "Code:  " << test_case.code << '\n'
+                      << "Guess: " << test_case.guess << '\n'
                       << "Expected C/I:" << test_case.correct << '/' << test_case.incorrect << '\n'
                       << "Actual C/I:  " << correct << '/' << incorrect << '\n';
         }

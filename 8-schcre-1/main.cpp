@@ -12,6 +12,7 @@
  */
 
 #include <iostream>         // for std::cout
+#include <string_view>      // for std::string_view
 
 #include "code.h"
 
@@ -40,8 +41,17 @@ int main()
 
     const Code code(code_width, digit_range);
 
-    std::cout << "The secret code is " << code << '\n';
+    std::cout << "Secret code:    " << code << '\n';
 
+    const auto demo_cases = std::array{
+        Code{5, 0, 3, 2, 6}, Code{2, 1, 2, 2, 2}, Code{1, 3, 3, 4, 5}
+    };
+
+    for (const Code& guess : demo_cases) {
+        std::cout << "Result of guess " << guess << ": "
+                  << code.checkCorrect(guess) << ","
+                  << code.checkIncorrect(guess) << '\n';
+    }
 
 }
 

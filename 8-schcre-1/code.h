@@ -26,7 +26,7 @@ class Code {
   public:
     using Digit = std::uint8_t;
 
-    explicit Code(std::vector<Digit> digits) : m_digits{std::move(digits)} {}
+    Code(std::initializer_list<Digit> list) : m_digits{list} {}
 
     template<typename R = std::default_random_engine>
     Code(
