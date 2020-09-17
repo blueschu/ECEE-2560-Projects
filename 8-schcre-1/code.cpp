@@ -16,15 +16,15 @@
 
 #include <iostream>
 
-std::size_t Code::checkCorrect(const Code& other) const
+std::size_t Code::checkCorrect(const Code& guess) const
 {
-    if (m_digits.size() != other.m_digits.size()) {
+    if (m_digits.size() != guess.m_digits.size()) {
         throw std::invalid_argument("cannot compare Code instances of unequal lengths");
     }
 
     std::size_t match_count{0};
 
-    auto right_it = std::begin(other.m_digits);
+    auto right_it = std::begin(guess.m_digits);
 
     for (const Digit left_digit : m_digits) {
         if (left_digit == *right_it) {
@@ -36,16 +36,16 @@ std::size_t Code::checkCorrect(const Code& other) const
     return match_count;
 }
 
-std::size_t Code::checkIncorrect(const Code& other) const
+std::size_t Code::checkIncorrect(const Code& guess) const
 {
-    // Sequence of digits from this->m_digits that do not match other.m_digits
+    // Sequence of digits from this->m_digits that do not match guess.m_digits
     // in value and position.
     std::vector<Digit> differing_digits_left{};
-    // Sequence of digits from other.m_digits that do not match this->m_digits
+    // Sequence of digits from guess.m_digits that do not match this->m_digits
     // in value and position.
     std::vector<Digit> differing_digits_right{};
 
-    auto right_it = std::begin(other.m_digits);
+    auto right_it = std::begin(guess.m_digits);
 
     // Extract all digits that do not match in value and position from both codes.
     for (const Digit left_digit : m_digits) {

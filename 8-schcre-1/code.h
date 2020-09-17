@@ -26,8 +26,22 @@ class Code {
   public:
     using Digit = std::uint8_t;
 
+    /**
+     * Initialize a Code instance with the given digits.
+     *
+     * @param list Digit sequence.
+     */
     Code(std::initializer_list<Digit> list) : m_digits{list} {}
 
+    /**
+     * Generates a random secret code with `digit_count` digits each ranging
+     * from 0 to `digit_range - 1`, optionally with a custom random engine.
+     *
+     * @tparam R Random number generator.
+     * @param digit_count Number of digits to include in the code.
+     * @param digit_range Upper bound of code digits, not inclusive.
+     * @param entropy_source Random number generator.
+     */
     template<typename R = std::default_random_engine>
     Code(
         std::size_t digit_count,
@@ -44,16 +58,34 @@ class Code {
         std::generate(std::begin(m_digits), std::end(m_digits), digit_generator);
     }
 
+    /**
+     * Counts the number of digits that match in both value and position between
+     * this code and the given guess.
+     *
+     * Marked as [[nodiscard]] per linter recommendation.
+     *
+     * @param guess Guess for the secret code digits.
+     * @return The number of correct digits in the guess.
+     */
     [[nodiscard]]
-    std::size_t checkCorrect(const Code& other) const;
+    std::size_t checkCorrect(const Code& guess) const;
 
+    /**
+     * Counts the number of digits that match in value but do not match in
+     * position between this code and the given guess.
+     *
+     * @param guess Guess for the secret code digits.
+     * @return The number of incorrect digits in the guess.
+     */
     [[nodiscard]]
-    std::size_t checkIncorrect(const Code& other) const;
+    std::size_t checkIncorrect(const Code& guess) const;
 
+    // Output stream operator overlaod.
     friend std::ostream& operator<<(std::ostream& out, const Code&);
 
   private:
 
+    /// The digits of this secret code.
     std::vector<Digit> m_digits;
 
     /**
