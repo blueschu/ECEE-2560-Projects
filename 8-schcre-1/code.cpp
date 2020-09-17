@@ -38,8 +38,11 @@ std::size_t Code::checkCorrect(const Code& other) const
 
 std::size_t Code::checkIncorrect(const Code& other) const
 {
-    // Sequence of digits from this->m_digits that do
+    // Sequence of digits from this->m_digits that do not match other.m_digits
+    // in value and position.
     std::vector<Digit> differing_digits_left{};
+    // Sequence of digits from other.m_digits that do not match this->m_digits
+    // in value and position.
     std::vector<Digit> differing_digits_right{};
 
     auto right_it = std::begin(other.m_digits);
@@ -59,7 +62,7 @@ std::size_t Code::checkIncorrect(const Code& other) const
 
     std::vector<Digit> non_matching_digits{};
 
-    // Compute
+    // Compute the difference between the two digit sequences using set operations.
     std::set_difference(
         std::begin(differing_digits_left), std::end(differing_digits_left),
         std::begin(differing_digits_right), std::end(differing_digits_right),

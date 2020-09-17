@@ -1,6 +1,11 @@
-//
-// Created by brian on 9/17/20.
-//
+/**
+ * Test executable for Project 1.
+ *
+ * Authors: Brian Schubert  <schubert.b@northeastern.edu>
+ *          David Cree      <cree.d@northeastern.edu>
+ * Date:    2020-09-17
+ *
+ */
 
 
 #include <iostream>
@@ -9,14 +14,15 @@
 
 #include "code.h"
 
+// Using anonymous namespace to give symbols internal linkage.
+namespace {
 struct CodeTestCase {
-
     std::vector<Code::Digit> code;
     std::vector<Code::Digit> guess;
     std::size_t correct;
     std::size_t incorrect;
-
 };
+} // end namespace
 
 int main()
 {
