@@ -24,6 +24,7 @@
 
 class Code {
   public:
+    // Integral type to be used for representing code digits.
     using Digit = std::uint8_t;
 
     /**
@@ -96,11 +97,10 @@ class Code {
      */
     static std::random_device::result_type default_random_seed()
     {
-        // Handle for random seed generation using available hardware devices.
-        // This tecnique for acquiring PRNG seeds is more  secure than using
-        // e.g. using the current system time. This variable is given static
-        // duration so that only one random device will be produced for this
-        // class.
+        // Handle for random seed generator using available hardware devices.
+        // This technique for acquiring PRNG seeds is more secure than using
+        // e.g. the current system time. This variable is given static duration
+        // so that only one random device will be produced for this class.
         static std::random_device random_device{};
         // Return a freshly generated PRNG seed.
         return random_device();

@@ -8,7 +8,7 @@
  * References
  * ==========
  *
- *  - https://en.cppreference.com/w/cpp/algorithm/set_difference
+ *  - https://en.cppreference.com/w/cpp/algorithm/set_intersection
  *
  */
 
@@ -60,16 +60,17 @@ std::size_t Code::checkIncorrect(const Code& guess) const
     std::sort(std::begin(differing_digits_left), std::end(differing_digits_left));
     std::sort(std::begin(differing_digits_right), std::end(differing_digits_right));
 
-    std::vector<Digit> non_matching_digits{};
+    std::vector<Digit> incorrect_digits{};
 
-    // Compute the difference between the two digit sequences using set operations.
-    std::set_difference(
+    // Extract the digits that are present in both sequences with repeats
+    // treated as unique values.
+    std::set_intersection(
         std::begin(differing_digits_left), std::end(differing_digits_left),
         std::begin(differing_digits_right), std::end(differing_digits_right),
-        std::inserter(non_matching_digits, std::begin(non_matching_digits))
+        std::inserter(incorrect_digits, std::begin(incorrect_digits))
     );
 
-    return differing_digits_left.size() - non_matching_digits.size();
+    return incorrect_digits.size();
 
 }
 
@@ -77,6 +78,7 @@ std::ostream& operator<<(std::ostream& out, const Code& code)
 {
     out << "[ ";
     for (Code::Digit digit : code.m_digits) {
+        // Make sure that digits are not displayed as `char`.
         out << static_cast<int>(digit) << ' ';
     }
     out << ']';
