@@ -23,11 +23,8 @@
 #include <vector>           // for std::vector
 
 class Code {
-    using Digit = std::uint8_t;
-
-    std::vector<Digit> m_digits;
-
   public:
+    using Digit = std::uint8_t;
 
     explicit Code(std::vector<Digit> digits) : m_digits{std::move(digits)} {}
 
@@ -56,6 +53,8 @@ class Code {
     friend std::ostream& operator<<(std::ostream& out, const Code&);
 
   private:
+
+    std::vector<Digit> m_digits;
 
     /**
      * Helper function for producing a random PRNG seed using an available

@@ -38,6 +38,7 @@ std::size_t Code::checkCorrect(const Code& other) const
 
 std::size_t Code::checkIncorrect(const Code& other) const
 {
+    // Sequence of digits from this->m_digits that do
     std::vector<Digit> differing_digits_left{};
     std::vector<Digit> differing_digits_right{};
 
