@@ -43,14 +43,17 @@ int main()
 
     std::cout << "Secret code:    " << code << '\n';
 
-    const auto demo_cases = std::array{
-        Code{5, 0, 3, 2, 6}, Code{2, 1, 2, 2, 2}, Code{1, 3, 3, 4, 5}
-    };
+    // Only run demo tests for 5-digit codes.
+    if (code_width == 5) {
+        const auto demo_cases = std::array{
+            Code{5, 0, 3, 2, 6}, Code{2, 1, 2, 2, 2}, Code{1, 3, 3, 4, 5}
+        };
 
-    for (const Code& guess : demo_cases) {
-        std::cout << "Result of guess " << guess << ": "
-                  << code.checkCorrect(guess) << ","
-                  << code.checkIncorrect(guess) << '\n';
+        for (const Code& guess : demo_cases) {
+            std::cout << "Result of guess " << guess << ": "
+                      << code.checkCorrect(guess) << ","
+                      << code.checkIncorrect(guess) << '\n';
+        }
     }
 
 }

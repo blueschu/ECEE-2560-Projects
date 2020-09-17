@@ -18,7 +18,9 @@
 #include <cstdint>          // for fixed width integers
 #include <functional>       // for std::bind
 #include <iosfwd>           // for I/O declarations, full iostream header not required.
+#include <limits>           // for std::numeric_limis
 #include <stdexcept>        // for std::invalid_argument
+#include <string>           // for std::to_string
 #include <random>           // for random number generation
 #include <vector>           // for std::vector
 
@@ -50,6 +52,18 @@ class Code {
         R entropy_source = R(default_random_seed())
     ) : m_digits(digit_count)
     {
+        using namespace std::string_literals;
+        constexpr auto max_digit = std::numeric_limits<Digit>::max();
+
+        // Make sure we can represent the interval [0, max_digit) using the
+        // configured Digit type.
+        if (digit_range - 1 > max_digit) {
+            throw std::invalid_argument(
+                "digit range cannot exceed the boundaries of the digit type "
+                "(max value is "s + std::to_string(max_digit) + ")"
+            );
+        }
+
         // Random distribution for integers in the interval [0, digit_range).
         const std::uniform_int_distribution<Digit> distribution(0, static_cast<Digit>(digit_range - 1));
         // Convenience function object for calling `distribution(entropy_source)`.
