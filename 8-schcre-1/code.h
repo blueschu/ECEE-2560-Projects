@@ -28,15 +28,16 @@
 #include <vector>           // for std::vector
 
 /**
- * POD structure representing a response to a mastermind game guess for part b.
+ * POD structure representing a response to a guess during a mastermind game.
  *
- * We explicitly do not make `correct_count` and `incorrect_count` private
+ * We intentionally do not make `correct_count` and `incorrect_count` private
  * since this class is not responsible for upholding any invariants.
  *
  * This class is an aggregate class, so no user-defined constructors are
  * provided.
  */
 struct GuessResponse {
+    /// Integral type representing a count.
     using Count = unsigned int;
 
     /**
@@ -50,7 +51,7 @@ struct GuessResponse {
     Count incorrect_count;
 
     // Constructor not defined since this class is designed to be an aggregate.
-    // GuessResponse()
+    GuessResponse() = delete;
 };
 
 static_assert(
