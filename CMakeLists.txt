@@ -4,7 +4,7 @@
 # Date:     2020-09-15
 #
 
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.10)
 project(ecee_2560_projects
         DESCRIPTION "ECEE 2560 / Fundamentals of Engineering Projects."
         LANGUAGES CXX)
