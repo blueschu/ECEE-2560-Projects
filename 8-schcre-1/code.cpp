@@ -59,6 +59,8 @@ GuessResponse::Count Code::check_incorrect(const Code& guess) const
     // Simultaneously iterate over the digits in this code and in the guess
     // code. Whenever the digits in this code and the guess code do not agree,
     // copy the digits into the "differing digits" vectors.
+    // In essence, we filter away the "correct" digits. This is safe to do,
+    // since no digit can be both "correct" and "incorrect".
     for (const Digit left_digit : m_digits) {
         if (left_digit != *right_it) {
             differing_digits_left.push_back(left_digit);
@@ -67,7 +69,7 @@ GuessResponse::Count Code::check_incorrect(const Code& guess) const
         ++right_it;
     }
 
-    // Sort the differing digits to that they can be treated as sets.
+    // Sort the differing digits to that they can be treated as multisets.
     std::sort(std::begin(differing_digits_left), std::end(differing_digits_left));
     std::sort(std::begin(differing_digits_right), std::end(differing_digits_right));
 
@@ -100,7 +102,7 @@ std::ostream& operator<<(std::ostream& out, const Code& code)
     out << "[ ";
     for (Code::Digit digit : code.m_digits) {
         // Make sure that digits are not interpreted as encoded characters,
-        // since we use an integral type with the same size as
+        // since we use an integral type with the same size as `char`.
         out << static_cast<int>(digit) << ' ';
     }
     out << ']';

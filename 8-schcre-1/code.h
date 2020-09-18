@@ -9,6 +9,8 @@
  * ==========
  *
  *  - https://en.cppreference.com/w/cpp/header/random
+ *  - https://en.cppreference.com/w/cpp/language/aggregate_initialization
+ *  - https://stackoverflow.com/questions/4178175/what-are-aggregates-and-pods-and-how-why-are-they-special
  */
 
 #ifndef ECEE_2560_PROJECTS_CODE_H
@@ -137,6 +139,9 @@ class Code {
      * result containing the number of "correct" and "incorrect" digits,
      * according the the Mastermind game rules.
      *
+     * Marked with a [[nodiscard]] attribute since calling this member function
+     * without reading the return value would be nonsensical.
+     *
      * @param guess Guess for the secret code digits.
      * @return Guess result.
      */
@@ -152,7 +157,8 @@ class Code {
      * Counts the number of digits that match in both value and position between
      * this code and the given guess.
      *
-     * Marked as [[nodiscard]] per linter recommendation.
+     * Marked with a [[nodiscard]] attribute since calling this member function
+     * without reading the return value would be nonsensical.
      *
      * @param guess Guess for the secret code digits.
      * @return The number of correct digits in the guess.
@@ -163,6 +169,9 @@ class Code {
     /**
      * Counts the number of digits that match in value but do not match in
      * position between this code and the given guess.
+     *
+     * Marked with a [[nodiscard]] attribute since calling this member function
+     * without reading the return value would be nonsensical.
      *
      * @param guess Guess for the secret code digits.
      * @return The number of incorrect digits in the guess.

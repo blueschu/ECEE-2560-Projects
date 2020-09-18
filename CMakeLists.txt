@@ -9,7 +9,7 @@ project(ecee_2560_projects
         DESCRIPTION "ECEE 2560 / Fundamentals of Engineering Projects."
         LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # List of subdirectories corresponding to ECEE2560 projects.
@@ -20,10 +20,10 @@ set(ECEE2560_PROJECT_LIST
 # Iterate over course project subdirectories and add those that exist to the
 # Cmake configuration.
 #
-# When a course-project being submitted for grading, this CMake-project may only
+# When a course-project is being submitted for grading, this CMake-project may only
 # contain a subset of the course-project subdirectories. To make sure that this
 # build configuration still works when course-project directories are missing,
-# we only add CMake configurations for course-projects that exits.
+# we only add CMake configurations for course-projects that exists.
 foreach (PROJ_DIRECTORY ${ECEE2560_PROJECT_LIST})
     if (EXISTS "${CMAKE_SOURCE_DIR}/${PROJ_DIRECTORY}")
         add_subdirectory("${CMAKE_SOURCE_DIR}/${PROJ_DIRECTORY}")
