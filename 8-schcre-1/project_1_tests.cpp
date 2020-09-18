@@ -19,8 +19,8 @@ namespace {
 struct CodeTestCase {
     Code code;
     Code guess;
-    std::size_t correct;
-    std::size_t incorrect;
+    GuessResponse::Count correct;
+    GuessResponse::Count incorrect;
 };
 } // end namespace
 
@@ -39,17 +39,16 @@ int main()
     std::size_t case_number{0};
 
     for (const CodeTestCase& test_case : test_cases) {
-        const auto correct = test_case.code.checkCorrect(test_case.guess);
-        const auto incorrect = test_case.code.checkIncorrect(test_case.guess);
+        const auto result = test_case.code.check_guess(test_case.guess);
 
-        if (correct == test_case.correct && incorrect == test_case.incorrect) {
+        if (result.correct_count == test_case.correct && result.incorrect_count == test_case.incorrect) {
             std::cout << "Case " << case_number << " OK\n";
         } else {
             std::cout << "Case " << case_number << " FAILED:\n"
                       << "Code:  " << test_case.code << '\n'
                       << "Guess: " << test_case.guess << '\n'
                       << "Expected C/I:" << test_case.correct << '/' << test_case.incorrect << '\n'
-                      << "Actual C/I:  " << correct << '/' << incorrect << '\n';
+                      << "Actual C/I:  " << result.correct_count << '/' << result.incorrect_count << '\n';
         }
         ++case_number;
     }

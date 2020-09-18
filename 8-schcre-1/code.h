@@ -18,16 +18,72 @@
 #include <cstdint>          // for fixed width integers
 #include <functional>       // for std::bind
 #include <iosfwd>           // for I/O declarations, full iostream header not required.
-#include <limits>           // for std::numeric_limis
+#include <limits>           // for std::numeric_limits
 #include <stdexcept>        // for std::invalid_argument
 #include <string>           // for std::to_string
 #include <random>           // for random number generation
+#include <utility>          // for std::tie
 #include <vector>           // for std::vector
 
+/**
+ * POD structure representing a response to a mastermind game guess for part b.
+ *
+ * We explicitly do not make `correct_count` and `incorrect_count` private
+ * since this class is not responsible for upholding any invariants.
+ *
+ * This class is an aggregate class, so no user-defined constructors are
+ * provided.
+ */
+struct GuessResponse {
+    using Count = unsigned int;
+
+    /**
+     * The number of digits in the guess that match the code in value and position.
+     */
+    Count correct_count;
+    /**
+     * The number of digits in the guess that match the code in value, but not
+     * in position.
+     */
+    Count incorrect_count;
+
+    // Constructor not defined since this class is designed to be an aggregate.
+    // GuessResponse()
+};
+
+static_assert(
+    std::is_aggregate_v<GuessResponse>,
+    "GuessResponse is expected to be an aggregate data type."
+);
+
+static_assert(
+    std::is_pod_v<GuessResponse>,
+    "GuessResponse is expected to be a plain-old-data type."
+);
+
+// Comparison operator overload.
+inline bool operator==(const GuessResponse& lhs, const GuessResponse& rhs)
+{
+    return std::tie(lhs.correct_count, lhs.incorrect_count)
+        == std::tie(rhs.correct_count, rhs.incorrect_count);
+}
+
+// Output stream operator overload.
+std::ostream& operator<<(std::ostream& out, const GuessResponse& guess_response);
+
+/**
+ * A "secret code" for the MasterMind game.
+ */
 class Code {
   public:
     // Integral type to be used for representing code digits.
     using Digit = std::uint8_t;
+
+  private:
+    /// The digits of this secret code.
+    std::vector<Digit> m_digits;
+
+  public:
 
     /**
      * Initialize a Code instance with the given digits.
@@ -48,7 +104,7 @@ class Code {
     template<typename R = std::default_random_engine>
     Code(
         std::size_t digit_count,
-        std::size_t digit_range,
+        unsigned int digit_range,
         R entropy_source = R(default_random_seed())
     ) : m_digits(digit_count)
     {
@@ -73,6 +129,25 @@ class Code {
         std::generate(std::begin(m_digits), std::end(m_digits), digit_generator);
     }
 
+    // Output stream operator overlaod.
+    friend std::ostream& operator<<(std::ostream& out, const Code&);
+
+    /**
+     * Compares the given guess against this codes digits and produceds a guess
+     * result containing the number of "correct" and "incorrect" digits,
+     * according the the Mastermind game rules.
+     *
+     * @param guess Guess for the secret code digits.
+     * @return Guess result.
+     */
+    [[nodiscard]]
+    GuessResponse check_guess(const Code& guess) const
+    {
+        return {check_correct(guess), check_incorrect(guess)};
+    }
+
+  private:
+
     /**
      * Counts the number of digits that match in both value and position between
      * this code and the given guess.
@@ -83,7 +158,7 @@ class Code {
      * @return The number of correct digits in the guess.
      */
     [[nodiscard]]
-    std::size_t checkCorrect(const Code& guess) const;
+    GuessResponse::Count check_correct(const Code& guess) const;
 
     /**
      * Counts the number of digits that match in value but do not match in
@@ -93,15 +168,7 @@ class Code {
      * @return The number of incorrect digits in the guess.
      */
     [[nodiscard]]
-    std::size_t checkIncorrect(const Code& guess) const;
-
-    // Output stream operator overlaod.
-    friend std::ostream& operator<<(std::ostream& out, const Code&);
-
-  private:
-
-    /// The digits of this secret code.
-    std::vector<Digit> m_digits;
+    GuessResponse::Count check_incorrect(const Code& guess) const;
 
     /**
      * Helper function for producing a random PRNG seed using an available

@@ -37,7 +37,7 @@ T prompt_user(std::string_view prompt);
 int main()
 {
     const auto code_width = prompt_user<std::size_t>("Please enter a code size: ");
-    const auto digit_range = prompt_user<std::size_t>("Please enter a code radix (range of valid digits): ");
+    const auto digit_range = prompt_user<unsigned int>("Please enter a code radix: ");
 
     const Code code(code_width, digit_range);
 
@@ -50,9 +50,10 @@ int main()
         };
 
         for (const Code& guess : demo_cases) {
+            const auto result = code.check_guess(guess);
             std::cout << "Result of guess " << guess << ": "
-                      << code.checkCorrect(guess) << ","
-                      << code.checkIncorrect(guess) << '\n';
+                      << result.correct_count << ","
+                      << result.incorrect_count << '\n';
         }
     }
 

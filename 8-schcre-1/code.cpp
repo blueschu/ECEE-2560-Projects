@@ -17,19 +17,19 @@
 
 #include <iostream>
 
-std::size_t Code::checkCorrect(const Code& guess) const
+GuessResponse::Count Code::check_correct(const Code& guess) const
 {
     if (m_digits.size() != guess.m_digits.size()) {
         throw std::invalid_argument("cannot compare Code instances of unequal lengths");
     }
 
     // The number of digits that match in both value and position.
-    std::size_t match_count{0};
+    GuessResponse::Count match_count{0};
     // Iterator into the guess code.
     auto right_it = std::begin(guess.m_digits);
 
     // Simultaneously iterate over the digits in this code and in the guess
-    // code. Count the number of position where the digits mathc.
+    // code. Count the number of positions where the digits match.
     for (const Digit left_digit : m_digits) {
         if (left_digit == *right_it) {
             ++match_count;
@@ -40,7 +40,7 @@ std::size_t Code::checkCorrect(const Code& guess) const
     return match_count;
 }
 
-std::size_t Code::checkIncorrect(const Code& guess) const
+GuessResponse::Count Code::check_incorrect(const Code& guess) const
 {
     if (m_digits.size() != guess.m_digits.size()) {
         throw std::invalid_argument("cannot compare Code instances of unequal lengths");
@@ -85,8 +85,14 @@ std::size_t Code::checkIncorrect(const Code& guess) const
         std::inserter(incorrect_digits, std::begin(incorrect_digits))
     );
 
-    return incorrect_digits.size();
+    return static_cast<GuessResponse::Count>(incorrect_digits.size());
 
+}
+
+std::ostream& operator<<(std::ostream& out, const GuessResponse& guess_response)
+{
+    out << '(' << guess_response.correct_count << ',' << guess_response.incorrect_count << ')';
+    return out;
 }
 
 std::ostream& operator<<(std::ostream& out, const Code& code)
