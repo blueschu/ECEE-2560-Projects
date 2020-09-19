@@ -1,5 +1,7 @@
 # CMake utilities for ECEE 2560 project.
 
+set(ECEE2560_GROUP_ID 8-schcre)
+
 function(ecee2560_target_warning_defaults TARGET ACCESS)
     # GCC warning flags. See https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html.
     # -Wall/Wextra  - enable common warnings.

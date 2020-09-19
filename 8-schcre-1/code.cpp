@@ -9,7 +9,7 @@
  * ==========
  *
  *  - https://en.cppreference.com/w/cpp/algorithm/set_intersection
- *  - https://en.cppreference.com/w/cpp/iterator/inserter
+ *  - https://en.cppreference.com/w/cpp/iterator/back_inserter
  *
  */
 
@@ -20,7 +20,7 @@
 GuessResponse::Count Code::check_correct(const Code& guess) const
 {
     if (m_digits.size() != guess.m_digits.size()) {
-        throw std::invalid_argument("cannot compare Code instances of unequal lengths");
+        throw MismatchedCodeLengthError("cannot compare Code instances of unequal lengths");
     }
 
     // The number of digits that match in both value and position.
@@ -43,7 +43,7 @@ GuessResponse::Count Code::check_correct(const Code& guess) const
 GuessResponse::Count Code::check_incorrect(const Code& guess) const
 {
     if (m_digits.size() != guess.m_digits.size()) {
-        throw std::invalid_argument("cannot compare Code instances of unequal lengths");
+        throw MismatchedCodeLengthError("cannot compare Code instances of unequal lengths");
     }
 
     // Sequence of digits from this code that do not match the guess digits
@@ -84,7 +84,7 @@ GuessResponse::Count Code::check_incorrect(const Code& guess) const
         std::end(differing_digits_left),
         std::begin(differing_digits_right),
         std::end(differing_digits_right),
-        std::inserter(incorrect_digits, std::begin(incorrect_digits))
+        std::back_inserter(incorrect_digits)
     );
 
     return static_cast<GuessResponse::Count>(incorrect_digits.size());

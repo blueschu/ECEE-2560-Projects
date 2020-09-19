@@ -9,6 +9,7 @@
  * ==========
  *
  *  - https://en.cppreference.com/w/cpp/header/random
+ *  - https://en.cppreference.com/w/cpp/numeric/random
  *  - https://en.cppreference.com/w/cpp/language/aggregate_initialization
  *  - https://stackoverflow.com/questions/4178175/what-are-aggregates-and-pods-and-how-why-are-they-special
  */
@@ -75,6 +76,15 @@ inline bool operator==(const GuessResponse& lhs, const GuessResponse& rhs)
 std::ostream& operator<<(std::ostream& out, const GuessResponse& guess_response);
 
 /**
+ * Exception class thrown when `Code::check_guess(Code)` is called on Code
+ * instances with an unequal number of digits.
+ */
+class MismatchedCodeLengthError : public std::invalid_argument {
+    // Use parent class constructor
+    using std::invalid_argument::invalid_argument;
+};
+
+/**
  * A "secret code" for the MasterMind game.
  */
 class Code {
@@ -131,6 +141,14 @@ class Code {
         // Fill `m_digits` using consecutive calls to `digit_generator`.
         std::generate(std::begin(m_digits), std::end(m_digits), digit_generator);
     }
+
+    /**
+     * Constructs a `Code` instance with the given digits.
+     *
+     * @param digits Code digits.
+     */
+    explicit Code(std::vector<Digit> digits) : m_digits(std::move(digits)) {}
+
 
     // Output stream operator overlaod.
     friend std::ostream& operator<<(std::ostream& out, const Code&);

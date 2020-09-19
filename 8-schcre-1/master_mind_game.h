@@ -15,7 +15,7 @@
 
 #include "code.h"
 
-#include <iostream>         // for I/O definitions
+#include <functional>       // for std::function
 
 /**
  * A game of MasterMind with a fixed secret code. Implemented for part b.
@@ -32,13 +32,29 @@ class MasterMindGame {
     constexpr inline static unsigned int MAX_GUESSES{10};
 
     /// The number of digits in this game's secret code.
-    [[maybe_unused]]
     const std::size_t m_code_size;
 
     /// This game's secret code.
     const Code m_secret_code;
 
   public:
+    /**
+     * Callable type for generating guesses during a mastermind game.
+     */
+    using GuessGenerator = std::function<Code()>;
+
+    /**
+     * Callable type for displaying the number of guesses remaining and the
+     * result of a guess during a mastermind game.
+     */
+    using ResponseCallback = std::function<void(int, GuessResponse)>;
+
+    /**
+     * The value of the "guesses remaining" argument that will be passed to
+     * a response callback when the player has won the game.
+     */
+    constexpr inline static int WON_SENTINEL{-1};
+
     /**
      * Creates a mastermind game with an n-digit secret code in radix r, where
      * n = `code_size` and r = `digit-range`.
@@ -51,9 +67,54 @@ class MasterMindGame {
         unsigned int digit_range = DEFAULT_DIGIT_RADIX
     ) : m_code_size{code_size}, m_secret_code(code_size, digit_range) {}
 
-    void run_game() const
+    /**
+     * Returns this game's secret code.
+     *
+     * @return Ths game's secret code.
+     */
+    [[nodiscard]]
+    const Code& get_code() const noexcept { return m_secret_code; }
+
+    /**
+     * Runs a game of mastermind using this game's secret code.
+     *
+     * This function accepts a `guess_generator` function object for producing
+     * user guesses during the same.
+     *
+     * @param guess_generator Callable for generating user guesses.
+     */
+    void run_game(
+        const GuessGenerator& guess_generator,
+        const ResponseCallback& response_callback) const
     {
-        // TODO
+        int guesses_remaining{MAX_GUESSES};
+
+        while (guesses_remaining > 0) {
+            const Code guess = guess_generator();
+            const GuessResponse result = m_secret_code.check_guess(guess);
+
+            if (check_solution(result)) {
+                response_callback(WON_SENTINEL, result);
+                break;
+            }
+
+            --guesses_remaining;
+            response_callback(guesses_remaining, result);
+        } // end while
+    }
+
+  private:
+    /**
+     * Returns true if the given guess response indicates that the user won
+     * the game.
+     *
+     * @param guess_response Response to the user's guess.
+     * @return True if the response indicates that the user won the game.
+     */
+    [[nodiscard]]
+    bool check_solution(const GuessResponse& guess_response) const noexcept
+    {
+        return guess_response.correct_count == m_code_size;
     }
 
 };

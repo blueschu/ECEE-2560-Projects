@@ -1,14 +1,10 @@
 /**
- * Project 1 main file.
+ * Project 1a main file.
  *
  * Authors: Brian Schubert  <schubert.b@northeastern.edu>
  *          David Cree      <cree.d@northeastern.edu>
  * Date:    2020-09-17
  *
- * References
- * ==========
- *
- *  - https://en.cppreference.com/w/cpp/numeric/random
  */
 
 #include <iostream>         // for std::cout
@@ -36,15 +32,15 @@ T prompt_user(std::string_view prompt);
 
 int main()
 {
-    const auto code_width = prompt_user<std::size_t>("Please enter a code size: ");
+    const auto code_size = prompt_user<std::size_t>("Please enter a code size: ");
     const auto digit_range = prompt_user<unsigned int>("Please enter a code radix: ");
 
-    const Code code(code_width, digit_range);
+    const Code code(code_size, digit_range);
 
     std::cout << "Secret code:    " << code << '\n';
 
     // Only run demo tests for 5-digit codes.
-    if (code_width == 5) {
+    if (code_size == 5) {
         const auto demo_cases = std::array{
             Code{5, 0, 3, 2, 6}, Code{2, 1, 2, 2, 2}, Code{1, 3, 3, 4, 5}
         };
