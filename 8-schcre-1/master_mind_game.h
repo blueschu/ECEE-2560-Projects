@@ -50,12 +50,6 @@ class MasterMindGame {
     using ResponseCallback = std::function<void(int, GuessResponse)>;
 
     /**
-     * The value of the "guesses remaining" argument that will be passed to
-     * a response callback when the player has won the game.
-     */
-    constexpr inline static int WON_SENTINEL{-1};
-
-    /**
      * Creates a mastermind game with an n-digit secret code in radix r, where
      * n = `code_size` and r = `digit-range`.
      *
@@ -82,8 +76,10 @@ class MasterMindGame {
      * user guesses during the same.
      *
      * @param guess_generator Callable for generating user guesses.
+     * @param response_callback Callback for displaying use results to the user.
+     * @return true if the user one the game, false if they lost.
      */
-    void run_game(
+    bool run_game(
         const GuessGenerator& guess_generator,
         const ResponseCallback& response_callback) const
     {
@@ -94,13 +90,15 @@ class MasterMindGame {
             const GuessResponse result = m_secret_code.check_guess(guess);
 
             if (check_solution(result)) {
-                response_callback(WON_SENTINEL, result);
-                break;
+                return true;
             }
 
             --guesses_remaining;
             response_callback(guesses_remaining, result);
         } // end while
+
+        // The user did not guess the code before reaching the guess limit.
+        return false;
     }
 
   private:

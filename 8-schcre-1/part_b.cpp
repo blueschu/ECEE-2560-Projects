@@ -23,6 +23,9 @@
 #include "code.h"
 #include "master_mind_game.h"
 
+// For access to string view literals.
+using namespace std::string_view_literals;
+
 // Using anonymous namespace to give symbols internal linkage.
 namespace {
 /**
@@ -54,8 +57,7 @@ Code prompt_user_guess(std::size_t code_size);
 /**
  * Displays the result of a user's guess to the standard output.
  *
- * @param guesses_remaining The number of guess remaining or a sentinel
- *                          indicating that the user won the game.
+ * @param guesses_remaining The number of guess remaining.
  * @param result The result of the user's guess.
  */
 void display_guess_result(int guesses_remaining, GuessResponse result);
@@ -81,10 +83,12 @@ int main()
 
     std::cout << "Secret code: " << master_mind_game.get_code() << '\n';
 
-    master_mind_game.run_game(
+    const bool won = master_mind_game.run_game(
         [=]() { return prompt_user_guess(code_size); },
         display_guess_result
     );
+
+    std::cout << "You " << (won ? "WON"sv : "LIST"sv) << "!\n";
 
 }
 
@@ -150,14 +154,10 @@ Code prompt_user_guess(std::size_t code_size)
 
 void display_guess_result(int guesses_remaining, GuessResponse result)
 {
-    if (guesses_remaining == MasterMindGame::WON_SENTINEL) {
-        std::cout << "You guess the code!\n";
-    } else {
-        using namespace std::string_view_literals;
-        const auto guess_plural = (guesses_remaining == 1) ? " guess"sv : " guesses"sv;
+    const auto guess_plural = (guesses_remaining == 1) ? " guess"sv : " guesses"sv;
 
-        std::cout << "Result: " << result
-                  << "\nYou have " << guesses_remaining << guess_plural << " remaining\n";
-    }
+    std::cout << "Result: " << result
+              << "\nYou have " << guesses_remaining << guess_plural << " remaining\n";
+
 }
-}
+} // end namespace
