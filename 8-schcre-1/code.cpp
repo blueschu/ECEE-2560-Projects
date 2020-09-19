@@ -26,7 +26,7 @@ GuessResponse::Count Code::check_correct(const Code& guess) const
     // The number of digits that match in both value and position.
     GuessResponse::Count match_count{0};
     // Iterator into the guess code.
-    auto right_it = std::begin(guess.m_digits);
+    auto right_it = std::cbegin(guess.m_digits);
 
     // Simultaneously iterate over the digits in this code and in the guess
     // code. Count the number of positions where the digits match.
@@ -42,6 +42,10 @@ GuessResponse::Count Code::check_correct(const Code& guess) const
 
 GuessResponse::Count Code::check_incorrect(const Code& guess) const
 {
+    // Note: we could use std::multiset (a binary tree) instead of std::vector
+    // to remove the need to explicitly sort the "differing digits" sequences.
+    // std::multiset is guaranteed to store ordered keys.
+
     if (m_digits.size() != guess.m_digits.size()) {
         throw MismatchedCodeLengthError("cannot compare Code instances of unequal lengths");
     }
@@ -54,7 +58,7 @@ GuessResponse::Count Code::check_incorrect(const Code& guess) const
     std::vector<Digit> differing_digits_right{};
 
     // Iterator into the guess code.
-    auto right_it = std::begin(guess.m_digits);
+    auto right_it = std::cbegin(guess.m_digits);
 
     // Simultaneously iterate over the digits in this code and in the guess
     // code. Whenever the digits in this code and the guess code do not agree,
@@ -69,7 +73,9 @@ GuessResponse::Count Code::check_incorrect(const Code& guess) const
         ++right_it;
     }
 
-    // Sort the differing digits to that they can be treated as multisets.
+    // Sort the differing digits to that they can be treated as multi-sets.
+    // If we use std::multiset instead of std::vector, these calls to std::sort
+    // could be omitted.
     std::sort(std::begin(differing_digits_left), std::end(differing_digits_left));
     std::sort(std::begin(differing_digits_right), std::end(differing_digits_right));
 
@@ -80,10 +86,10 @@ GuessResponse::Count Code::check_incorrect(const Code& guess) const
     // that appear in both sequences, but which do not appear in the same
     // positions.
     std::set_intersection(
-        std::begin(differing_digits_left),
-        std::end(differing_digits_left),
-        std::begin(differing_digits_right),
-        std::end(differing_digits_right),
+        std::cbegin(differing_digits_left),
+        std::cend(differing_digits_left),
+        std::cbegin(differing_digits_right),
+        std::cend(differing_digits_right),
         std::back_inserter(incorrect_digits)
     );
 

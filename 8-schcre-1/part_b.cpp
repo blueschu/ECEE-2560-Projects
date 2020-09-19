@@ -79,6 +79,7 @@ int main()
     // trailing newline left in the input buffer from using "std::cin >> var".
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
+    // Create a mastermind game with a random secret code.
     const MasterMindGame master_mind_game(code_size, digit_range);
 
     std::cout << "Secret code: " << master_mind_game.get_code() << '\n';
@@ -88,7 +89,7 @@ int main()
         display_guess_result
     );
 
-    std::cout << "You " << (won ? "WON"sv : "LIST"sv) << "!\n";
+    std::cout << "You " << (won ? "WON" : "LOST") << "!\n";
 
 }
 
@@ -140,7 +141,7 @@ Code prompt_user_guess(std::size_t code_size)
         if (digits.size() != code_size) {
             std::cout << "Invalid input. Code guess must consist of "
                       << code_size << " digits\n";
-            // Empty the zero vector without de-allocating it storage.
+            // Empty the digit vector without de-allocating its storage.
             digits.clear();
             continue;
         }

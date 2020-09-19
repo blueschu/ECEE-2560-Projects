@@ -1,3 +1,5 @@
+# CMakeLists for Project 1 - MasterMind Game
+
 include(${CMAKE_SOURCE_DIR}/cmake/ecee2560_project_utils.cmake)
 
 # Static library for shared elements in Part A and Part B
