@@ -8,10 +8,10 @@
  * References
  * ==========
  *
- *  - https://en.cppreference.com/w/cpp/header/type_traits
- *  - https://en.cppreference.com/w/cpp/io/basic_istringstream
- *  - https://en.cppreference.com/w/cpp/algorithm/copy
- *  - https://en.cppreference.com/w/cpp/iterator/back_inserter
+ *  [1]: https://en.cppreference.com/w/cpp/header/type_traits
+ *  [2]: https://en.cppreference.com/w/cpp/io/basic_istringstream
+ *  [3]: https://en.cppreference.com/w/cpp/algorithm/copy
+ *  [4]: https://en.cppreference.com/w/cpp/iterator/back_inserter
  */
 
 #include <algorithm>        // for std::copy

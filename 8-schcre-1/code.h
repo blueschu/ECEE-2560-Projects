@@ -8,10 +8,10 @@
  * References
  * ==========
  *
- *  - https://en.cppreference.com/w/cpp/header/random
- *  - https://en.cppreference.com/w/cpp/numeric/random
- *  - https://en.cppreference.com/w/cpp/language/aggregate_initialization
- *  - https://stackoverflow.com/questions/4178175/what-are-aggregates-and-pods-and-how-why-are-they-special
+ *  [1]: https://en.cppreference.com/w/cpp/header/random
+ *  [2]: https://en.cppreference.com/w/cpp/numeric/random
+ *  [3]: https://en.cppreference.com/w/cpp/language/aggregate_initialization
+ *  [4]: https://stackoverflow.com/questions/4178175/what-are-aggregates-and-pods-and-how-why-are-they-special
  */
 
 #ifndef ECEE_2560_PROJECTS_CODE_H
@@ -150,7 +150,7 @@ class Code {
     explicit Code(std::vector<Digit> digits) : m_digits(std::move(digits)) {}
 
 
-    // Output stream operator overlaod.
+    // Output stream operator overload.
     friend std::ostream& operator<<(std::ostream& out, const Code&);
 
     /**
@@ -179,6 +179,8 @@ class Code {
      * Marked with a [[nodiscard]] attribute since calling this member function
      * without reading the return value would be nonsensical.
      *
+     * Runs in O(N) times and O(1) space.
+     *
      * @param guess Guess for the secret code digits.
      * @return The number of correct digits in the guess.
      */
@@ -191,6 +193,8 @@ class Code {
      *
      * Marked with a [[nodiscard]] attribute since calling this member function
      * without reading the return value would be nonsensical.
+     *
+     * Runs in O(N log N) time and O(N) space.
      *
      * @param guess Guess for the secret code digits.
      * @return The number of incorrect digits in the guess.
