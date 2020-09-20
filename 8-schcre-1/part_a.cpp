@@ -47,9 +47,7 @@ int main()
 
         for (const Code& guess : demo_cases) {
             const auto result = code.check_guess(guess);
-            std::cout << "Result of guess " << guess << ": "
-                      << result.correct_count << ","
-                      << result.incorrect_count << '\n';
+            std::cout << "Result of guess " << guess << ": " << result << '\n';
         }
     }
 

@@ -131,7 +131,9 @@ Code prompt_user_guess(std::size_t code_size)
 
         // Repeatedly read integers from the user-provided string until it is
         // depleted. Note that we do not want to use std::istream_iterator<Code::Digit>
-        // here, since that may lead to digits being ASCII encoded.
+        // here, since that may lead to digits being ASCII encoded. Integers
+        // that are too large to fit in a Code::Digit with have their upper bits
+        // truncated.
         std::copy(
             std::istream_iterator<int>(input_stream),
             std::istream_iterator<int>(),
