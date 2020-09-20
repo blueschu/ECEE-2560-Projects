@@ -5,15 +5,15 @@
 #
 
 cmake_minimum_required(VERSION 3.10)
-project(ecee_2560_projects
-        DESCRIPTION "ECEE 2560 / Fundamentals of Engineering Projects."
+project(eece_2560_projects
+        DESCRIPTION "EECE 2560 / Fundamentals of Engineering Projects."
         LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # List of subdirectories corresponding to ECEE2560 projects.
-set(ECEE2560_PROJECT_LIST
+set(EECE2560_PROJECT_LIST
 #        8-schcre-non-existent-project-test-sentinel
         8-schcre-1)
 
@@ -24,7 +24,7 @@ set(ECEE2560_PROJECT_LIST
 # contain a subset of the course-project subdirectories. To make sure that this
 # build configuration still works when course-project directories are missing,
 # we only add CMake configurations for course-projects that exists.
-foreach (PROJ_DIRECTORY ${ECEE2560_PROJECT_LIST})
+foreach (PROJ_DIRECTORY ${EECE2560_PROJECT_LIST})
     if (EXISTS "${CMAKE_SOURCE_DIR}/${PROJ_DIRECTORY}")
         add_subdirectory("${CMAKE_SOURCE_DIR}/${PROJ_DIRECTORY}")
     else ()
