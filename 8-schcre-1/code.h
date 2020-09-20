@@ -80,7 +80,7 @@ std::ostream& operator<<(std::ostream& out, const GuessResponse& guess_response)
  * instances with an unequal number of digits.
  */
 class MismatchedCodeLengthError : public std::invalid_argument {
-    // Use parent class constructor
+    // Use parent class constructor.
     using std::invalid_argument::invalid_argument;
 };
 

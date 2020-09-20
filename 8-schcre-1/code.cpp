@@ -87,6 +87,9 @@ GuessResponse::Count Code::check_incorrect(const Code& guess) const
     }
 
     // O(N log N)  [N4659, 28.7.1.1]
+    // Sort the differing digits to that they can be treated as multi-sets.
+    // If we use std::multiset instead of std::vector, these calls to std::sort
+    // could be omitted.
     std::sort(std::begin(differing_digits_left), std::end(differing_digits_left));
     std::sort(std::begin(differing_digits_right), std::end(differing_digits_right));
 
