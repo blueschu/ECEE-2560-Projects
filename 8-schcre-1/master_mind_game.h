@@ -40,12 +40,18 @@ class MasterMindGame {
   public:
     /**
      * Callable type for generating guesses during a mastermind game.
+     *
+     * This callable accepts a single argument representing the number of
+     * digits in the game's secret code.
      */
-    using GuessGenerator = std::function<Code()>;
+    using GuessGenerator = std::function<Code(std::size_t)>;
 
     /**
      * Callable type for displaying the number of guesses remaining and the
      * result of a guess during a mastermind game.
+     *
+     * This callable accepts two arguments representing the number of guess
+     * remaining and the GuessResponse from the last guess, respectively.
      */
     using ResponseCallback = std::function<void(int, GuessResponse)>;
 

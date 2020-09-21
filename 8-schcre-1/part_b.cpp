@@ -54,8 +54,16 @@ T prompt_user(std::string_view prompt);
  */
 Code prompt_user_guess(std::size_t code_size);
 
+static_assert(
+    std::is_constructible_v<MasterMindGame::GuessGenerator, decltype(prompt_user_guess)>,
+    "prompt_user_guess is not a valid mastermind game guess generator"
+);
+
 /**
  * Displays the result of a user's guess to the standard output.
+ *
+ * GuessResponse is a small POD, so it more optimal to pass it by value than
+ * by reference.
  *
  * @param guesses_remaining The number of guess remaining.
  * @param result The result of the user's guess.
@@ -85,7 +93,7 @@ int main()
     std::cout << "Secret code: " << master_mind_game.get_code() << '\n';
 
     const bool won = master_mind_game.run_game(
-        [=]() { return prompt_user_guess(code_size); },
+        prompt_user_guess,
         display_guess_result
     );
 

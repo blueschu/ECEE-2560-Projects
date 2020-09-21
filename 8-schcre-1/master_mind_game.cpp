@@ -17,7 +17,7 @@ bool MasterMindGame::run_game(
     int guesses_remaining{MAX_GUESSES};
 
     while (guesses_remaining > 0) {
-        const Code guess = guess_generator();
+        const Code guess = guess_generator(m_code_size);
         const GuessResponse result = m_secret_code.check_guess(guess);
 
         if (check_solution(result)) {
