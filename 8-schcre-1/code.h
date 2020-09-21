@@ -122,14 +122,18 @@ class Code {
     ) : m_digits(digit_count)
     {
         using namespace std::string_literals;
-        constexpr auto max_digit = std::numeric_limits<Digit>::max();
+        // The maximum value representable by a digit, plus one.
+        constexpr auto max_radix{
+            // Promote ULL to ensure that we don't overflow the Digit type.
+            std::numeric_limits<Digit>::max() + 1ull
+        };
 
         // Make sure we can represent the interval [0, max_digit) using the
         // configured Digit type.
-        if (digit_range - 1 > max_digit) {
+        if (digit_range > max_radix) {
             throw std::invalid_argument(
                 "digit range cannot exceed the boundaries of the digit type "
-                "(max value is "s + std::to_string(max_digit) + ")"
+                "(max radix is "s + std::to_string(max_radix) + ")"
             );
         }
 
@@ -149,14 +153,13 @@ class Code {
      */
     explicit Code(std::vector<Digit> digits) : m_digits(std::move(digits)) {}
 
-
     // Output stream operator overload.
     friend std::ostream& operator<<(std::ostream& out, const Code&);
 
     /**
-     * Compares the given guess against this codes digits and produceds a guess
+     * Compares the given guess against this codes digits and produces a guess
      * result containing the number of "correct" and "incorrect" digits,
-     * according the the Mastermind game rules.
+     * according to the Mastermind game rules.
      *
      * Marked with a [[nodiscard]] attribute since calling this member function
      * without reading the return value would be nonsensical.
@@ -208,6 +211,7 @@ class Code {
      *
      * @return PRNG seed.
      */
+    [[nodiscard]]
     static std::random_device::result_type default_random_seed()
     {
         // Handle for random seed generator using available hardware devices.

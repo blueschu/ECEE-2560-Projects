@@ -61,16 +61,16 @@ GuessResponse::Count Code::check_incorrect(const Code& guess) const
         throw MismatchedCodeLengthError("cannot compare Code instances of unequal lengths");
     }
 
-    // 2*Theta(1).
+    // Theta(1) for initial construction.
     // Sequence of digits from this code that do not match the guess digits
     // in both value and position. Relative ordering of digits is maintained.
-    std::vector<Digit> differing_digits_left{};
+    std::vector<Digit> differing_digits_code{};
     // Sequence of digits from the guess that do not match this code's digits
     // in both value and position. Relative ordering of digits is maintained.
-    std::vector<Digit> differing_digits_right{};
+    std::vector<Digit> differing_digits_guess{};
 
     // Iterator into the guess code. Theta(1).
-    auto right_it = std::cbegin(guess.m_digits);
+    auto guess_digit_it = std::cbegin(guess.m_digits);
 
     // O(N).
     // Simultaneously iterate over the digits in this code and in the guess
@@ -78,20 +78,20 @@ GuessResponse::Count Code::check_incorrect(const Code& guess) const
     // copy the digits into the "differing digits" vectors.
     // In essence, we filter away the "correct" digits. This is safe to do,
     // since no digit can be both "correct" and "incorrect".
-    for (const Digit left_digit : m_digits) {
-        if (left_digit != *right_it) {
-            differing_digits_left.push_back(left_digit);
-            differing_digits_right.push_back(*right_it);
+    for (const Digit code_digit : m_digits) {
+        if (code_digit != *guess_digit_it) {
+            differing_digits_code.push_back(code_digit);
+            differing_digits_guess.push_back(*guess_digit_it);
         }
-        ++right_it;
+        ++guess_digit_it;
     }
 
     // O(N log N)  [N4659, 28.7.1.1]
     // Sort the differing digits to that they can be treated as multi-sets.
     // If we use std::multiset instead of std::vector, these calls to std::sort
     // could be omitted.
-    std::sort(std::begin(differing_digits_left), std::end(differing_digits_left));
-    std::sort(std::begin(differing_digits_right), std::end(differing_digits_right));
+    std::sort(std::begin(differing_digits_code), std::end(differing_digits_code));
+    std::sort(std::begin(differing_digits_guess), std::end(differing_digits_guess));
 
     // Theta(1).
     std::vector<Digit> incorrect_digits{};
@@ -102,10 +102,10 @@ GuessResponse::Count Code::check_incorrect(const Code& guess) const
     // that appear in both sequences, but which do not appear in the same
     // positions.
     std::set_intersection(
-        std::cbegin(differing_digits_left),
-        std::cend(differing_digits_left),
-        std::cbegin(differing_digits_right),
-        std::cend(differing_digits_right),
+        std::cbegin(differing_digits_code),
+        std::cend(differing_digits_code),
+        std::cbegin(differing_digits_guess),
+        std::cend(differing_digits_guess),
         std::back_inserter(incorrect_digits)
     );
 
@@ -122,7 +122,7 @@ std::ostream& operator<<(std::ostream& out, const GuessResponse& guess_response)
 std::ostream& operator<<(std::ostream& out, const Code& code)
 {
     out << "[ ";
-    for (Code::Digit digit : code.m_digits) {
+    for (const Code::Digit digit : code.m_digits) {
         // Make sure that digits are not interpreted as encoded characters,
         // since we use an integral type with the same size as `char`.
         out << static_cast<int>(digit) << ' ';
