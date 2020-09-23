@@ -8,6 +8,8 @@
  * References
  * ==========
  *
+ *  [1]: https://en.cppreference.com/w/cpp/language/inline
+ *
  */
 
 #ifndef ECEE_2560_PROJECTS_MASTER_MIND_GAME_H
@@ -22,14 +24,16 @@
  */
 class MasterMindGame {
 
+    // Note: constexpr static member variables are implicitly inline since C++17 [1].
+
     /// The default number of digits in a secret code.
-    constexpr inline static std::size_t DEFAULT_CODE_SIZE{5};
+    constexpr static std::size_t DEFAULT_CODE_SIZE{5};
 
     /// The default radix for secret code digits.
-    constexpr inline static unsigned int DEFAULT_DIGIT_RADIX{10};
+    constexpr static unsigned int DEFAULT_DIGIT_RADIX{10};
 
     /// The number of incorrect guesses a player can make before losing the game.
-    constexpr inline static unsigned int MAX_GUESSES{10};
+    constexpr static unsigned int MAX_GUESSES{10};
 
     /// The number of digits in this game's secret code.
     const std::size_t m_code_size;

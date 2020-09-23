@@ -111,8 +111,13 @@ class Code {
      *
      * @tparam R Random number generator.
      * @param digit_count Number of digits to include in the code.
-     * @param digit_range Upper bound of code digits, not inclusive.
+     * @param digit_range Upper bound of code digits, not inclusive. Must not
+     *                    exceed the maximum value representable by Digit, plus
+     *                    one.
      * @param entropy_source Random number generator.
+     * @throws invalid_argument if the given digit_range exceeds the maximum
+     *                    value representable by Digit, plus
+     *                    one.
      */
     template<typename R = std::default_random_engine>
     Code(
@@ -165,6 +170,8 @@ class Code {
      * without reading the return value would be nonsensical.
      *
      * @param guess Guess for the secret code digits.
+     * @throws MismatchedCodeLengthError if this code and the given guess
+     *         have unequal lengths.
      * @return Guess result.
      */
     [[nodiscard]]
@@ -185,6 +192,8 @@ class Code {
      * Runs in O(N) times and O(1) space.
      *
      * @param guess Guess for the secret code digits.
+     * @throws MismatchedCodeLengthError if this code and the given guess
+     *         have unequal lengths.
      * @return The number of correct digits in the guess.
      */
     [[nodiscard]]
@@ -200,6 +209,8 @@ class Code {
      * Runs in O(N log N) time and O(N) space.
      *
      * @param guess Guess for the secret code digits.
+     * @throws MismatchedCodeLengthError if this code and the given guess
+     *         have unequal lengths.
      * @return The number of incorrect digits in the guess.
      */
     [[nodiscard]]
