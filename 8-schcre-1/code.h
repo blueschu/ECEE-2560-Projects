@@ -52,7 +52,7 @@ struct GuessResponse {
     Count incorrect_count;
 
     // Constructor not defined since this class is designed to be an aggregate.
-    GuessResponse() = delete;
+    GuessResponse() = default;
 };
 
 static_assert(
