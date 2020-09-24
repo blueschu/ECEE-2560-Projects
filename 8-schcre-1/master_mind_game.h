@@ -135,7 +135,7 @@ class MasterMindGame {
     [[nodiscard]]
     bool check_solution(const GuessResponse& guess_response) const noexcept
     {
-        return guess_response.correct_count == m_code_size;
+        return guess_response.get_correct() == m_code_size;
     }
 
     /**

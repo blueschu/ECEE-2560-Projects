@@ -28,49 +28,51 @@
 #include <utility>          // for std::tie
 #include <vector>           // for std::vector
 
+// Macro to generate value-based getters and setters for a class member.
+#define HELPER_VALUE_GETTER_SETTER(MEMBER, METHOD_NAME_POSTFIX)\
+    decltype(MEMBER) get_##METHOD_NAME_POSTFIX() const { return MEMBER; }\
+    void set_##METHOD_NAME_POSTFIX(decltype(MEMBER) value) { MEMBER = value; }
+
 /**
- * POD structure representing a response to a guess during a mastermind game.
+ * A response to a guess during a mastermind game.
  *
- * We intentionally do not make `correct_count` and `incorrect_count` private
- * since this class is not responsible for upholding any invariants.
- *
- * This class is an aggregate class, so no user-defined constructors are
- * provided.
+ * Usually, this class would be implemented as a POD structure. However,
+ * this project required that it be implemented as a non-trivial class with
+ * getters, setters, and a user-defined constructor.
  */
-struct GuessResponse {
+class GuessResponse {
+  public:
     /// Integral type representing a count.
     using Count = unsigned int;
 
+  private:
     /**
      * The number of digits in the guess that match the code in value and position.
      */
-    Count correct_count;
+    Count m_correct_count;
     /**
      * The number of digits in the guess that match the code in value, but not
      * in position.
      */
-    Count incorrect_count;
+    Count m_incorrect_count;
 
-    // Constructor not defined since this class is designed to be an aggregate.
-    GuessResponse() = default;
+  public:
+    GuessResponse(Count correct, Count incorrect)
+        : m_correct_count{correct}, m_incorrect_count{incorrect} {};
+
+    // Generate getter and setter for correct count.
+    HELPER_VALUE_GETTER_SETTER(m_correct_count, correct)
+
+    // Generate getter and setter for incorrect count.
+    HELPER_VALUE_GETTER_SETTER(m_incorrect_count, incorrect)
+
+    // Comparison operator overload. Implicitly inline.
+    friend bool operator==(const GuessResponse& lhs, const GuessResponse& rhs)
+    {
+        return std::tie(lhs.m_correct_count, lhs.m_incorrect_count)
+            == std::tie(rhs.m_correct_count, rhs.m_incorrect_count);
+    }
 };
-
-static_assert(
-    std::is_aggregate_v<GuessResponse>,
-    "GuessResponse is expected to be an aggregate data type."
-);
-
-static_assert(
-    std::is_pod_v<GuessResponse>,
-    "GuessResponse is expected to be a plain-old-data type."
-);
-
-// Comparison operator overload.
-inline bool operator==(const GuessResponse& lhs, const GuessResponse& rhs)
-{
-    return std::tie(lhs.correct_count, lhs.incorrect_count)
-        == std::tie(rhs.correct_count, rhs.incorrect_count);
-}
 
 // Output stream operator overload.
 std::ostream& operator<<(std::ostream& out, const GuessResponse& guess_response);

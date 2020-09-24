@@ -115,7 +115,7 @@ GuessResponse::Count Code::check_incorrect(const Code& guess) const
 
 std::ostream& operator<<(std::ostream& out, const GuessResponse& guess_response)
 {
-    out << '(' << guess_response.correct_count << ',' << guess_response.incorrect_count << ')';
+    out << '(' << guess_response.get_correct() << ',' << guess_response.get_incorrect() << ')';
     return out;
 }
 
