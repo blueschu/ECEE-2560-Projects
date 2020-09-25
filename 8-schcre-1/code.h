@@ -28,11 +28,6 @@
 #include <utility>          // for std::tie
 #include <vector>           // for std::vector
 
-// Macro to generate value-based getters and setters for a class member.
-#define HELPER_VALUE_GETTER_SETTER(MEMBER, METHOD_NAME_POSTFIX)\
-    decltype(MEMBER) get_##METHOD_NAME_POSTFIX() const { return MEMBER; }\
-    void set_##METHOD_NAME_POSTFIX(decltype(MEMBER) value) { MEMBER = value; }
-
 /**
  * A response to a guess during a mastermind game.
  *
@@ -60,11 +55,17 @@ class GuessResponse {
     GuessResponse(Count correct, Count incorrect)
         : m_correct_count{correct}, m_incorrect_count{incorrect} {};
 
-    // Generate getter and setter for correct count.
-    HELPER_VALUE_GETTER_SETTER(m_correct_count, correct)
+    /// Returns the number of correct digits.
+    Count get_correct() const { return m_correct_count; }
 
-    // Generate getter and setter for incorrect count.
-    HELPER_VALUE_GETTER_SETTER(m_incorrect_count, incorrect)
+    /// Sets the number of correct digit to the given value.
+    void set_correct(Count value) { m_correct_count = value; }
+
+    /// Returns the number of incorrect digits.
+    Count get_incorrect() const { return m_incorrect_count; }
+
+    /// Sets the number of incorrect digits to the given value.
+    void set_incorrect(Count value) { m_incorrect_count = value; }
 
     // Comparison operator overload. Implicitly inline.
     friend bool operator==(const GuessResponse& lhs, const GuessResponse& rhs)
