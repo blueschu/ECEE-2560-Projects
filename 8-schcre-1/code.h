@@ -10,8 +10,6 @@
  *
  *  [1]: https://en.cppreference.com/w/cpp/header/random
  *  [2]: https://en.cppreference.com/w/cpp/numeric/random
- *  [3]: https://en.cppreference.com/w/cpp/language/aggregate_initialization
- *  [4]: https://stackoverflow.com/questions/4178175/what-are-aggregates-and-pods-and-how-why-are-they-special
  */
 
 #ifndef ECEE_2560_PROJECTS_CODE_H
@@ -56,13 +54,13 @@ class GuessResponse {
         : m_correct_count{correct}, m_incorrect_count{incorrect} {};
 
     /// Returns the number of correct digits.
-    Count get_correct() const { return m_correct_count; }
+    [[nodiscard]] Count get_correct() const { return m_correct_count; }
 
     /// Sets the number of correct digit to the given value.
     void set_correct(Count value) { m_correct_count = value; }
 
     /// Returns the number of incorrect digits.
-    Count get_incorrect() const { return m_incorrect_count; }
+    [[nodiscard]] Count get_incorrect() const { return m_incorrect_count; }
 
     /// Sets the number of incorrect digits to the given value.
     void set_incorrect(Count value) { m_incorrect_count = value; }
@@ -180,7 +178,7 @@ class Code {
     [[nodiscard]]
     GuessResponse check_guess(const Code& guess) const
     {
-        return {check_correct(guess), check_incorrect(guess)};
+        return GuessResponse(check_correct(guess), check_incorrect(guess));
     }
 
   private:
