@@ -15,8 +15,6 @@
 #ifndef ECEE_2560_PROJECTS_MASTER_MIND_GAME_H
 #define ECEE_2560_PROJECTS_MASTER_MIND_GAME_H
 
-#define EECE_USE_OVERLOADS
-
 #include "code.h"
 
 #include <functional>       // for std::function
@@ -61,9 +59,6 @@ class MasterMindGame {
      */
     using ResponseCallback = std::function<void(int, GuessResponse)>;
 
-#ifdef EECE_USE_OVERLOADS
-    // Use overloaded constructors to provide default constructor arguments.
-
     /**
      * Creates a mastermind game with default digit count and digit range.
      */
@@ -73,27 +68,14 @@ class MasterMindGame {
      * Creates a mastermind game with an n-digit secret code in radix r, where
      * n = `code_size` and r = `digit-range`.
      *
+     * Note: this constructor could be merged into a default constructor with
+     * default arguments.
+     *
      * @param code_size The number of digit in the secret code.
      * @param digit_range The radix of the secret code digits.
      */
     MasterMindGame(std::size_t code_size, unsigned int digit_range)
         : m_code_size{code_size}, m_secret_code(code_size, digit_range) {}
-
-#else // Use default arguments instead of overloaded constructors.
-
-    /**
-     * Creates a mastermind game with an n-digit secret code in radix r, where
-     * n = `code_size` and r = `digit-range`.
-     *
-     * @param code_size The number of digit in the secret code.
-     * @param digit_range The radix of the secret code digits.
-     */
-    explicit MasterMindGame(
-        std::size_t code_size = DEFAULT_CODE_SIZE,
-        unsigned int digit_range = DEFAULT_DIGIT_RADIX
-    ) : m_code_size{code_size}, m_secret_code(code_size, digit_range) {}
-
-#endif
 
     /**
      * Returns this game's secret code.
