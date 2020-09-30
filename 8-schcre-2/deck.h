@@ -9,6 +9,8 @@
  * ==========
  *
  *  [1]: https://en.cppreference.com/w/cpp/algorithm/random_shuffle
+ *  [2]: https://en.cppreference.com/w/cpp/container/forward_list
+ *  [3]: https://en.cppreference.com/w/cpp/iterator/front_inserter
  */
 
 #ifndef EECE_2560_PROJECTS_DECK_H
@@ -16,12 +18,17 @@
 
 #include <algorithm>            // for std::random_shuffle
 #include <forward_list>         // temporary: for standard list container
-#include <ostream>
+#include <ostream>              // for output stream definitions (iosfwd not sufficient)
 #include <random>               // for random number generation
-#include <vector>
+#include <vector>               // for std::vector (used in shuffle implementation)
 
 #include "card.h"
 
+/**
+ * A deck of playing cards.
+ *
+ * @tparam List The linked list type used to store the deck's cards.
+ */
 template<typename List = std::forward_list<Card>>
 class Deck {
 
@@ -40,12 +47,14 @@ class Deck {
      */
     Deck()
     {
+        // Iterator to before the start of the card list.
         auto it = m_card_list.before_begin();
 
         for (auto rank : Card::ALL_RANKS) {
             for (auto suit : Card::ALL_SUITS) {
-                // Use emplace to construct the card in place rather than copying a temporary.
-                it = m_card_list.emplace_after(it, rank, suit);
+                // Insert the card with the current rank and suite at the end
+                // of the list. Update the iterator to the end of the list.
+                it = m_card_list.insert_after(it, {rank, suit});
             }
         }
     }
@@ -82,12 +91,15 @@ class Deck {
         return out;
     }
 
+    /*
+     * Range member functions to allow Decks to be used as iterable ranges.
+     */
 
-    iterator begin() { return m_card_list.begin(); }
+//    iterator begin() { return m_card_list.begin(); }
 
     const_iterator begin() const { return m_card_list.begin(); }
 
-    iterator end() { return m_card_list.end(); }
+//    iterator end() { return m_card_list.end(); }
 
     const_iterator end() const { return m_card_list.end(); }
 
