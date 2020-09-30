@@ -23,10 +23,10 @@ namespace {
 constexpr std::string_view suite_to_string(Card::Suit suit)
 {
     switch (suit) {
-        case Card::Suit::Club: return "Club";
-        case Card::Suit::Diamond: return "Diamond"sv;
-        case Card::Suit::Heart: return "Heat"sv;
-        case Card::Suit::Spade: return "Spade"sv;
+        case Card::Suit::Club: return "C";
+        case Card::Suit::Diamond: return "D"sv;
+        case Card::Suit::Heart: return "H"sv;
+        case Card::Suit::Spade: return "S"sv;
     }
 
     // Signal the compiler that this branch is impossible [P0627r0].
@@ -45,17 +45,17 @@ constexpr std::string_view rank_to_string(Card::Rank rank)
         case Card::Rank::R8: return "8"sv;
         case Card::Rank::R9: return "9"sv;
         case Card::Rank::R10: return "10"sv;
-        case Card::Rank::Jack: return "Jack"sv;
-        case Card::Rank::Queen: return "Queen"sv;
-        case Card::Rank::King: return "King"sv;
-        case Card::Rank::Ace: return "Ace"sv;
+        case Card::Rank::Jack: return "J"sv;
+        case Card::Rank::Queen: return "Q"sv;
+        case Card::Rank::King: return "K"sv;
+        case Card::Rank::Ace: return "A"sv;
     }
 
     // Signal the compiler that this branch is impossible [P0627r0].
     __builtin_unreachable();
 }
 
-}
+} // end namespace
 
 std::ostream& operator<<(std::ostream& out, Card::Suit suit)
 {
@@ -71,6 +71,6 @@ std::ostream& operator<<(std::ostream& out, Card::Rank rank)
 
 std::ostream& operator<<(std::ostream& out, const Card& card)
 {
-    out << card.m_rank << " of " << card.m_suit;
+    out << card.m_rank << card.m_suit;
     return out;
 }

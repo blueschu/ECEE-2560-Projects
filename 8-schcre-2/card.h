@@ -12,55 +12,108 @@
 #ifndef EECE_2560_PROJECTS_CARD_H
 #define EECE_2560_PROJECTS_CARD_H
 
+#include <array>
 #include <tuple>            // for std::tie
 
+/**
+ * A playing care with a suit and rank.
+ */
 class Card {
 
   public:
+    /// The possible ranks for a playing card.
+    enum class Rank {
+        Ace, R2, R3, R4, R5, R6, R7, R8, R9, R10, Jack, Queen, King
+    };
+
+    /// The possible suits for a palavering card.
     enum class Suit {
         Club, Diamond, Heart, Spade
     };
 
-    enum class Rank {
-        R2, R3, R4, R5, R6, R7, R8, R9, R10, Jack, Queen, King, Ace
+    /// All possible playing car ranks
+    constexpr static auto ALL_RANKS{
+        std::array{
+            Rank::Ace, Rank::R2, Rank::R3, Rank::R4, Rank::R5,
+            Rank::R6, Rank::R7, Rank::R8, Rank::R9, Rank::R10,
+            Rank::Jack, Rank::Queen, Rank::King
+        }
     };
 
-    Card(Suit suit, Rank rank) : m_suit{suit}, m_rank{rank} {}
+    /// All possible playing card suits.
+    constexpr static auto ALL_SUITS{
+        std::array{Suit::Club, Suit::Diamond, Suit::Heart, Suit::Spade}
+    };
 
+  private:
+    /// The rank of this card.
+    Rank m_rank;
+
+    /// The suit of this card.
+    Suit m_suit;
+
+  public:
+
+    /// Creates a playing card with the given suit and rank.
+    Card(Rank rank, Suit suit) : m_rank{rank}, m_suit{suit} {}
+
+    /// Returns true is this card is a face card (Jack, Queen, or King).
     bool is_face()
     {
         return m_rank == Rank::Jack || m_rank == Rank::Queen || m_rank == Rank::King;
     }
 
+    /*
+     * Required getters and setters from project instructions.
+     */
+
+    /// Returns the suit of this card.
     [[nodiscard]] Suit get_suit() const { return m_suit; }
 
+    /// Sets the suit of this card to the given value.
     void set_suit(Suit suit) { m_suit = suit; }
 
+    /// Returns the rank of this card.
     [[nodiscard]] Rank get_rank() const { return m_rank; }
 
+    /// Sets the rank of this card to the given value.
     void set_rank(Rank rank) { m_rank = rank; }
+
+    /*
+     * Comparison operator overloads.
+     */
 
     bool operator==(const Card& rhs) const
     {
-        return std::tie(m_suit, m_rank) == std::tie(rhs.m_suit, rhs.m_rank);
+        return std::tie(m_rank, m_suit) == std::tie(rhs.m_rank, rhs.m_suit);
     }
 
-    bool operator!=(const Card& rhs) const
+    bool operator<(const Card& rhs) const
     {
-        return !(rhs == *this);
+        return std::tie(m_rank, m_suit) < std::tie(rhs.m_rank, m_suit);
     }
 
+    bool operator!=(const Card& rhs) const { return !(rhs == *this); }
+
+    bool operator>(const Card& rhs) const { return rhs < *this; }
+
+    bool operator<=(const Card& rhs) const { return !(rhs < *this); }
+
+    bool operator>=(const Card& rhs) const { return !(*this < rhs); }
+
+    // Output stream operator overload.
     friend std::ostream& operator<<(std::ostream& os, const Card& card);
 
-  private:
+}; // class Card
 
-    Suit m_suit;
-    Rank m_rank;
 
-};
+// Ensure that there are precisely 52 possible playing cards.
+static_assert(Card::ALL_SUITS.size() * Card::ALL_RANKS.size() == 52);
 
+// Output stream operator overload for suits.
 std::ostream& operator<<(std::ostream& out, Card::Suit suit);
 
+// Output stream operator overload for ranks.
 std::ostream& operator<<(std::ostream& out, Card::Rank rank);
 
 #endif //EECE_2560_PROJECTS_CARD_H
