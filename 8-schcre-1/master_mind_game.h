@@ -68,8 +68,8 @@ class MasterMindGame {
      * Creates a mastermind game with an n-digit secret code in radix r, where
      * n = `code_size` and r = `digit-range`.
      *
-     * Note: this constructor could be merged into a default constructor with
-     * default arguments.
+     * Note: this constructor and the default constructor above could be merged
+     * into a default constructor with default arguments.
      *
      * @param code_size The number of digit in the secret code.
      * @param digit_range The radix of the secret code digits.
