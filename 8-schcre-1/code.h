@@ -50,6 +50,12 @@ class GuessResponse {
     Count m_incorrect_count;
 
   public:
+    /**
+     * Constructs a GuessResponse with the given correct and incorrect counts.
+     *
+     * Note: it may be preferable to replace this constructor with aggregate
+     * initialization in a more general design.
+     */
     GuessResponse(Count correct, Count incorrect)
         : m_correct_count{correct}, m_incorrect_count{incorrect} {};
 
