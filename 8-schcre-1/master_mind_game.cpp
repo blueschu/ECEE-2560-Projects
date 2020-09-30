@@ -1,5 +1,5 @@
 /**
- * Mastermind game definitions.
+ * Mastermind game definitions for project 1.
  *
  * Authors: Brian Schubert  <schubert.b@northeastern.edu>
  *          David Cree      <cree.d@northeastern.edu>
@@ -17,8 +17,9 @@ bool MasterMindGame::run_game(
     int guesses_remaining{MAX_GUESSES};
 
     while (guesses_remaining > 0) {
-        const Code guess = guess_generator(m_code_size);
-        const GuessResponse result = m_secret_code.check_guess(guess);
+        const GuessResponse result = compute_guess_response(
+            generate_user_guess(guess_generator)
+        );
 
         if (check_solution(result)) {
             return true;

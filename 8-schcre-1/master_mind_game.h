@@ -1,5 +1,5 @@
 /**
- * Mastermind game class declarations.
+ * Mastermind game class declarations for project 1.
  *
  * Authors: Brian Schubert  <schubert.b@northeastern.edu>
  *          David Cree      <cree.d@northeastern.edu>
@@ -60,16 +60,22 @@ class MasterMindGame {
     using ResponseCallback = std::function<void(int, GuessResponse)>;
 
     /**
+     * Creates a mastermind game with default digit count and digit range.
+     */
+    MasterMindGame() : MasterMindGame(DEFAULT_CODE_SIZE, DEFAULT_DIGIT_RADIX) {}
+
+    /**
      * Creates a mastermind game with an n-digit secret code in radix r, where
      * n = `code_size` and r = `digit-range`.
+     *
+     * Note: this constructor could be merged into a default constructor with
+     * default arguments.
      *
      * @param code_size The number of digit in the secret code.
      * @param digit_range The radix of the secret code digits.
      */
-    explicit MasterMindGame(
-        std::size_t code_size = DEFAULT_CODE_SIZE,
-        unsigned int digit_range = DEFAULT_DIGIT_RADIX
-    ) : m_code_size{code_size}, m_secret_code(code_size, digit_range) {}
+    MasterMindGame(std::size_t code_size, unsigned int digit_range)
+        : m_code_size{code_size}, m_secret_code(code_size, digit_range) {}
 
     /**
      * Returns this game's secret code.
@@ -85,6 +91,9 @@ class MasterMindGame {
      * This function accepts a `guess_generator` function object for producing
      * user guesses during the same.
      *
+     * This function implements the "playGame()" function from the project
+     * instructions.
+     *
      * @param guess_generator Callable for generating user guesses.
      * @param response_callback Callback for displaying use results to the user.
      * @return true if the user one the game, false if they lost.
@@ -99,13 +108,46 @@ class MasterMindGame {
      * Returns true if the given guess response indicates that the user won
      * the game.
      *
+     * This function implements the "isSolved()" function from the project
+     * instructions.
+     *
      * @param guess_response Response to the user's guess.
      * @return True if the response indicates that the user won the game.
      */
     [[nodiscard]]
     bool check_solution(const GuessResponse& guess_response) const noexcept
     {
-        return guess_response.correct_count == m_code_size;
+        return guess_response.get_correct() == m_code_size;
+    }
+
+    /**
+     * Returns the response to the given user guess for this MasterMind game.
+     *
+     * This function implement the "getResponse()" function from the project
+     * instructions.
+     *
+     * @param guess Guess for the secret code digits.
+     * @return Guess result.
+     */
+    [[nodiscard]]
+    GuessResponse compute_guess_response(const Code& guess) const
+    {
+        return m_secret_code.check_guess(guess);
+    }
+
+    /**
+     * Generates a user guess with the provided guess generator.
+     *
+     * This function implement the "humanGuess()" function from the project
+     * instructions.
+     *
+     * @param guess_generator Callable for generating user guesses.
+     * @return User guess for the secret code.
+     */
+    [[nodiscard]]
+    Code generate_user_guess(const GuessGenerator& guess_generator) const
+    {
+        return guess_generator(m_code_size);
     }
 
 };
