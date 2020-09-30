@@ -15,7 +15,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # List of subdirectories corresponding to ECEE2560 projects.
 set(EECE2560_PROJECT_LIST
 #        8-schcre-non-existent-project-test-sentinel
-        8-schcre-1)
+        8-schcre-1,
+        8-schcre-2)
 
 # Iterate over course project subdirectories and add those that exist to the
 # Cmake configuration.
