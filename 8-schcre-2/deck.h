@@ -10,7 +10,7 @@
  *
  *  [1]: https://en.cppreference.com/w/cpp/algorithm/random_shuffle
  *  [2]: https://en.cppreference.com/w/cpp/container/forward_list
- *  [3]: https://en.cppreference.com/w/cpp/iterator/front_inserter
+ *  [3]: https://en.cppreference.com/w/cpp/iterator/front_inserter (no longer used)
  */
 
 #ifndef EECE_2560_PROJECTS_DECK_H
@@ -76,22 +76,19 @@ class Deck {
     template<typename R = std::default_random_engine>
     void shuffle(R entropy_source = R(default_random_seed()))
     {
-        // We cannot use a fixed size array since we do not provide
-        // a default constructor for Card
+        // std::shuffle requires a random access iterator, so we copy the card
+        // list into a random access container. We cannot use a fixed size array
+        // since we do not provide a default constructor for Card.
         std::vector<Card> shuffle_buff(std::begin(m_card_list), std::end(m_card_list));
-
-        // Empty the card list.
-        m_card_list.clear();
 
         std::shuffle(std::begin(shuffle_buff), std::end(shuffle_buff), entropy_source);
 
-        // Copy the shuffled cards into the card list.
-        std::copy(
-            std::begin(shuffle_buff),
-            std::end(shuffle_buff),
-            std::front_inserter(m_card_list)
-        );
+        // Create a new card list from the shuffle cards.
+        List new_list(std::begin(shuffle_buff), std::end(shuffle_buff));
 
+        // Move the new list into this deck's card list. The old card list will
+        // be automatically dropped when new_list goes out of scope.
+        m_card_list = std::move(new_list);
     }
 
     std::optional<Card> deal()
@@ -133,7 +130,9 @@ class Deck {
      * Helper function for producing a random PRNG seed using an available
      * hardware device.
      *
-     * @return PRNG seed.
+     * This function will yield a new PRNG seed each time it is called.
+     *
+     * @return new PRNG seed.
      */
     [[nodiscard]]
     static std::random_device::result_type default_random_seed()
