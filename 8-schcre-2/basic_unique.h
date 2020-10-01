@@ -18,7 +18,7 @@
 #include <utility>      // for std::exchange
 
 /**
- * An smart pointer that uniquely owns its contents.
+ * A smart pointer that uniquely owns its contents.
  *
  * This class is an approximate substitute for std::unique_ptr. For this
  * project, we were required to perform manual memory allocations

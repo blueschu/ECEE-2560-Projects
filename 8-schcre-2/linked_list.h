@@ -79,17 +79,17 @@ class LinkedList {
      *
      * Note: this class needs to be a member class of Linked list since it needs
      * access to BaseNode/Node types that are not tainted by the qualifiers
-     * that may be attached to Value. We cannot assume that, for example, that
-     * BaseNode is the same as LinkedList<Value>::BaseNode since Value will
+     * that may be attached to Q. We cannot assume that, for example, that
+     * BaseNode is the same as LinkedList<Q>::BaseNode since Q will
      * differ from T when this template is used to create a const iterator
-     * (Value = const T).
+     * (Q = const T).
      *
-     * @tparam Value The type of value being iterator over by this iterator.
-     *               This template parameter is required so that this iterator
-     *               class can be used to instantiate both non-const and const
-     *               iterator for LinkedList.
+     * @tparam Q A potentially const-qualified version of the class template
+     *           parameter T. This template parameter is required so that this
+     *           iterator class can be used to instantiate both non-const and
+     *           const iterator for LinkedList.
      */
-    template<typename Value>
+    template<typename Q>
     struct LinkedListIterator {
         /**
          * The position of this iterator in the linked list.
@@ -104,9 +104,9 @@ class LinkedList {
         /*
          * Standard aliases for iterator traits [6].
          */
-        using value_type = Value;
-        using pointer = Value*;
-        using reference = Value&;
+        using value_type = Q;
+        using pointer = Q*;
+        using reference = Q&;
         using difference_type = std::ptrdiff_t;
         using iterator_category = std::forward_iterator_tag;
 
@@ -127,7 +127,7 @@ class LinkedList {
          *
          * @return Iterator to next element.
          */
-        LinkedListIterator<Value> next() const noexcept
+        LinkedListIterator<Q> next() const noexcept
         {
             // If this iterator is not the end iterator (i.e., set to nullptr),
             // return an iterator to the node that follows the current node.
@@ -147,19 +147,19 @@ class LinkedList {
         /*
          * Comparison operators.
          */
-        bool operator==(LinkedListIterator<Value> other) const noexcept { return m_iter_pos == other.m_iter_pos; }
+        bool operator==(LinkedListIterator<Q> other) const noexcept { return m_iter_pos == other.m_iter_pos; }
 
-        bool operator!=(LinkedListIterator<Value> other) const noexcept { return !(*this == other); }
+        bool operator!=(LinkedListIterator<Q> other) const noexcept { return !(*this == other); }
 
         // Post-increment overload.
-        LinkedListIterator<Value>& operator++() noexcept
+        LinkedListIterator<Q>& operator++() noexcept
         {
             m_iter_pos = m_iter_pos->m_next_ptr.get();
             return *this;
         }
 
         // Post-increment overload.
-        LinkedListIterator<Value> operator++(int) noexcept
+        LinkedListIterator<Q> operator++(int) noexcept
         {
             auto temp = *this;
             ++(*this);
@@ -300,42 +300,7 @@ class LinkedList {
     {
         return const_iterator{nullptr};
     }
-
-    /**
-     * Inserts the given element into this linked last at the position
-     * immediately following the provided iterator.
-     *
-     * This function is named after the analogous function in std::forward_list.
-     *
-     * Runs in O(1) time.
-     *
-     * @param position Iterator preceding the insertion position.
-     * @param value Element to be inserted.
-     * @return Iterator to the inserted element.
-     */
-    iterator insert_after(iterator position, const T& value);
-
-    /**
-     * Inserts the given element at the front of this list.
-     *
-     * This function is named after the analogous function in std::forward_list.
-     *
-     *  Runs in O(1) time.
-     *
-     * @param value Element to be inserted.
-     */
-    void push_front(const T& value);
-
-    /**
-     * Removes all elements from this list.
-     *
-     * This function is named after the analogous function in std::forward_list.
-     *
-     * Runs in O(N) time.
-     */
-    void clear();
-
-};
+}; // end class LinkedList
 
 #include "linked_list.tpp"
 
