@@ -1,3 +1,6 @@
+
+#include "linked_list.h"
+
 /**
  * EECE 2560 Project 2 - linked list definitions.
  *
@@ -55,4 +58,23 @@ void LinkedList<T>::remove_after(LinkedList::iterator position)
     // pointer to the "next node" to the temporary.
     swap(tmp, next_node_ptr);
     // The former "next node" will be desctructed when tmp goes out of scope.
+}
+
+template<typename T>
+void LinkedList<T>::clear()
+{
+    // Allow a specialized swap to be found through ADL
+    // if we later define one [C.165 in 9 from header].
+    using std::swap;
+
+
+    // Locally scoped pointer for destroying the node that is removed.
+    // Default initializes to nullptr.
+    BasicUnique<BaseNode> tmp{};
+
+    // Give ownership of the first element of the linked list to the temporary
+    // variable. The list will be recursively destructed when the local variable
+    // goes out of scope.
+    swap(m_head.m_next_ptr, tmp);
+
 }

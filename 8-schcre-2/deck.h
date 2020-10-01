@@ -16,22 +16,33 @@
 #ifndef EECE_2560_PROJECTS_DECK_H
 #define EECE_2560_PROJECTS_DECK_H
 
+// If defined, Deck will use the C++ standard libary's std::forward_list as its
+// internal linked list. Otherwise, the custom LinkedList class will be used.
+//#define USE_STANDARD_LIST
+
 #include <algorithm>            // for std::random_shuffle
-#include <forward_list>         // temporary: for standard list container
 #include <optional>             // for std::optional
 #include <ostream>              // for output stream definitions (iosfwd not sufficient)
 #include <random>               // for random number generation
 #include <vector>               // for std::vector (used in shuffle implementation)
 
 #include "card.h"
+
+#ifdef USE_STANDARD_LIST
+#include <forward_list>         // temporary: for standard list container
+
+using DefaultList = std::forward_list<Card>;
+#else
 #include "linked_list.h"
+using DefaultList = LinkedList<Card>;
+#endif
 
 /**
  * A deck of playing cards.
  *
  * @tparam List The linked list type used to store the deck's cards.
  */
-template<typename List = LinkedList<Card>>
+template<typename List = DefaultList>
 class Deck {
 
     /// The number of playing cards in a full deck.

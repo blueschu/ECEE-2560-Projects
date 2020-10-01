@@ -291,6 +291,9 @@ class LinkedList {
      */
     void remove_after(iterator position);
 
+
+    void clear();
+
 };
 
 #include "linked_list.tpp"
