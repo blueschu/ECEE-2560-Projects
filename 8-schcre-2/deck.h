@@ -52,7 +52,7 @@ class Deck {
 
   public:
     using iterator = typename List::iterator;
-//    using const_iterator = typename List::const_iterator;
+    using const_iterator = typename List::const_iterator;
 
     /**
      * Creates a Deck will all 52 cards in their sorted order.
@@ -105,8 +105,7 @@ class Deck {
     friend std::ostream& operator<<(std::ostream& out, const Deck& code)
     {
         out << "[ ";
-        // TODO remove const cast after const iterators are implemented
-        for (const Card card : code.m_card_list) {
+        for (const Card card : code) {
             out << card << ", ";
         }
         out << ']';
@@ -120,11 +119,11 @@ class Deck {
 
     iterator begin() { return m_card_list.begin(); }
 
-//    const_iterator begin() const { return m_card_list.begin(); }
+    const_iterator begin() const { return m_card_list.begin(); }
 
     iterator end() { return m_card_list.end(); }
 
-//    const_iterator end() const { return m_card_list.end(); }
+    const_iterator end() const { return m_card_list.end(); }
 
   private:
 
