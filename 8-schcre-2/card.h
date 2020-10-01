@@ -55,10 +55,11 @@ class Card {
   public:
 
     /// Creates a playing card with the given suit and rank.
-    Card(Rank rank, Suit suit) : m_rank{rank}, m_suit{suit} {}
+    constexpr Card(Rank rank, Suit suit) : m_rank{rank}, m_suit{suit} {}
 
-    /// Returns true is this card is a face card (Jack, Queen, or King).
-    [[nodiscard]] bool is_face()
+    /// Returns true if this card is a face card (Jack, Queen, or King).
+    [[nodiscard]]
+    bool is_face() const
     {
         return m_rank == Rank::Jack || m_rank == Rank::Queen || m_rank == Rank::King;
     }

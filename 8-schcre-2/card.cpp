@@ -13,45 +13,44 @@
 
 #include "card.h"
 
-#include <ostream>
-#include <string_view>
+#include <ostream>          // output stream definitions
 
 using namespace std::string_view_literals;
 
 // Using anonymous namespace to give symbols internal linkage.
 namespace {
-constexpr std::string_view suite_to_string(Card::Suit suit)
+constexpr char suit_to_char(Card::Suit suit)
 {
     switch (suit) {
-        case Card::Suit::Club: return "C";
-        case Card::Suit::Diamond: return "D"sv;
-        case Card::Suit::Heart: return "H"sv;
-        case Card::Suit::Spade: return "S"sv;
+        case Card::Suit::Club: return 'C';
+        case Card::Suit::Diamond: return 'D';
+        case Card::Suit::Heart: return 'H';
+        case Card::Suit::Spade: return 'S';
     }
 
-    // Signal the compiler that this branch is impossible [P0627r0].
+    // Signal to the compiler that this branch is impossible [P0627r0].
     __builtin_unreachable();
 }
 
-constexpr std::string_view rank_to_string(Card::Rank rank)
+constexpr char rank_to_char(Card::Rank rank)
 {
     switch (rank) {
-        case Card::Rank::R2: return "2"sv;
-        case Card::Rank::R3: return "3"sv;
-        case Card::Rank::R4: return "4"sv;
-        case Card::Rank::R5: return "5"sv;
-        case Card::Rank::R6: return "6"sv;
-        case Card::Rank::R7: return "7"sv;
-        case Card::Rank::R8: return "8"sv;
-        case Card::Rank::R9: return "9"sv;
-        case Card::Rank::R10: return "10"sv;
-        case Card::Rank::Jack: return "J"sv;
-        case Card::Rank::Queen: return "Q"sv;
-        case Card::Rank::King: return "K"sv;
-        case Card::Rank::Ace: return "A"sv;
+        case Card::Rank::Ace: return 'A';
+        case Card::Rank::R2: return '2';
+        case Card::Rank::R3: return '3';
+        case Card::Rank::R4: return '4';
+        case Card::Rank::R5: return '5';
+        case Card::Rank::R6: return '6';
+        case Card::Rank::R7: return '7';
+        case Card::Rank::R8: return '8';
+        case Card::Rank::R9: return '9';
+        case Card::Rank::R10: return 'T';
+        case Card::Rank::Jack: return 'J';
+        case Card::Rank::Queen: return 'Q';
+        case Card::Rank::King: return 'K';
     }
 
-    // Signal the compiler that this branch is impossible [P0627r0].
+    // Signal to the compiler that this branch is impossible [P0627r0].
     __builtin_unreachable();
 }
 
@@ -59,13 +58,13 @@ constexpr std::string_view rank_to_string(Card::Rank rank)
 
 std::ostream& operator<<(std::ostream& out, Card::Suit suit)
 {
-    out << suite_to_string(suit);
+    out << suit_to_char(suit);
     return out;
 }
 
 std::ostream& operator<<(std::ostream& out, Card::Rank rank)
 {
-    out << rank_to_string(rank);
+    out << rank_to_char(rank);
     return out;
 }
 

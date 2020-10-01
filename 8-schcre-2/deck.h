@@ -101,10 +101,10 @@ class Deck {
         return front;
     }
 
-    friend std::ostream& operator<<(std::ostream& out, const Deck& code)
+    friend std::ostream& operator<<(std::ostream& out, const Deck<List>& deck)
     {
         out << "[ ";
-        for (const Card card : code) {
+        for (const Card card : deck) {
             out << card << ", ";
         }
         out << ']';
