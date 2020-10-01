@@ -21,7 +21,7 @@
  * An smart pointer that uniquely owns its contents.
  *
  * This class is an approximate substitute for std::unique_ptr. For this
- * projectt, we were required to perform manual memory allocations
+ * project, we were required to perform manual memory allocations
  * using `new` and `delete` to store nodes in a linked list. In order to
  * save some headaches over reasoning about pointer ownership, we decided
  * to implement our own mock smart pointer with roughly the same semantics

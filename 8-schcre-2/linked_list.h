@@ -65,9 +65,9 @@ class LinkedList {
     };
 
     /**
-     *  Pointer to the first node in this linked list.
+     *  Node containing a pointer to the first node in this linked list.
      *
-     *  The pointer will be nullptr when the list is empty.
+     *  This pointer will be nullptr when the list is empty.
      */
     BaseNode m_head{};
 
@@ -325,17 +325,6 @@ class LinkedList {
      * @param value Element to be inserted.
      */
     void push_front(const T& value);
-
-    /**
-     * Removes the elements immediately following the given position.
-     *
-     * This function is analogous to std::forward_iterator::erase_after().
-     *
-     *  Runs in O(1) time.
-     *
-     * @param position Iterating preceding the element to be removed.
-     */
-    void remove_after(iterator position);
 
     /**
      * Removes all elements from this list.
