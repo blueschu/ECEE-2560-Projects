@@ -23,4 +23,8 @@ int main() {
 
     std::cout << "Shuffle deck: " << deck << '\n';
 
+    deck.deal();
+
+    std::cout << "After 1 deal: " << deck << '\n';
+
 }

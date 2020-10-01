@@ -175,6 +175,8 @@ class LinkedList {
     using value_type = T;
     using iterator = LinkedListIterator<T>;
     using const_iterator = LinkedListIterator<const T>;
+    using reference = T&;
+    using const_reference = const T&;
 
     /*
      * Default constructor.
@@ -232,6 +234,93 @@ class LinkedList {
         swap(m_head, other.m_head);
         return *this;
     }
+
+    /**
+     * Returns the first element in this list.
+     *
+     * The behavior of this function is not defined if this list is empty.
+     *
+     * @return First element.
+     */
+    [[nodiscard]]
+    reference front() { return *begin(); }
+
+    /**
+    * Returns the first element in this list.
+    *
+    * The behavior of this function is not defined if this list is empty.
+    *
+    * @return First element.
+    */
+    [[nodiscard]]
+    const_reference front() const { return *begin(); }
+
+    /**
+     * Returns true if this list contains no elements.
+     *
+     * Runs in O(1) time.
+     *
+     * @return True if this list is empty.
+     */
+    [[nodiscard]]
+    bool empty() const noexcept { return m_head.m_next_ptr.get() == nullptr; }
+
+    /**
+    * Inserts the given element into this linked last at the position
+    * immediately following the provided iterator.
+    *
+    * This function is named after the analogous function in std::forward_list.
+    *
+    * Runs in O(1) time.
+    *
+    * @param position Iterator preceding the insertion position.
+    * @param value Element to be inserted.
+    * @return Iterator to the inserted element.
+    */
+    iterator insert_after(iterator position, const T& value);
+
+    /**
+     * Inserts the given element at the front of this list.
+     *
+     * This function is named after the analogous function in std::forward_list.
+     *
+     *  Runs in O(1) time.
+     *
+     * @param value Element to be inserted.
+     */
+    void push_front(const T& value);
+
+    /**
+     * Removes the element immediately following the given position.
+     *
+     * This function is analogous to std::forward_iterator::erase_after().
+     *
+     *  Runs in O(1) time.
+     *
+     * @param position Iterating preceding the element to be removed.
+     */
+    void remove_after(iterator position);
+
+    /**
+     * Removes the first element from this list.
+     *
+     * This function emulates the behavior of the function with the same name
+     * in std::forward_list. If we instead wrote this linked list implementation
+     * to be incompatible with std::forward_list, this member function could
+     * return an optional value instead. We take this approach in Deck::deal.
+     *
+     *  Runs in O(1) time.
+     */
+    void pop_front() { remove_after(before_begin()); }
+
+    /**
+     * Removes all elements from this list.
+     *
+     * This function is named after the analogous function in std::forward_list.
+     *
+     * Runs in O(N) time.
+     */
+    void clear();
 
     /**
      * Returns an iterator that represents an entry just before the beginning
