@@ -1,6 +1,3 @@
-
-#include "linked_list.h"
-
 /**
  * EECE 2560 Project 2 - linked list definitions.
  *
