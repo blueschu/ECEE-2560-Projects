@@ -189,9 +189,6 @@ class LinkedList {
     /**
      * Range constructor.
      *
-     * This constructor was added to simplify the code in the extra credit
-     * portion of this lab.
-     *
      * @tparam Iter Input iterator type.
      * @param it,end The range of elements to be inserted.
      */

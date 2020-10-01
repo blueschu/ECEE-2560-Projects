@@ -12,11 +12,11 @@
 #ifndef EECE_2560_PROJECTS_CARD_H
 #define EECE_2560_PROJECTS_CARD_H
 
-#include <array>
+#include <array>            // for std::arary
 #include <tuple>            // for std::tie
 
 /**
- * A playing care with a suit and rank.
+ * A playing card with a suit and rank.
  */
 class Card {
 

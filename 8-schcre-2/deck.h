@@ -73,6 +73,12 @@ class Deck {
         }
     }
 
+    /**
+     * Shuffles the playing cards in this deck into a random order.
+     *
+     * @tparam R Random number generator.
+     * @param entropy_source Random number generator.
+     */
     template<typename R = std::default_random_engine>
     void shuffle(R entropy_source = R(default_random_seed()))
     {
