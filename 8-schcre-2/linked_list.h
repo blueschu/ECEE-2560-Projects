@@ -28,8 +28,6 @@
 #include <iterator>         // for iterator tag
 #include <utility>          // for std::exchange (in move ctor)
 
-#include <vector>
-
 /**
  * A singlely linked list.
  *
@@ -44,10 +42,10 @@ class LinkedList {
     /**
      * Helper class representing a linked list element with no data.
      *
-     * This technique is adapted from one used in the C++ standard library
-     * sources included with my compiler. By defining separate classes for
-     * nodes with data and nodes without data, we gain the ability of having
-     * a unified interface for accessing the head and tail of the list.
+     * This technique is adapted from one used in the implementation of the
+     * C++ standard library included with my compiler. By defining separate
+     * classes for nodes with data and nodes without data, we gain the ability
+     * of having a unified interface for accessing the head and tail of the list.
      *
      * If we used only one Node class, the head pointer could not be treated as
      * a node, which would prevent the creation of iterators that reference the
@@ -78,8 +76,21 @@ class LinkedList {
      * A forward iterator over a linked list.
      *
      * This class attempts to implement a basic forward iterator [4,5].
+     *
+     * Note: this class needs to be a member class of Linked list since it needs
+     * access to BaseNode/Node types that are not tainted by the qualifiers
+     * that may be attached to Value. We cannot assume that, for example, that
+     * BaseNode is the same as LinkedList<Value>::BaseNode since Value will
+     * differ from T when this template is used to create a const iterator
+     * (Value = const T).
+     *
+     * @tparam Value The type of value being iterator over by this iterator.
+     *               This template parameter is required so that this iterator
+     *               class can be used to instantiate both non-const and const
+     *               iterator for LinkedList.
      */
-    struct iterator {
+    template<typename Value>
+    struct LinkedListIterator {
         /**
          * The position of this iterator in the linked list.
          *
@@ -93,9 +104,9 @@ class LinkedList {
         /*
          * Standard aliases for iterator traits [6].
          */
-        using value_type = T;
-        using pointer = T*;
-        using reference = T&;
+        using value_type = Value;
+        using pointer = Value*;
+        using reference = Value&;
         using difference_type = std::ptrdiff_t;
         using iterator_category = std::forward_iterator_tag;
 
@@ -105,10 +116,10 @@ class LinkedList {
          * All members are already given in-class member initializers, so we can
          * just use the compiler generated default constructor [C.45,C.80 in 9].
          */
-        iterator() noexcept = default;
+        LinkedListIterator() noexcept = default;
 
         // Construct an iterator from a base node pointer.
-        explicit iterator(BaseNode* base) noexcept: m_iter_pos{base} {}
+        explicit LinkedListIterator(BaseNode* base) noexcept: m_iter_pos{base} {}
 
         /**
          * Helper function for computing the iterator for the next element in
@@ -116,11 +127,11 @@ class LinkedList {
          *
          * @return Iterator to next element.
          */
-        iterator next() const noexcept
+        LinkedListIterator<Value> next() const noexcept
         {
             // If this iterator is not the end iterator (i.e., set to nullptr),
             // return an iterator to the node that follows the current node.
-            return iterator{m_iter_pos ? m_iter_pos->m_next_ptr.get() : nullptr};
+            return LinkedListIterator{m_iter_pos ? m_iter_pos->m_next_ptr.get() : nullptr};
         }
 
         /*
@@ -136,19 +147,19 @@ class LinkedList {
         /*
          * Comparison operators.
          */
-        bool operator==(iterator other) const noexcept { return m_iter_pos == other.m_iter_pos; }
+        bool operator==(LinkedListIterator<Value> other) const noexcept { return m_iter_pos == other.m_iter_pos; }
 
-        bool operator!=(iterator other) const noexcept { return !(*this == other); }
+        bool operator!=(LinkedListIterator<Value> other) const noexcept { return !(*this == other); }
 
         // Post-increment overload.
-        iterator& operator++() noexcept
+        LinkedListIterator<Value>& operator++() noexcept
         {
             m_iter_pos = m_iter_pos->m_next_ptr.get();
             return *this;
         }
 
         // Post-increment overload.
-        iterator operator++(int) noexcept
+        LinkedListIterator<Value> operator++(int) noexcept
         {
             auto temp = *this;
             ++(*this);
@@ -162,7 +173,8 @@ class LinkedList {
      * project.
      */
     using value_type = T;
-
+    using iterator = LinkedListIterator<T>;
+    using const_iterator = LinkedListIterator<const T>;
 
     /*
      * Default constructor.
@@ -184,9 +196,9 @@ class LinkedList {
     template<typename Iter>
     LinkedList(Iter it, Iter end)
     {
-        auto out_end = before_begin();
+        auto back_it = before_begin();
         while (it != end) {
-            out_end = insert_after(out_end, *it);
+            back_it = insert_after(back_it, *it);
             ++it;
         }
     }
@@ -236,6 +248,20 @@ class LinkedList {
     }
 
     /**
+     * Returns an iterator that represents an entry just before the beginning
+     * of the list.
+     *
+     * This technique was discovered by examining the implementation of
+     * std::forward_list.
+     *
+     * @return Iterator before the beginning of this list.
+     */
+    const_iterator before_begin() const noexcept
+    {
+        return const_iterator{&m_head};
+    }
+
+    /**
      * Returns an iterator representing the first element in this list.
      *
      * @return First element iterator.
@@ -246,6 +272,16 @@ class LinkedList {
     }
 
     /**
+    * Returns an iterator representing the first element in this list.
+    *
+    * @return First element iterator.
+    */
+    const_iterator begin() const noexcept
+    {
+        return const_iterator{m_head.m_next_ptr.get()};
+    }
+
+    /**
      * Returns an iterator representing the end of this list.
      *
      * @return End iterator.
@@ -253,6 +289,16 @@ class LinkedList {
     iterator end() noexcept
     {
         return iterator{nullptr};
+    }
+
+    /**
+     * Returns an iterator representing the end of this list.
+     *
+     * @return End iterator.
+     */
+    const_iterator end() const noexcept
+    {
+        return const_iterator{nullptr};
     }
 
     /**
@@ -290,7 +336,6 @@ class LinkedList {
      * @param position Iterating preceding the element to be removed.
      */
     void remove_after(iterator position);
-
 
     void clear();
 

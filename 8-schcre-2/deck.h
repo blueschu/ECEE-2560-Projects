@@ -30,7 +30,6 @@
 
 #ifdef USE_STANDARD_LIST
 #include <forward_list>         // temporary: for standard list container
-
 using DefaultList = std::forward_list<Card>;
 #else
 #include "linked_list.h"
@@ -107,7 +106,7 @@ class Deck {
     {
         out << "[ ";
         // TODO remove const cast after const iterators are implemented
-        for (const Card card : const_cast<LinkedList<Card>&>(code.m_card_list)) {
+        for (const Card card : code.m_card_list) {
             out << card << ", ";
         }
         out << ']';

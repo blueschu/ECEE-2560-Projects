@@ -67,7 +67,6 @@ void LinkedList<T>::clear()
     // if we later define one [C.165 in 9 from header].
     using std::swap;
 
-
     // Locally scoped pointer for destroying the node that is removed.
     // Default initializes to nullptr.
     BasicUnique<BaseNode> tmp{};
