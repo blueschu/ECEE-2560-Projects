@@ -51,7 +51,9 @@ class Deck {
     List m_card_list;
 
   public:
+    // Forward iterator type used by the internal playing card list.
     using iterator = typename List::iterator;
+    // Forward const iterator type used by the internal playing card list.
     using const_iterator = typename List::const_iterator;
 
     /**

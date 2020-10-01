@@ -169,7 +169,7 @@ class LinkedList {
     }; // end struct iterator
 
     /*
-     * Type alias for containers [10].  We only provide those used in this
+     * Type aliases for containers [10].  We only provide those used in this
      * project.
      */
     using value_type = T;
@@ -337,6 +337,13 @@ class LinkedList {
      */
     void remove_after(iterator position);
 
+    /**
+     * Removes all elements from this list.
+     *
+     * This function is named after the analogous function in std::forward_list.
+     *
+     * Runs in O(N) time.
+     */
     void clear();
 
 };
