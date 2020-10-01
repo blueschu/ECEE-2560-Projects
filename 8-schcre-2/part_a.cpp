@@ -23,8 +23,15 @@ int main() {
 
     std::cout << "Shuffle deck: " << deck << '\n';
 
-    deck.deal();
+    auto top_card = deck.deal();
 
-    std::cout << "After 1 deal: " << deck << '\n';
+    if (top_card) {
+        std::cout << "Top card " << *top_card << '\n';
+        std::cout << "After 1 deal: " << deck << '\n';
+    } else {
+        std::cout << "The deck was empty\n";
+    }
+
+
 
 }

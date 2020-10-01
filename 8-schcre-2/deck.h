@@ -33,6 +33,7 @@
 using DefaultList = std::forward_list<Card>;
 #else
 #include "linked_list.h"
+
 using DefaultList = LinkedList<Card>;
 #endif
 
@@ -64,8 +65,8 @@ class Deck {
         // Iterator to before the start of the card list.
         auto it = m_card_list.before_begin();
 
-        for (auto rank : Card::ALL_RANKS) {
-            for (auto suit : Card::ALL_SUITS) {
+        for (auto suit : Card::ALL_SUITS) {
+            for (auto rank : Card::ALL_RANKS) {
                 // Insert the card with the current rank and suite at the end
                 // of the list. Update the iterator to the end of the list.
                 it = m_card_list.insert_after(it, {rank, suit});

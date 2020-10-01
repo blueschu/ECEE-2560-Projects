@@ -204,7 +204,7 @@ class LinkedList {
 
     /*
      * Copy constructor and assignment operator were not necessary for this
-     * lab.
+     * project.
      *
      * To prevent accidents, we explicitly disallow the compiler from generating
      * them [C.21,C.81 in 9].
@@ -215,9 +215,6 @@ class LinkedList {
 
     /*
      * Move constructor [7, C.66 in 9].
-     *
-     * Moves are required in our implementation of the extra credit portion
-     * of this lab.
      */
     LinkedList(LinkedList&& other) noexcept
         : m_head{std::exchange(other.m_head, BaseNode{})} {}
