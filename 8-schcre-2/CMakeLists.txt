@@ -3,7 +3,7 @@
 include(${CMAKE_SOURCE_DIR}/cmake/eece2560_project_utils.cmake)
 
 # Static library for shared elements in Part A and Part B
-add_library(${EECE2560_GROUP_ID}-2-lib STATIC card.h card.cpp deck.h)
+add_library(${EECE2560_GROUP_ID}-2-lib STATIC card.h card.cpp deck.h basic_unique.h linked_list.h)
 eece2560_target_warning_defaults(${EECE2560_GROUP_ID}-2-lib PRIVATE)
 
 # Executable for Part A

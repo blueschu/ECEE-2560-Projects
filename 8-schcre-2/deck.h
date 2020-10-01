@@ -18,18 +18,20 @@
 
 #include <algorithm>            // for std::random_shuffle
 #include <forward_list>         // temporary: for standard list container
+#include <optional>             // for std::optional
 #include <ostream>              // for output stream definitions (iosfwd not sufficient)
 #include <random>               // for random number generation
 #include <vector>               // for std::vector (used in shuffle implementation)
 
 #include "card.h"
+#include "linked_list.h"
 
 /**
  * A deck of playing cards.
  *
  * @tparam List The linked list type used to store the deck's cards.
  */
-template<typename List = std::forward_list<Card>>
+template<typename List = LinkedList<Card>>
 class Deck {
 
     /// The number of playing cards in a full deck.
@@ -40,7 +42,7 @@ class Deck {
 
   public:
     using iterator = typename List::iterator;
-    using const_iterator = typename List::const_iterator;
+//    using const_iterator = typename List::const_iterator;
 
     /**
      * Creates a Deck will all 52 cards in their sorted order.
@@ -80,10 +82,21 @@ class Deck {
 
     }
 
+    std::optional<Card> deal()
+    {
+        if (m_card_list.empty()) {
+            return std::nullopt;
+        }
+        auto front = m_card_list.front();
+        m_card_list.pop_front();
+        return front;
+    }
+
     friend std::ostream& operator<<(std::ostream& out, const Deck& code)
     {
         out << "[ ";
-        for (const Card card : code.m_card_list) {
+        // TODO remove const cast after const iterators are implemented
+        for (const Card card : const_cast<LinkedList<Card>&>(code.m_card_list)) {
             out << card << ", ";
         }
         out << ']';
@@ -95,13 +108,13 @@ class Deck {
      * Range member functions to allow Decks to be used as iterable ranges.
      */
 
-//    iterator begin() { return m_card_list.begin(); }
+    iterator begin() { return m_card_list.begin(); }
 
-    const_iterator begin() const { return m_card_list.begin(); }
+//    const_iterator begin() const { return m_card_list.begin(); }
 
-//    iterator end() { return m_card_list.end(); }
+    iterator end() { return m_card_list.end(); }
 
-    const_iterator end() const { return m_card_list.end(); }
+//    const_iterator end() const { return m_card_list.end(); }
 
   private:
 

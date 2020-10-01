@@ -1,5 +1,5 @@
 /**
- * Card class for Project 2a.
+ * EECE 2560 Project 2 - Card class declarations.
  *
  * Authors: Brian Schubert  <schubert.b@northeastern.edu>
  *          David Cree      <cree.d@northeastern.edu>
@@ -58,7 +58,7 @@ class Card {
     Card(Rank rank, Suit suit) : m_rank{rank}, m_suit{suit} {}
 
     /// Returns true is this card is a face card (Jack, Queen, or King).
-    bool is_face()
+    [[nodiscard]] bool is_face()
     {
         return m_rank == Rank::Jack || m_rank == Rank::Queen || m_rank == Rank::King;
     }
