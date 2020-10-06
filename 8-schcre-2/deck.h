@@ -30,32 +30,26 @@
 
 #ifdef USE_STANDARD_LIST
 #include <forward_list>         // temporary: for standard list container
-using DefaultList = std::forward_list<Card>;
+using CardList = std::forward_list<Card>;
 #else
 #include "linked_list.h"
-
-using DefaultList = LinkedList<Card>;
+using CardList = LinkedList<Card>;
 #endif
 
 /**
  * A deck of playing cards.
  *
- * @tparam List The linked list type used to store the deck's cards.
  */
-template<typename List = DefaultList>
 class Deck {
 
-    /// The number of playing cards in a full deck.
-    constexpr static std::size_t FULL_DECK_SIZE{Card::ALL_RANKS.size() * Card::ALL_SUITS.size()};
-
     /// This deck's list of cards
-    List m_card_list;
+    CardList m_card_list;
 
   public:
     // Forward iterator type used by the internal playing card list.
-    using iterator = typename List::iterator;
+    using iterator = CardList::iterator;
     // Forward const iterator type used by the internal playing card list.
-    using const_iterator = typename List::const_iterator;
+    using const_iterator = CardList::const_iterator;
 
     /**
      * Creates a Deck will all 52 cards in their sorted order.
@@ -91,13 +85,18 @@ class Deck {
         std::shuffle(std::begin(shuffle_buff), std::end(shuffle_buff), entropy_source);
 
         // Create a new card list from the shuffle cards.
-        List new_list(std::begin(shuffle_buff), std::end(shuffle_buff));
+        CardList new_list(std::begin(shuffle_buff), std::end(shuffle_buff));
 
         // Move the new list into this deck's card list. The old card list will
         // be automatically dropped when new_list goes out of scope.
         m_card_list = std::move(new_list);
     }
 
+    /**
+     * Returns the top card of the deck, if a card exists.
+     *
+     * @return Top card.
+     */
     std::optional<Card> deal()
     {
         if (m_card_list.empty()) {
@@ -108,27 +107,22 @@ class Deck {
         return front;
     }
 
-    friend std::ostream& operator<<(std::ostream& out, const Deck<List>& deck)
-    {
-        out << "[ ";
-        for (const Card card : deck) {
-            out << card << ", ";
-        }
-        out << ']';
-
-        return out;
-    }
+    friend std::ostream& operator<<(std::ostream& out, const Deck& deck);
 
     /*
      * Range member functions to allow Decks to be used as iterable ranges.
      */
 
+    /// Returns an iterator to the first card in this deck.
     iterator begin() { return m_card_list.begin(); }
 
+    /// Returns an iterator to the first card in this deck.
     const_iterator begin() const { return m_card_list.begin(); }
 
+    /// Returns the end iterator for this deck.
     iterator end() { return m_card_list.end(); }
 
+    /// Returns the end iterator for this deck.
     const_iterator end() const { return m_card_list.end(); }
 
   private:
@@ -154,5 +148,15 @@ class Deck {
     }
 
 };
+
+inline std::ostream& operator<<(std::ostream& out, const Deck& deck) {
+    out << "[ ";
+    for (const Card card : deck) {
+        out << card << ", ";
+    }
+    out << ']';
+
+    return out;
+}
 
 #endif //EECE_2560_PROJECTS_DECK_H

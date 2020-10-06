@@ -12,7 +12,7 @@
 #ifndef EECE_2560_PROJECTS_CARD_H
 #define EECE_2560_PROJECTS_CARD_H
 
-#include <array>            // for std::arary
+#include <array>            // for std::array
 #include <tuple>            // for std::tie
 
 /**
@@ -26,7 +26,7 @@ class Card {
         Ace, R2, R3, R4, R5, R6, R7, R8, R9, R10, Jack, Queen, King
     };
 
-    /// The possible suits for a palavering card.
+    /// The possible suits for a playing card.
     enum class Suit {
         Club, Diamond, Heart, Spade
     };

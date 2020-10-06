@@ -23,7 +23,7 @@ int main() {
 
     std::cout << "Shuffle deck: " << deck << '\n';
 
-    auto top_card = deck.deal();
+    const auto top_card = deck.deal();
 
     if (top_card) {
         std::cout << "Top card " << *top_card << '\n';
@@ -31,7 +31,5 @@ int main() {
     } else {
         std::cout << "The deck was empty\n";
     }
-
-
 
 }
