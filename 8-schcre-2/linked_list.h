@@ -385,6 +385,10 @@ class LinkedList {
     }
 }; // end class LinkedList
 
+// Deduction guide for range constructor.
+template<typename Iter>
+LinkedList(Iter, Iter) -> LinkedList<typename std::iterator_traits<Iter>::value_type>;
+
 #include "linked_list.tpp"
 
 #endif //EECE_2560_PROJECTS_LINKED_LIST_H
