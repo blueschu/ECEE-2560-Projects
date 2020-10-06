@@ -213,6 +213,20 @@ class LinkedList {
 
     LinkedList& operator=(const LinkedList&) = delete;
 
+    ~LinkedList()
+    {
+        // This linked list implementation will already automatically free all
+        // nodes upon destruction even this explicit destructor. However, the
+        // process for deallocating each node involves recursively calling
+        // destructors for BasicUnique, which if not optimized by the compiler,
+        // could result in significant stack space being used and non-optimal
+        // performance.
+
+        while (!empty()) {
+            pop_front();
+        }
+    }
+
     /*
      * Move constructor [7, C.66 in 9].
      */

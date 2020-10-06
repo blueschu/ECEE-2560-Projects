@@ -41,19 +41,10 @@ void LinkedList<T>::push_front(const T& value)
 template<typename T>
 void LinkedList<T>::clear()
 {
-    // Allow a specialized swap to be found through ADL
-    // if we later define one [C.165 in 9 from header].
-    using std::swap;
-
-    // Locally scoped pointer for destroying the node that is removed.
-    // Default initializes to nullptr.
-    BasicUnique<BaseNode> tmp{};
-
-    // Give ownership of the first element of the linked list to the temporary
-    // variable. The list will be recursively destructed when the local variable
-    // goes out of scope.
-    swap(m_head.m_next_ptr, tmp);
-
+    // Given ownership of this linked list to a local variable. This list
+    // will now be in its "moved from" state, which is a valid empty list. The
+    // old list will be destroyed by the destructor when this function exits.
+    LinkedList<T> tmp = std::move(*this);
 }
 
 template<typename T>
