@@ -54,7 +54,11 @@ class Card {
 
   public:
 
-    /// Creates a playing card with the given suit and rank.
+    /*
+     * Creates a playing card with the given suit and rank.
+     *
+     * Note: this constructor could be omitted if we made this class an aggregate.
+     */
     constexpr Card(Rank rank, Suit suit) : m_rank{rank}, m_suit{suit} {}
 
     /// Returns true if this card is a face card (Jack, Queen, or King).

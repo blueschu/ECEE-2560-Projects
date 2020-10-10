@@ -42,31 +42,51 @@ using CardList = LinkedList<Card>;
  */
 class Deck {
 
-    /// This deck's list of cards
-    CardList m_card_list;
-
   public:
     // Forward iterator type used by the internal playing card list.
     using iterator = CardList::iterator;
     // Forward const iterator type used by the internal playing card list.
     using const_iterator = CardList::const_iterator;
 
+  private:
+    /// This deck's list of cards
+    CardList m_card_list;
+
+    /**
+     * Iterator to the end of the singlely linked card list.
+     *
+     * This iterator is not invalidated by any operation exposed by the Deck
+     * class, so it is safe to store it indefinitely.
+     *
+     * Note: there is a declaration order dependency between m_before_end and
+     * m_card_list.
+     */
+    iterator m_before_end{m_card_list.before_begin()};
+
+  public:
+
     /**
      * Creates a Deck will all 52 cards in their sorted order.
      */
     Deck()
     {
-        // Iterator to before the start of the card list.
-        auto it = m_card_list.before_begin();
-
         for (auto suit : Card::ALL_SUITS) {
             for (auto rank : Card::ALL_RANKS) {
-                // Insert the card with the current rank and suite at the end
-                // of the list. Update the iterator to the end of the list.
-                it = m_card_list.insert_after(it, {rank, suit});
+                place_bottom(Card(rank, suit));
             }
         }
+
     }
+
+    /*
+     * We do not need to implement logic to deallocate the linked list in
+     * Deck's destructor as recommended in the project instructions since this
+     * logic is included in the linked list class itself.
+     *
+     * We include an explicitly defaulted destructor below to make this note
+     * more visible.
+     */
+    ~Deck() = default;
 
     /**
      * Shuffles the playing cards in this deck into a random order.
@@ -80,20 +100,27 @@ class Deck {
         // std::shuffle requires a random access iterator, so we copy the card
         // list into a random access container. We cannot use a fixed size array
         // since we do not provide a default constructor for Card.
-        std::vector<Card> shuffle_buff(std::begin(m_card_list), std::end(m_card_list));
+        std::vector<Card> shuffle_buff(std::cbegin(m_card_list), std::cend(m_card_list));
 
         std::shuffle(std::begin(shuffle_buff), std::end(shuffle_buff), entropy_source);
 
         // Create a new card list from the shuffle cards.
-        CardList new_list(std::begin(shuffle_buff), std::end(shuffle_buff));
+        CardList new_list(std::cbegin(shuffle_buff), std::cend(shuffle_buff));
 
         // Move the new list into this deck's card list. The old card list will
         // be automatically dropped when new_list goes out of scope.
         m_card_list = std::move(new_list);
+
+        // Set the "before end" iterator to point to the last element of the
+        // new list. This occurs in linear time.
+        m_before_end = m_card_list.before_begin();
+        std::advance(m_before_end, std::distance(m_before_end, end()) - 1);
     }
 
     /**
      * Returns the top card of the deck, if a card exists.
+     *
+     * This function runs in O(1) time.
      *
      * @return Top card.
      */
@@ -105,6 +132,21 @@ class Deck {
         auto front = m_card_list.front();
         m_card_list.pop_front();
         return front;
+    }
+
+    /**
+     * Places the given card at the bottom of the deck.
+     *
+     * This function implements the "replace" function from the project
+     * instructions. It runs in O(1) time.
+     *
+     * @param card New bottom card.
+     */
+    void place_bottom(Card card)
+    {
+        // Insert the given card at the end of the list. Update the "before end"
+        // iterator to the end of the list.
+        m_before_end = m_card_list.insert_after(m_before_end, card);
     }
 
     friend std::ostream& operator<<(std::ostream& out, const Deck& deck);
@@ -149,7 +191,8 @@ class Deck {
 
 };
 
-inline std::ostream& operator<<(std::ostream& out, const Deck& deck) {
+inline std::ostream& operator<<(std::ostream& out, const Deck& deck)
+{
     out << "[ ";
     for (const Card card : deck) {
         out << card << ", ";

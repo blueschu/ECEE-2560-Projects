@@ -25,13 +25,9 @@
  * using `new` and `delete` to store nodes in a linked list. In order to
  * save some headaches over reasoning about pointer ownership, we decided
  * to implement our own mock smart pointer with roughly the same semantics
- * as those include in the C++ standard library. Throughout the linked list
+ * as those included in the C++ standard library. Throughout the linked list
  * code, each instance of BasicUnique should be able to be replaced by
- * std::unique_ptr with no obvious change in behavior.
- *
- * This should make our linked list implementation much easier to read
- * since only basic knowledge of move semantics is required to understand
- * how memory is being managed.
+ * std::unique_ptr with no change in behavior.
  *
  * @tparam T The value type referenced by this pointer.
  */

@@ -8,8 +8,7 @@
  */
 
 template<typename T>
-typename LinkedList<T>::iterator  // typename keyword needed for dependent return type
-LinkedList<T>::insert_after(LinkedList<T>::iterator position, const T& value)
+auto LinkedList<T>::insert_after(iterator position, const T& value) -> iterator
 {
     // Allow a specialized swap to be found through ADL
     // if we later define one [C.165 in 9 from header].
@@ -48,7 +47,7 @@ void LinkedList<T>::clear()
 }
 
 template<typename T>
-void LinkedList<T>::remove_after(LinkedList::iterator position)
+void LinkedList<T>::remove_after(iterator position)
 {
     // Allow a specialized swap to be found through ADL
     // if we later define one [C.165 in 9 from header].
@@ -68,5 +67,5 @@ void LinkedList<T>::remove_after(LinkedList::iterator position)
     // Swap the node after "next node" into the current node, and give the
     // pointer to the "next node" to the temporary.
     swap(tmp, next_node_ptr);
-    // The former "next node" will be desctructed when tmp goes out of scope.
+    // The former "next node" will be destructed when tmp goes out of scope.
 }
