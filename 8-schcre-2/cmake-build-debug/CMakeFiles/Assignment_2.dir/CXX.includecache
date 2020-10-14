@@ -1,0 +1,16 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+E:/Northeastern University/2020Fall/EECE2560/Assignments/Assignment 2/flip.cpp
+iostream
+-
+cstdlib
+-
+ctime
+-
+
