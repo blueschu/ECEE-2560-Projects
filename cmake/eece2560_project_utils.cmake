@@ -49,7 +49,7 @@ endfunction()
 # Generates CMake targets for an EECE2560 project.
 function(eece2560_add_project_targets PROJ_NUM)
     cmake_parse_arguments(
-            PARSED         # Output variable prefix.
+            PARSED              # Output variable prefix.
             ""                  # No boolean arguments.
             ""                  # No single value arguments.
             "LIB;PART_A;PART_B" # Multi-value arguments for target sources.
