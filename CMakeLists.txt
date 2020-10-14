@@ -29,7 +29,7 @@ foreach (PROJ_DIRECTORY ${EECE2560_PROJECT_LIST})
     if (EXISTS "${CMAKE_SOURCE_DIR}/${PROJ_DIRECTORY}")
         add_subdirectory("${CMAKE_SOURCE_DIR}/${PROJ_DIRECTORY}")
     else ()
-        message("Warning: cannot find project ${PROJ_DIRECTORY} - ignoring this project")
+        message(WARNING "Cannot find project ${PROJ_DIRECTORY} - ignoring this project")
     endif ()
 endforeach ()
 
