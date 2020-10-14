@@ -57,7 +57,9 @@ class Card {
     /*
      * Creates a playing card with the given suit and rank.
      *
-     * Note: this constructor could be omitted if we made this class an aggregate.
+     * Making this constructor constexpr allows cards to be used as literals.
+     *
+     * This constructor could be omitted if we made Card an aggregate.
      */
     constexpr Card(Rank rank, Suit suit) : m_rank{rank}, m_suit{suit} {}
 
@@ -88,6 +90,7 @@ class Card {
      * Comparison operator overloads.
      */
 
+#if __cplusplus < 202002L
     bool operator==(const Card& rhs) const
     {
         return std::tie(m_rank, m_suit) == std::tie(rhs.m_rank, rhs.m_suit);
@@ -105,6 +108,11 @@ class Card {
     bool operator<=(const Card& rhs) const { return !(rhs < *this); }
 
     bool operator>=(const Card& rhs) const { return !(*this < rhs); }
+#else
+    // If we're compiling with C++20 support, we can use default comparisons.
+    // The compiler will automatically generate all comparison operators.
+    auto operator<=>(const Card&) const = default;
+#endif
 
     // Output stream operator overload.
     friend std::ostream& operator<<(std::ostream& os, const Card& card);

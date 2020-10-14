@@ -31,13 +31,6 @@ auto LinkedList<T>::insert_after(iterator position, const T& value) -> iterator
 }
 
 template<typename T>
-void LinkedList<T>::push_front(const T& value)
-{
-    // We discard iterator returned by insert_after.
-    insert_after(before_begin(), value);
-}
-
-template<typename T>
 void LinkedList<T>::clear()
 {
     // Given ownership of this linked list to a local variable. This list

@@ -16,7 +16,7 @@
 #ifndef EECE_2560_PROJECTS_DECK_H
 #define EECE_2560_PROJECTS_DECK_H
 
-// If defined, Deck will use the C++ standard libary's std::forward_list as its
+// If defined, Deck will use the C++ standard library's std::forward_list as its
 // internal linked list. Otherwise, the custom LinkedList class will be used.
 //#define USE_STANDARD_LIST
 
@@ -75,7 +75,6 @@ class Deck {
                 place_bottom(Card(rank, suit));
             }
         }
-
     }
 
     /*
@@ -156,16 +155,16 @@ class Deck {
      */
 
     /// Returns an iterator to the first card in this deck.
-    iterator begin() { return m_card_list.begin(); }
+    [[nodiscard]] iterator begin() { return m_card_list.begin(); }
 
     /// Returns an iterator to the first card in this deck.
-    const_iterator begin() const { return m_card_list.begin(); }
+    [[nodiscard]] const_iterator begin() const { return m_card_list.begin(); }
 
     /// Returns the end iterator for this deck.
-    iterator end() { return m_card_list.end(); }
+    [[nodiscard]] iterator end() { return m_card_list.end(); }
 
     /// Returns the end iterator for this deck.
-    const_iterator end() const { return m_card_list.end(); }
+    [[nodiscard]] const_iterator end() const { return m_card_list.end(); }
 
   private:
 
@@ -195,7 +194,7 @@ inline std::ostream& operator<<(std::ostream& out, const Deck& deck)
 {
     out << "[ ";
     for (const Card card : deck) {
-        out << card << ", ";
+        out << card << ' ';
     }
     out << ']';
 

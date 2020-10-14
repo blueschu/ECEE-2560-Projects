@@ -52,7 +52,7 @@ class BasicUnique {
      */
     explicit BasicUnique(T* owned_ptr) : m_ptr{owned_ptr} {}
 
-    // Disallow copy constructor [C.81 in 2].
+    // Disallow copy construction [C.81 in 2].
     BasicUnique(const BasicUnique&) noexcept = delete;
 
     // Move constructor
@@ -85,12 +85,9 @@ class BasicUnique {
     /**
      * Returns the owned pointer without releasing ownership.
      *
-     * @returns Non-owning pointer to stored resource.
+     * @returns Non-owning pointer to the stored resource.
      */
-    T* get() const noexcept
-    {
-        return m_ptr;
-    }
+    T* get() const noexcept { return m_ptr; }
 
 };
 

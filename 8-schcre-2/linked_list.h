@@ -58,7 +58,7 @@ class LinkedList {
         BasicUnique<BaseNode> m_next_ptr;
     };
 
-    /// Helper class representing a link in the linked list.
+    /// Helper class representing an element in the linked list.
     struct Node : public BaseNode {
         /// The value contained in this node.
         T m_value;
@@ -166,7 +166,7 @@ class LinkedList {
             return temp;
         }
 
-    }; // end struct iterator
+    }; // end struct  LinkedListIterator
 
     /*
      * Type aliases for containers [10].  We only provide those used in this
@@ -296,7 +296,7 @@ class LinkedList {
      *
      * @param value Element to be inserted.
      */
-    void push_front(const T& value);
+    void push_front(const T& value) { insert_after(before_begin(), value); }
 
     /**
      * Removes the element immediately following the given position.
@@ -339,6 +339,7 @@ class LinkedList {
      *
      * @return Iterator before the beginning of this list.
      */
+    [[nodiscard]]
     iterator before_begin() noexcept
     {
         return iterator{&m_head};
@@ -353,6 +354,7 @@ class LinkedList {
      *
      * @return Iterator before the beginning of this list.
      */
+    [[nodiscard]]
     const_iterator before_begin() const noexcept
     {
         return const_iterator{&m_head};
@@ -363,6 +365,7 @@ class LinkedList {
      *
      * @return First element iterator.
      */
+    [[nodiscard]]
     iterator begin() noexcept
     {
         return iterator{m_head.m_next_ptr.get()};
@@ -373,6 +376,7 @@ class LinkedList {
     *
     * @return First element iterator.
     */
+    [[nodiscard]]
     const_iterator begin() const noexcept
     {
         return const_iterator{m_head.m_next_ptr.get()};
@@ -383,6 +387,7 @@ class LinkedList {
      *
      * @return End iterator.
      */
+    [[nodiscard]]
     iterator end() noexcept
     {
         return iterator{nullptr};
@@ -393,6 +398,7 @@ class LinkedList {
      *
      * @return End iterator.
      */
+    [[nodiscard]]
     const_iterator end() const noexcept
     {
         return const_iterator{nullptr};
