@@ -18,6 +18,8 @@ set(EECE2560_PROJECT_LIST
         8-schcre-1
         8-schcre-2)
 
+add_subdirectory(common)
+
 # Iterate over course project subdirectories and add those that exist to the
 # Cmake configuration.
 #
