@@ -133,7 +133,7 @@ Code prompt_user_guess(std::size_t code_size)
         // Fetch a complete line of input from the user.
         std::getline(std::cin, user_input);
 
-        // Wrap the user-provided stream in stream so that input stream
+        // Wrap the user-provided string in stream so that input stream
         // operations can be performed on it (e.g., reading integers).
         std::istringstream input_stream(user_input);
 

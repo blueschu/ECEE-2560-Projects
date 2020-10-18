@@ -53,14 +53,17 @@ int main()
     GameConfig game_config{};
 
     game_config.show_unflipped_cards = eece2560::prompt_user<bool>(
-        "Game config - Show unflipped cards? "
+        "Game config - Show unflipped cards? ",
+        eece2560::bool_alpha_extractor
     );
     game_config.allow_repeat_flips = eece2560::prompt_user<bool>(
-        "Game config - Allow repeat flips? "
+        "Game config - Allow repeat flips? ",
+        eece2560::bool_alpha_extractor
     );
 
     const auto show_unused_cards = eece2560::prompt_user<bool>(
-        "Game config - Show unused cards before playing? "
+        "Game config - Show unused cards before playing? ",
+        eece2560::bool_alpha_extractor
     );
 
     // "Deal" the required number of cards from the deck.
