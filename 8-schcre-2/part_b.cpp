@@ -46,8 +46,11 @@ void update_score(Card card, Score& score);
 
 int main()
 {
+    // Generate the required linked list of shuffled playing cards.
     Deck deck{};
+    deck.shuffle();
 
+    // Sequence of cards to be used during the flip game.
     std::vector<FlipCard> live_cards;
 
     GameConfig game_config{};
@@ -57,12 +60,12 @@ int main()
         eece2560::bool_alpha_extractor
     );
     game_config.allow_repeat_flips = eece2560::prompt_user<bool>(
-        "Game config - Allow repeat flips? ",
+        "Game config - Allow repeat flips?   ",
         eece2560::bool_alpha_extractor
     );
 
     const auto show_unused_cards = eece2560::prompt_user<bool>(
-        "Game config - Show unused cards before playing? ",
+        "Game config - Show unused cards?    ",
         eece2560::bool_alpha_extractor
     );
 
@@ -117,7 +120,10 @@ Score play_flip_interactive(std::vector<FlipCard>& cards, const GameConfig& game
 
         ++round_counter;
 
-        if (eece2560::prompt_user<bool>("Would you like to quit? ")) {
+        if (eece2560::prompt_user<bool>(
+            "Would you like to quit? ",
+            eece2560::bool_alpha_extractor
+        )) {
             break;
         }
     }
@@ -130,7 +136,7 @@ void display_game_state(const std::vector<FlipCard>& cards, const GameConfig& ga
     // Print the line of card indices.
     for (std::size_t i{0}; i < cards.size(); ++i) {
         if (!game_config.allow_repeat_flips && cards[i].flipped) {
-            std::cout << " * ";
+            std::cout << " **";
         } else {
             std::cout << ' ' << std::setw(2) << i;
         }
@@ -151,12 +157,10 @@ void display_game_state(const std::vector<FlipCard>& cards, const GameConfig& ga
 Card prompt_pick_card(std::vector<FlipCard>& cards, const GameConfig& game_config)
 {
     while (true) {
-        const auto user_selection = eece2560::prompt_user<std::size_t>("Pick a card: ");
-
-        if (user_selection >= FLIP_CARD_COUNT) {
-            std::cout << "No such card exists!\n";
-            continue;
-        }
+        const auto user_selection = eece2560::prompt_user<std::size_t>(
+            "Pick a card: ",
+            eece2560::FromIntervalExtractor(FLIP_CARD_COUNT)
+        );
 
         if (!game_config.allow_repeat_flips && cards[user_selection].flipped) {
             std::cout << "You can't flip that card again!\n";

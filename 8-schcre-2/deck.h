@@ -27,6 +27,7 @@
 #include <vector>               // for std::vector (used in shuffle implementation)
 
 #include "card.h"
+#include "eece2560_io.h"
 
 #ifdef USE_STANDARD_LIST
 #include <forward_list>         // temporary: for standard list container
@@ -192,12 +193,7 @@ class Deck {
 
 inline std::ostream& operator<<(std::ostream& out, const Deck& deck)
 {
-    out << "[ ";
-    for (const Card card : deck) {
-        out << card << ' ';
-    }
-    out << ']';
-
+    eece2560::print_sequence(out, std::begin(deck), std::end(deck), " ", "[ ", " ]");
     return out;
 }
 

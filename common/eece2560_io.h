@@ -13,33 +13,149 @@
 #ifndef EECE_2560_PROJECTS_EECE2560_IO_H
 #define EECE_2560_PROJECTS_EECE2560_IO_H
 
-#include <functional>           // for std::function
 #include <iostream>             // for I/O definitions (iosfwd not sufficient)
 #include <iterator>             // for std::iterator_traits
 #include <sstream>              // for std::istringstream
 #include <string_view>          // for std::string_view
 #include <type_traits>          // for std::is_base_of
+#include <variant>              // for std::variant
 
 namespace eece2560 {
+
+/**
+ * Prints the range [it, end) to given output stream with elements separated by
+ * the given delimiter and with the entire sequence enclosed by the given
+ * open and close symbols.
+ *
+ * @tparam Iter Iterator type. May be any input iterator.
+ * @param out Output stream to be written to.
+ * @param it,end Range to be printed.
+ * @param delim String to be printed between internal elements of the range.
+ * @param open_symbol String to be printed at the beginning of the sequence.
+ * @param close_symbol String to be printed at the end of the sequence.
+ */
+template<typename Iter>
+void print_sequence(
+    std::ostream& out,
+    Iter it,
+    Iter end,
+    std::string_view delim = ", ",
+    std::string_view open_symbol = "[",
+    std::string_view close_symbol = "]")
+{
+    using category = typename std::iterator_traits<Iter>::iterator_category;
+    static_assert(std::is_base_of_v<std::input_iterator_tag, category>);
+
+    out << open_symbol;
+
+    // For random access and bidirectional iterators, we can directly compute
+    // the iterator to the last element.
+    if constexpr (std::is_base_of_v<std::bidirectional_iterator_tag, category>) {
+        // Iterator to the last element.
+        auto before_end = end;
+        --before_end;
+
+        // Print internal elements separated by the given delimiter.
+        while (it != before_end) {
+            out << *it << delim;
+            ++it;
+        }
+        // Print the last element with no trailing delimiter.
+        out << *before_end;
+
+    } else {    // For forward iterators.
+        // Track the previous iterator during iteration. This way when the
+        // end iterator is reached, we still have a reference to the last
+        // element, which we can print without a trailing delimiter.
+        auto prev = it++;
+
+        // Print internal elements separated by the given delimiter.
+        while (it != end) {
+            out << *prev << delim;
+            prev = it++;
+        }
+        // Print the last element with no trailing delimiter.
+        out << *prev;
+    }
+
+    out << close_symbol;
+}
+
+/**
+ * Type-safe tagged enum used to represent the result of parsing a user input
+ * into a T value.
+ *
+ * We allow the case where T = E.
+ */
+template<typename T, typename E>
+using FromStrResult = std::variant<T, E>;
 
 /**
  * Functor for converting a string into a T instance using T's stream extraction
  * operator overload.
  *
- * @tparam T The type to be extracted from a string.
+ * @tparam T Type to be extracted from a string.
  */
 template<typename T>
 struct StreamExtractor {
-    std::optional<T> operator()(const std::string& line) const
+    FromStrResult<T, std::string_view> operator()(const std::string& line) const
     {
+        using namespace std::string_view_literals;
         // Wrap the user-provided line in a stream so that input stream
         // operations can be performed on it.
         std::istringstream stream(line);
         T temp;
         stream >> temp;
         if (!stream) {
-            return std::nullopt;
+            return "Invalid input."sv;
         } else {
+            return temp;
+        }
+    }
+};
+
+/**
+ * Functor for extracting and ordered type from an interval.
+ * @tparam T Ordered type to be extracted from a string.
+ */
+template<typename T>
+struct FromIntervalExtractor {
+    /// Lower bound for T values to be extracted.
+    const T m_min;
+
+    /// Upper bounds for T values to be extracted.
+    const T m_max;
+
+    /**
+     * Creates an FromIntervalExtractor that seeks inputs in the interval
+     * [T{}, max).
+     * @param max The upper bound (non inclusive) of the interval.
+     */
+    constexpr explicit FromIntervalExtractor(T max) noexcept: m_min{}, m_max{max} {}
+
+    /**
+     * Creates an FromIntervalExtractor that seeks inputs in the interval
+     * [min, max).
+     * @param max The upper bound (non inclusive) of the interval.
+     * @param min The lower bound (inclusive) of the interval.
+     */
+    constexpr FromIntervalExtractor(T min, T max) noexcept: m_min{min}, m_max{max} {}
+
+    FromStrResult<T, std::string> operator()(const std::string& line) const
+    {
+        using namespace std::string_literals;
+        std::istringstream stream(line);
+        T temp;
+        stream >> temp;
+        if (!stream) {
+            return "Invalid input."s;
+        } else {
+            if (temp < m_min || temp >= m_max) {
+                std::ostringstream out_stream;
+                out_stream << "Invalid input - value must be in the range ["
+                           << m_min << ',' << m_max << ").";
+                return out_stream.str();
+            }
             return temp;
         }
     }
@@ -51,7 +167,7 @@ struct StreamExtractor {
  * @tparam AffirmPred Callable type for determining whether the input is truthy,
  * @tparam NegatePred Callable type for determining whether the input is fasley.
  */
-template<typename AffirmPred, typename NegatePred>
+template<typename AffirmPred, typename NegatePred, typename ErrReason>
 struct BoolAlphaExtractor {
 
     /**
@@ -67,15 +183,21 @@ struct BoolAlphaExtractor {
     NegatePred m_is_negation;
 
     /**
+     * Callable for determining the reason that a string is neither truth
+     * nor falsey
+     */
+    ErrReason m_err_reason;
+
+    /**
      * Constructs a BoolAlphaExtractor with the given affirmation and negation
      * predicates.
      * @param is_affirm Callable that returns true for truthy values.
      * @param is_negate Callable that returns true for falsey values.
      */
-    constexpr BoolAlphaExtractor(AffirmPred is_affirm, NegatePred is_negate) noexcept
-        : m_is_affirmation(is_affirm), m_is_negation(is_negate) {}
+    constexpr BoolAlphaExtractor(AffirmPred is_affirm, NegatePred is_negate, ErrReason err_reason) noexcept
+        : m_is_affirmation(is_affirm), m_is_negation(is_negate), m_err_reason(err_reason) {}
 
-    std::optional<bool> operator()(std::string_view line) const
+    FromStrResult<bool, std::string> operator()(std::string_view line) const
     {
         if (m_is_affirmation(line)) {
             return true;
@@ -83,10 +205,12 @@ struct BoolAlphaExtractor {
         if (m_is_negation(line)) {
             return false;
         }
-        return std::nullopt;
+        // Ensure that the error message returned by m_err_reason is interpreted
+        // as a std::string and not as a bool.
+        std::string err{m_err_reason(line)};
+        return err;
     }
 };
-
 
 /**
  * Prints the specified prompt to the standard output and attempts to produce
@@ -118,14 +242,17 @@ T prompt_user(std::string_view prompt, FromStr try_from_str = FromStr())
         // For simplicity we assume that reading a string will not fail.
         std::getline(std::cin, line);
 
-        // Most likely a std::optional, but we do not restrict implementors
-        // from using a custom option-like class instead.
+        // FromStrResult<T, E> or compatible tuple where E is deduced from
+        // the return type.
         auto parsed_value = try_from_str(line);
 
-        if (parsed_value) {
-            return *parsed_value;
+        if (0 == parsed_value.index()) {
+            // parsed_value stores a valid T from the user input.
+            return std::get<0>(parsed_value);
         } else {
-            std::cout << "Invalid input" << std::endl;
+            // The user input could not be parsed as a T. Print the error
+            // and re-prompt the user
+            std::cout << std::get<1>(parsed_value) << '\n';
             continue;
         }
     }
@@ -183,67 +310,11 @@ constexpr inline bool is_negation(std::string_view response) noexcept
  * BoolAlphaExtractor instance using the default whitelists for prompt affirmations
  * and negations.
  */
-inline constexpr BoolAlphaExtractor bool_alpha_extractor{is_affirmation, is_negation};
-
-
-/**
- * Prints the range [it, end) to given output stream with elements separated by
- * the given delimiter and with the entire sequence enclosed by the given
- * open and close symbols.
- *
- * @tparam Iter Iterator type. May be any input iterator.
- * @param out Output stream to be written to.
- * @param it,end Range to be printed.
- * @param delim String to be printed between internal elements of the range.
- * @param open_symbol String to be printed at the beginning of the list.
- * @param close_symbol String to be printed at the end of the list.
- */
-template<typename Iter>
-void print_list(
-    std::ostream& out,
-    Iter it,
-    Iter end,
-    std::string_view delim = ", ",
-    std::string_view open_symbol = "[",
-    std::string_view close_symbol = "]")
-{
-    using category = typename std::iterator_traits<Iter>::iterator_category;
-    static_assert(std::is_base_of_v<std::input_iterator_tag, category>);
-
-    out << open_symbol;
-
-    // For random access and bidirectional iterators, we can directly compute
-    // the iterator to the last element.
-    if constexpr (std::is_base_of_v<std::bidirectional_iterator_tag, category>) {
-        // Iterator to the last element.
-        auto before_end = end;
-        --before_end;
-
-        // Print internal elements separated by the given delimiter.
-        while (it != before_end) {
-            out << *it << delim;
-            ++it;
-        }
-        // Print the last element with no trailing delimiter.
-        out << *before_end;
-
-    } else {    // For forward iterators.
-        // Track the previous iterator during iteration. This way when the
-        // end iterator is reached, we still have a reference to the last
-        // element, which we can print without a trailing delimiter.
-        auto prev = it++;
-
-        // Print internal elements separated by the given delimiter.
-        while (it != end) {
-            out << *prev << delim;
-            prev = it++;
-        }
-        // Print the last element with no trailing delimiter.
-        out << *prev;
-    }
-
-    out << close_symbol;
-}
+inline constexpr BoolAlphaExtractor bool_alpha_extractor{
+    is_affirmation,
+    is_negation,
+    [](auto) -> std::string_view { return "Invalid input. Enter [y]es/[t]rue/[1] or [n]o/[f]alse/[0]."; }
+};
 
 } // end namespace eece2560
 
