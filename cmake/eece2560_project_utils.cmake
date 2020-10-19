@@ -16,7 +16,8 @@ function(eece2560_target_warning_defaults TARGET ACCESS)
     # -Werror       - treat warnings as errors.
     # -pedantic     - disable gcc extensions; ensure valid ISO C++.
     # -Wconversion  - warn about possibly lossy implicit conversions.
-    set(COMPILER_WARNINGS_GNU -Wall -Wextra -pedantic -Werror -Wconversion)
+    # -Wno-unknown-pragmas - disable warnings for unknown pragmas (for clang-tiddy config)
+    set(COMPILER_WARNINGS_GNU -Wall -Wextra -pedantic -Werror -Wconversion -Wno-unknown-pragmas)
     # Clang warning flags. We assume all GCC flags used are also supported by Clang.
     set(COMPILER_WARNINGS_Clang ${COMPILER_WARNINGS_GNU})
     # MSVC warning flags.
@@ -81,10 +82,12 @@ function(eece2560_add_project_targets PROJ_NUM)
     add_executable(${TARGET_PREFIX}a ${PARSED_PART_A})
     eece2560_target_warning_defaults(${TARGET_PREFIX}a PRIVATE)
     target_link_libraries(${TARGET_PREFIX}a ${TARGET_PREFIX}-lib)
+    target_link_libraries(${TARGET_PREFIX}a eece2560_common)
 
     # Executable for Part B
     add_executable(${TARGET_PREFIX}b ${PARSED_PART_B})
     eece2560_target_warning_defaults(${TARGET_PREFIX}b PRIVATE)
     target_link_libraries(${TARGET_PREFIX}b ${TARGET_PREFIX}-lib)
+    target_link_libraries(${TARGET_PREFIX}b eece2560_common)
 
 endfunction()

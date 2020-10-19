@@ -7,6 +7,7 @@
  *
  * References
  * ==========
+ *  [1] https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines
  */
 
 #ifndef EECE_2560_PROJECTS_CARD_H
@@ -62,6 +63,31 @@ class Card {
      * This constructor could be omitted if we made Card an aggregate.
      */
     constexpr Card(Rank rank, Suit suit) : m_rank{rank}, m_suit{suit} {}
+
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "modernize-use-equals-default"
+    // Disable clang-tiddy linter diagnostics for trivial copy ctor.
+
+    // User-defined copy constructor per project instructions.
+    Card(const Card& rhs) noexcept: m_rank{rhs.m_rank}, m_suit{rhs.m_suit} {} // = default
+
+    // User-defined copy assignment per project instructions.
+    Card& operator=(const Card& rhs) noexcept // = default
+    {
+        std::tie(m_rank, m_suit) = std::tie(rhs.m_rank, rhs.m_suit);
+        return *this;
+    }
+
+    // Since we defined copy constructor/assignment operator, we need to explicitly
+    // re-enable move the constructor [1, C.21].
+    Card(Card&& rhs) = default;
+
+    // Since we defined copy constructor/assignment operator, we need to explicitly
+    // re-enable move the assignment operator [1, C.21].
+    Card& operator=(Card&& rhs) = default;
+
+#pragma clang diagnostic pop
 
     /// Returns true if this card is a face card (Jack, Queen, or King).
     [[nodiscard]]
