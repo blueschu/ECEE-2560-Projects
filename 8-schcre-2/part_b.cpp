@@ -46,12 +46,6 @@ void update_score(Card card, Score& score);
 
 int main()
 {
-    // Generate the required linked list of shuffled playing cards.
-    Deck deck{};
-    deck.shuffle();
-
-    // Sequence of cards to be used during the flip game.
-    std::vector<FlipCard> live_cards;
 
     GameConfig game_config{};
 
@@ -68,6 +62,24 @@ int main()
         "Game config - Show unused cards?    ",
         eece2560::bool_alpha_extractor
     );
+
+    const auto show_shuffling = eece2560::prompt_user<bool>(
+        "Game config - Show shuffling?       ",
+        eece2560::bool_alpha_extractor
+    );
+
+    // Generate the required linked list of shuffled playing cards.
+    Deck deck{};
+    if (show_shuffling) {
+        std::cout << "Deck before shuffling: " << deck << '\n';
+    }
+    deck.shuffle();
+    if (show_shuffling) {
+        std::cout << "Deck after shuffling:  " << deck << '\n';
+    }
+
+    // Sequence of cards to be used during the flip game.
+    std::vector<FlipCard> live_cards;
 
     // "Deal" the required number of cards from the deck.
     for (std::size_t i{0}; i < FLIP_CARD_COUNT; ++i) {
