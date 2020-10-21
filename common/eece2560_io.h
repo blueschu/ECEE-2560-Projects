@@ -105,8 +105,10 @@ struct StreamExtractor {
         // operations can be performed on it.
         std::istringstream stream(line);
         T temp;
-        stream >> temp;
-        if (!stream) {
+        // Read T value from stream and consume any trailing whitespace.
+        stream >> temp >> std::ws;
+        if (!stream || !stream.eof()) {
+            // Read was not successful or not all input tokens were used.
             return "Invalid input."sv;
         } else {
             return temp;
@@ -146,8 +148,10 @@ struct FromIntervalExtractor {
         using namespace std::string_literals;
         std::istringstream stream(line);
         T temp;
-        stream >> temp;
-        if (!stream) {
+        // Read T value from stream and consume any trailing whitespace.
+        stream >> temp >> std::ws;
+        if (!stream || !stream.eof()) {
+            // Read was not successful or not all input tokens were used.
             return "Invalid input."s;
         } else {
             if (temp < m_min || temp >= m_max) {
@@ -310,13 +314,12 @@ constexpr inline bool is_negation(std::string_view response) noexcept
  * BoolAlphaExtractor instance using the default whitelists for prompt affirmations
  * and negations.
  */
-inline constexpr BoolAlphaExtractor bool_alpha_extractor{
+constexpr inline BoolAlphaExtractor bool_alpha_extractor{
     is_affirmation,
     is_negation,
     [](auto) -> std::string_view { return "Invalid input. Enter [y]es/[t]rue/[1] or [n]o/[f]alse/[0]."; }
 };
 
 } // end namespace eece2560
-
 
 #endif //EECE_2560_PROJECTS_EECE2560_IO_H
