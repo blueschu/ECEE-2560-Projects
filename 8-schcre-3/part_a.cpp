@@ -7,6 +7,12 @@
  *
  */
 
-int main() {
+#include "dictionary.h"
 
+constexpr const char* DICTIONARY_FILE = "resources/dictionary.txt";
+
+int main()
+{
+
+    auto dictionary = Dictionary::read_file(DICTIONARY_FILE);
 }

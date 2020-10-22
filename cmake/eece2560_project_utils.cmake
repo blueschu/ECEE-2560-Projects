@@ -91,7 +91,8 @@ function(eece2560_add_project_targets PROJ_NUM)
     target_link_libraries(${TARGET_PREFIX}b ${TARGET_PREFIX}-lib)
     target_link_libraries(${TARGET_PREFIX}b eece2560_common)
 
-    # file handles empty resources list correctly
+    # Copy target resources to build directory. The "file" command treats empty
+    # sources lists as a no-op, so we don't need to check if RESOURCES was provided.
     file(COPY ${PARSED_RESOURCES} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 endfunction()
