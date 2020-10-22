@@ -13,6 +13,7 @@
 #ifndef EECE_2560_PROJECTS_EECE2560_IO_H
 #define EECE_2560_PROJECTS_EECE2560_IO_H
 
+#include <array>                // for std::array
 #include <iostream>             // for I/O definitions (iosfwd not sufficient)
 #include <iterator>             // for std::iterator_traits
 #include <sstream>              // for std::istringstream
