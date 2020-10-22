@@ -7,12 +7,14 @@
  *
  */
 
+#include <iostream>             // for I/O stream definitions
+
 #include "dictionary.h"
 
 constexpr const char* DICTIONARY_FILE = "resources/dictionary.txt";
 
 int main()
 {
-
-    auto dictionary = Dictionary::read_file(DICTIONARY_FILE);
+    const auto dictionary = Dictionary::read_file(DICTIONARY_FILE);
+    std::cout << "Dictionary: " << dictionary << '\n';
 }

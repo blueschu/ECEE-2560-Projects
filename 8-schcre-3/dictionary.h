@@ -10,9 +10,9 @@
 #ifndef EECE_2560_PROJECTS_DICTIONARY_H
 #define EECE_2560_PROJECTS_DICTIONARY_H
 
-#include <iosfwd>
-#include <string>
-#include <vector>
+#include <iosfwd>           // for I/O stream declarations (iostream not necessary)
+#include <string>           // for std::string
+#include <vector>           // for std::vector
 
 class Dictionary {
 
@@ -26,6 +26,10 @@ class Dictionary {
     }
 
     static Dictionary read_file(const char* file_name);
+
+  private:
+  public:
+    friend std::ostream& operator<<(std::ostream& os, const Dictionary& dictionary);
 
   private:
     void sort_words();

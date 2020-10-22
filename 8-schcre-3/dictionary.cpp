@@ -16,6 +16,8 @@
 #include <fstream>          // for std::ifstream
 #include <iterator>         // for std::istream_iterator
 
+#include "eece2560_io.h"
+
 Dictionary Dictionary::read_file(const char* file_name)
 {
     // todo error handling
@@ -34,5 +36,11 @@ Dictionary Dictionary::read_file(const char* file_name)
 
 void Dictionary::sort_words()
 {
+    // todo
+}
 
+std::ostream& operator<<(std::ostream& out, const Dictionary& dictionary)
+{
+    eece2560::print_sequence(out, std::begin(dictionary.m_words), std::end(dictionary.m_words));
+    return out;
 }
