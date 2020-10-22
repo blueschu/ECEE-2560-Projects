@@ -109,7 +109,7 @@ namespace {
 Score play_flip_interactive(std::vector<FlipCard>& cards, const GameConfig& game_config)
 {
     // String to be printed around each round header.
-    const static std::string header_padding = std::string(((FLIP_CARD_COUNT) * 3) / 2 - 5, '=');
+    const static std::string header_padding = std::string(FLIP_CARD_COUNT * 3 / 2 - 5, '=');
 
     int round_counter{1};
     Score score{};
@@ -186,24 +186,23 @@ Card prompt_pick_card(std::vector<FlipCard>& cards, const GameConfig& game_confi
 
 void update_score(Card card, Score& score)
 {
-    if (card.is_face()) {
-        score += 5;
-    }
-
     if (card.get_rank() == Card::Rank::Ace) {
         score += 10;
     }
 
-    if (card.get_rank() == Card::Rank::R7) {
-        score = score / 2; //Will return the floor value of the halved score
+    if (card.is_face()) {
+        score += 5;
     }
 
-    if (card.zero_points()) {
+    if (card.get_rank() == Card::Rank::R7) {
+        score = score / 2; // Will return the floor value of the halved score
+    }
+
+    if (card.is_low()) {
         score = 0;
     }
 
-    if (card.get_suit() == Card::Suit::Heart)
-    {
+    if (card.get_suit() == Card::Suit::Heart) {
         score += 1;
     }
 

@@ -64,7 +64,6 @@ class Card {
      */
     constexpr Card(Rank rank, Suit suit) : m_rank{rank}, m_suit{suit} {}
 
-
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "modernize-use-equals-default"
     // Disable clang-tiddy linter diagnostics for trivial copy ctor.
@@ -78,6 +77,7 @@ class Card {
         std::tie(m_rank, m_suit) = std::tie(rhs.m_rank, rhs.m_suit);
         return *this;
     }
+#pragma clang diagnostic pop
 
     // Since we defined copy constructor/assignment operator, we need to explicitly
     // re-enable move the constructor [1, C.21].
@@ -87,8 +87,6 @@ class Card {
     // re-enable move the assignment operator [1, C.21].
     Card& operator=(Card&& rhs) = default;
 
-#pragma clang diagnostic pop
-
     /// Returns true if this card is a face card (Jack, Queen, or King).
     [[nodiscard]]
     bool is_face() const
@@ -96,10 +94,12 @@ class Card {
         return m_rank == Rank::Jack || m_rank == Rank::Queen || m_rank == Rank::King;
     }
 
-    /// Returns true if the value of the card is (2, 3, 4, 5, or 6)
-    bool zero_points() const
+    /// Returns true if the rank of the card is (2, 3, 4, 5, or 6)
+    [[nodiscard]]
+    bool is_low() const
     {
-        return m_rank == Rank::R2 || m_rank == Rank::R3 || m_rank == Rank::R4 || m_rank == Rank::R5 || m_rank == Rank::R6;
+        return m_rank == Rank::R2 || m_rank == Rank::R3 || m_rank == Rank::R4
+            || m_rank == Rank::R5 || m_rank == Rank::R6;
     }
 
     /*
