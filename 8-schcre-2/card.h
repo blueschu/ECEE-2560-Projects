@@ -96,6 +96,12 @@ class Card {
         return m_rank == Rank::Jack || m_rank == Rank::Queen || m_rank == Rank::King;
     }
 
+    /// Returns true if the value of the card is (2, 3, 4, 5, or 6)
+    bool zero_points() const
+    {
+        return m_rank == Rank::R2 || m_rank == Rank::R3 || m_rank == Rank::R4 || m_rank == Rank::R5 || m_rank == Rank::R6;
+    }
+
     /*
      * Required getters and setters from project instructions.
      */

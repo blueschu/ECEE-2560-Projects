@@ -189,7 +189,24 @@ void update_score(Card card, Score& score)
     if (card.is_face()) {
         score += 5;
     }
-    // todo implement remainder of game logic
+
+    if (card.get_rank() == Card::Rank::Ace) {
+        score += 10;
+    }
+
+    if (card.get_rank() == Card::Rank::R7) {
+        score = score / 2; //Will return the floor value of the halved score
+    }
+
+    if (card.zero_points()) {
+        score = 0;
+    }
+
+    if (card.get_suit() == Card::Suit::Heart)
+    {
+        score += 1;
+    }
+
 }
 }
 
