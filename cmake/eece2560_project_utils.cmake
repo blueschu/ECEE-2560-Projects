@@ -78,18 +78,19 @@ function(eece2560_add_project_targets PROJ_NUM)
     # Static library for shared elements in Part A and Part B
     add_library(${TARGET_PREFIX}-lib STATIC ${PARSED_LIB})
     eece2560_target_warning_defaults(${TARGET_PREFIX}-lib PRIVATE)
+    # Link common-lib to target-lib as PUBLIC so that it becomes part of the
+    # target-lib's link interface
+    target_link_libraries(${TARGET_PREFIX}-lib PUBLIC eece2560_common)
 
     # Executable for Part A
     add_executable(${TARGET_PREFIX}a ${PARSED_PART_A})
     eece2560_target_warning_defaults(${TARGET_PREFIX}a PRIVATE)
     target_link_libraries(${TARGET_PREFIX}a ${TARGET_PREFIX}-lib)
-    target_link_libraries(${TARGET_PREFIX}a eece2560_common)
 
     # Executable for Part B
     add_executable(${TARGET_PREFIX}b ${PARSED_PART_B})
     eece2560_target_warning_defaults(${TARGET_PREFIX}b PRIVATE)
     target_link_libraries(${TARGET_PREFIX}b ${TARGET_PREFIX}-lib)
-    target_link_libraries(${TARGET_PREFIX}b eece2560_common)
 
     # Copy target resources to build directory. The "file" command treats empty
     # sources lists as a no-op, so we don't need to check if RESOURCES was provided.
