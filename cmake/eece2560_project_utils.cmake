@@ -50,10 +50,11 @@ endfunction()
 # Generates CMake targets for an EECE2560 project.
 function(eece2560_add_project_targets PROJ_NUM)
     cmake_parse_arguments(
-            PARSED              # Output variable prefix.
-            ""                  # No boolean arguments.
-            ""                  # No single value arguments.
-            "LIB;PART_A;PART_B" # Multi-value arguments for target sources.
+            PARSED          # Output variable prefix.
+            ""              # No boolean arguments.
+            ""              # No single value arguments.
+            # Multi-value arguments for target sources.
+            "LIB;PART_A;PART_B;RESOURCES"
             ${ARGN}
     )
 
@@ -89,5 +90,8 @@ function(eece2560_add_project_targets PROJ_NUM)
     eece2560_target_warning_defaults(${TARGET_PREFIX}b PRIVATE)
     target_link_libraries(${TARGET_PREFIX}b ${TARGET_PREFIX}-lib)
     target_link_libraries(${TARGET_PREFIX}b eece2560_common)
+
+    # file handles empty resources list correctly
+    file(COPY ${PARSED_RESOURCES} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 endfunction()
