@@ -15,7 +15,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # List of subdirectories corresponding to ECEE2560 projects.
 set(EECE2560_PROJECT_LIST
 #        8-schcre-non-existent-project-test-sentinel
-        8-schcre-1)
+        8-schcre-1
+        8-schcre-2)
+
+add_subdirectory(common)
 
 # Iterate over course project subdirectories and add those that exist to the
 # Cmake configuration.
@@ -28,7 +31,7 @@ foreach (PROJ_DIRECTORY ${EECE2560_PROJECT_LIST})
     if (EXISTS "${CMAKE_SOURCE_DIR}/${PROJ_DIRECTORY}")
         add_subdirectory("${CMAKE_SOURCE_DIR}/${PROJ_DIRECTORY}")
     else ()
-        message("Warning: cannot find project ${PROJ_DIRECTORY} - ignoring this project")
+        message(WARNING "Cannot find project ${PROJ_DIRECTORY} - ignoring this project")
     endif ()
 endforeach ()
 

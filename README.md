@@ -1,7 +1,7 @@
 # EECE 2560 Projects
 
 Group members:
- - David Cree <[cree.d@northeastern.edu](mailto:cree.d@northeastern.edu)>
+ - Chandler Cree <[cree.d@northeastern.edu](mailto:cree.d@northeastern.edu)>
  - Brian Schubert <[schubert.b@northeastern.edu](mailto:schubert.b@northeastern.edu)>
  
 Group ID: `8-schcre`
