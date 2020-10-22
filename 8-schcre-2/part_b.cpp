@@ -112,7 +112,7 @@ Score play_flip_interactive(std::vector<FlipCard>& cards, const GameConfig& game
     // String to be printed around each round header.
     const static std::string header_padding = std::string(FLIP_CARD_COUNT * 3 / 2 - 5, '=');
 
-    int round_counter{1};
+    std::size_t round_counter{1};
     Score score{};
 
     while (true) {
@@ -131,14 +131,16 @@ Score play_flip_interactive(std::vector<FlipCard>& cards, const GameConfig& game
         std::cout << "You flipped " << card
                   << ". Your new score is " << score << "\n\n";
 
-        ++round_counter;
-
-        if (eece2560::prompt_user<bool>(
+        const auto quit = eece2560::prompt_user<bool>(
             "Would you like to quit? ",
             eece2560::bool_alpha_extractor
-        )) {
+        );
+
+        if (quit || (!game_config.allow_repeat_flips && round_counter >= cards.size())) {
             break;
         }
+
+        ++round_counter;
     }
 
     return score;
