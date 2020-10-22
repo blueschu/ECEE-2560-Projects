@@ -9,8 +9,9 @@
  * ==========
  */
 
-#include <iomanip>
-#include <iostream>
+#include <cmath>            // for std::ceil
+#include <iomanip>          // for std::setw
+#include <iostream>         // for I/O definitions
 
 #include "eece2560_io.h"
 #include "deck.h"
@@ -195,7 +196,10 @@ void update_score(Card card, Score& score)
     }
 
     if (card.get_rank() == Card::Rank::R7) {
-        score = score / 2; // Will return the floor value of the halved score
+        // Use explicit casts since we're compiling with -Wconversion.
+        score = static_cast<Score>(
+            std::ceil(static_cast<double>(score) / 2)
+        );
     }
 
     if (card.is_low()) {
