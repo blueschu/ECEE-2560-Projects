@@ -38,6 +38,7 @@ Iter min_elem(Iter it, Iter end, Comp compare = Comp())
         if (compare(*it, *curr_min)) {
             curr_min = it;
         }
+        ++it;
     }
     return curr_min;
 }
