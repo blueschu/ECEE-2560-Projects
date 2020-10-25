@@ -20,13 +20,15 @@
 #include <utility>              // for std::pair
 #include <vector>               // for std::vector
 
-class MatrixIndexError : std::out_of_range {
+/// Exception raised upon accessing a non-existant matrix entry.
+class MatrixIndexError : public std::out_of_range {
   public:
     // Use parent class constructor.
     using std::out_of_range::out_of_range;
 };
 
-class MatrixResizeError : std::runtime_error {
+/// Exception raised upon attempting to reshape a matrix to an incompatible shape.
+class MatrixResizeError : public std::runtime_error {
   public:
     // Use parent class constructor.
     using std::runtime_error::runtime_error;
@@ -58,7 +60,7 @@ class Matrix {
 
   private:
     /// Consecutive storage of matrix elements.
-    Storage m_values;
+    Storage m_entries;
 
     /// The number of rows in this matrix.
     size_type m_rows;
@@ -69,8 +71,8 @@ class Matrix {
   public:
 
     /// Creates a 1 by N matrix with the given elements.
-    explicit Matrix(Storage values)
-        : m_values(std::move(values)), m_rows{1}, m_cols{m_values.size()} {}
+    explicit Matrix(Storage entries)
+        : m_entries(std::move(entries)), m_rows{1}, m_cols{m_entries.size()} {}
 
     /// Returns the dimensions of this matrix.
     [[nodiscard]] Index dimensions() const noexcept { return {m_rows, m_cols}; }
@@ -96,7 +98,7 @@ class Matrix {
         }
     }
 
-    // Returns the elements at the Nth position, counting left-to-right,
+    // Returns the entry at the Nth position, counting left-to-right,
     // top-to-bottom, where N=index.
     reference operator[](size_type index)
     {
@@ -106,7 +108,7 @@ class Matrix {
         );
     }
 
-    // Returns the elements at the position (i,j), where both i and j
+    // Returns the entry at the position (i,j), where both i and j
     // are 0-based indices, where N=index.
     reference operator[](Index index)
     {
@@ -116,17 +118,17 @@ class Matrix {
         );
     }
 
-    // Returns the elements at the Nth position, counting left-to-right,
+    // Returns the entry at the Nth position, counting left-to-right,
     // top-to-bottom.
     const_reference operator[](size_type index) const
     {
         if (index >= m_rows * m_cols) {
             throw MatrixIndexError("invalid matrix index");
         }
-        return m_values[index];
+        return m_entries[index];
     }
 
-    // Returns the elements at the position (i,j), where both i and j
+    // Returns the entry at the position (i,j), where both i and j
     // are 0-based indices.
     const_reference operator[](Index index) const
     {
@@ -135,21 +137,21 @@ class Matrix {
         if (row > m_rows || col > m_cols) {
             throw MatrixIndexError("invalid matrix index");
         }
-        return m_values[row * m_cols + col];
+        return m_entries[row * m_cols + col];
 
     }
 
-    /// Returns an iterator to the first (top left) element of this matrix.
-    [[nodiscard]] iterator begin() noexcept { return std::begin(m_values); }
+    /// Returns an iterator to the first (top left) entry of this matrix.
+    [[nodiscard]] iterator begin() noexcept { return std::begin(m_entries); }
 
-    /// Returns an iterator to the first (top left) element of this matrix.
-    [[nodiscard]] const_iterator begin() const noexcept { return std::begin(m_values); }
+    /// Returns an iterator to the first (top left) entry of this matrix.
+    [[nodiscard]] const_iterator begin() const noexcept { return std::begin(m_entries); }
 
-    /// Returns an iterator to the last (bottom right) element of this matrix.
-    [[nodiscard]] iterator end() noexcept { return std::end(m_values); }
+    /// Returns an iterator to the last (bottom right) entry of this matrix.
+    [[nodiscard]] iterator end() noexcept { return std::end(m_entries); }
 
-    /// Returns an iterator to the last (bottom right) element of this matrix.
-    [[nodiscard]] const_iterator end() const noexcept { return std::end(m_values); }
+    /// Returns an iterator to the last (bottom right) entry of this matrix.
+    [[nodiscard]] const_iterator end() const noexcept { return std::end(m_entries); }
 };
 
 #endif //EECE_2560_PROJECTS_MATRIX_H
