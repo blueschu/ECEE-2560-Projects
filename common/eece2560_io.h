@@ -49,6 +49,11 @@ void print_sequence(
 
     out << open_symbol;
 
+    if (it == end) {
+        std::cout << close_symbol;
+        return;
+    }
+
     // For random access and bidirectional iterators, we can directly compute
     // the iterator to the last element.
     if constexpr (std::is_base_of_v<std::bidirectional_iterator_tag, category>) {
