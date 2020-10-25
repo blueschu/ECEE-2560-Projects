@@ -1,5 +1,7 @@
 # CMake utilities for EECE 2560 project.
 #
+# Author: Brian Schubert <schubert.b@northeastern.edu>
+#
 # References:
 # - https://cmake.org/cmake/help/latest/command/target_compile_options.html
 # - https://cmake.org/cmake/help/latest/command/cmake_parse_arguments.html
