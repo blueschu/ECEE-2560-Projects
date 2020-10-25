@@ -17,6 +17,15 @@
 
 #include "matrix.h"
 
+namespace details {
+/// Compute value % base such that the result is always in [0, base).
+template<typename T>
+constexpr T positive_mod(T value, T base)
+{
+    return (value + base) % base;
+}
+} // end namespace details
+
 /**
  * An iterator that produces every consecutive sequence of elements produced
  * by traversing a matrix along each of the eight ordinal directions, starting
@@ -37,34 +46,47 @@ class OrdinalWrappingSequenceIter {
     using iterator_category = std::input_iterator_tag;
 
   private:
-
+    /// Type used to access elements of the underlying matrix.
     using Index = typename Matrix<T>::Index;
 
+    /// The current direction of iteration for producing sequence elements.
     enum { N, NE, E, SE, S, SW, W } m_dir{N};
 
+    /// The matrix being iterated over.
     const Matrix<T>* m_grid_ref;
 
+    /// The position of the current starting elements of the sequence
     Index m_curr_center{};
 
+    /// The position of the current ending element in the sequence.
     Index m_curr_pos{};
 
-    value_type m_candidate{};
+    /**
+     * The sequence of consecutive elements from the matrix produce by iterating
+     * over entries along an ordinal direction.
+     *
+     * We use the same buffer to store all sequences produced by this iterator.
+     * This is safe since the rules for input iterators state that incrementing
+     * the iterator is allowed to invalidate any existing copies of the iterator.
+     */
+    value_type m_sequence{};
 
   public:
+    /// Creates an end iterator.
     OrdinalWrappingSequenceIter() noexcept: m_grid_ref{nullptr} {}
 
-    explicit OrdinalWrappingSequenceIter(const Matrix<T>& grid)
-        : m_grid_ref(&grid)
+    /// Creates an iterator over the given matrix.
+    explicit OrdinalWrappingSequenceIter(const Matrix<T>& grid) : m_grid_ref(&grid)
     {
         const auto[rows, cols] = m_grid_ref->dimensions();
         // Preallocate the storage required to store the longest candidate word.
-        m_candidate.reserve(std::max(rows, cols));
-        m_candidate.push_back((*m_grid_ref)[m_curr_center]);
+        m_sequence.reserve(std::max(rows, cols));
+        m_sequence.push_back((*m_grid_ref)[m_curr_center]);
     }
 
-    reference operator*() const { return m_candidate; }
+    reference operator*() const { return m_sequence; }
 
-    pointer operator->() const { return &m_candidate; }
+    pointer operator->() const { return &m_sequence; }
 
     bool operator==(const OrdinalWrappingSequenceIter& rhs) const
     {
@@ -83,8 +105,8 @@ class OrdinalWrappingSequenceIter {
     {
         advance();
         if (m_curr_pos == m_curr_center) {
-            m_candidate.clear();
-            m_candidate.push_back((*m_grid_ref)[m_curr_pos]);
+            m_sequence.clear();
+            m_sequence.push_back((*m_grid_ref)[m_curr_pos]);
             change_dir();
 
             if (m_grid_ref) {
@@ -94,34 +116,34 @@ class OrdinalWrappingSequenceIter {
                 return *this;
             }
         }
-        m_candidate.push_back((*m_grid_ref)[m_curr_pos]);
+        m_sequence.push_back((*m_grid_ref)[m_curr_pos]);
 
         return *this;
     }
 
-  private:
-
-    static std::array<int, 8> make_ordinal_offset(const Matrix<T>& grid)
-    {
-        const auto row_step = static_cast<int>(grid.dimensions().second);
-        return {
-            -row_step, -row_step + 1, 1, row_step + 1,
-            row_step, row_step - 1, -1, -row_step - 1
-        };
+    OrdinalWrappingSequenceIter operator++(int) {
+        auto temp = *this;
+        ++(*this);
+        return temp;
     }
+
+  private:
 
     void advance()
     {
         const auto[rows, cols] = m_grid_ref->dimensions();
         auto offset = compute_offset();
 
-        auto next_x = (static_cast<int>(m_curr_pos.first) + offset.first + static_cast<int>(cols)) % static_cast<int>(cols);
-        auto next_y = (static_cast<int>(m_curr_pos.second) + offset.second + static_cast<int>(rows)) % static_cast<int>(rows);
+        Index next {
+            details::positive_mod(static_cast<int>(m_curr_pos.first) + offset.first, static_cast<int>(cols)),
+            details::positive_mod(static_cast<int>(m_curr_pos.second) + offset.second, static_cast<int>(rows))
+        };
 
-        m_curr_pos = {next_x, next_y};
+        m_curr_pos = next;
     }
 
-    void change_dir() {
+    void change_dir()
+    {
         switch (m_dir) {
             case N: { m_dir = NE; break;}
             case NE:{ m_dir = E; break; }

@@ -22,7 +22,7 @@ class Dictionary {
     Dictionary() = default;
 
     explicit Dictionary(std::vector<std::string> words) : m_words(std::move(words)) {
-//        sort_words();
+        sort_words();
     }
 
     static Dictionary read_file(const char* file_name);
