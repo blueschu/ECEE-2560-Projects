@@ -138,7 +138,6 @@ class Matrix {
             throw MatrixIndexError("invalid matrix index");
         }
         return m_entries[row * m_cols + col];
-
     }
 
     /// Returns an iterator to the first (top left) entry of this matrix.

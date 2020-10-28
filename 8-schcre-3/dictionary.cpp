@@ -13,11 +13,13 @@
 
 #include "dictionary.h"
 
+#include <algorithm>        // for std::transform
+#include <cctype>           // for std::tolower
 #include <fstream>          // for std::ifstream
 #include <iterator>         // for std::istream_iterator
 
 #include "eece2560_io.h"
-#include "sorting_util.h"
+#include "algo_util.h"
 
 Dictionary Dictionary::read_file(const char* file_name)
 {
@@ -37,11 +39,20 @@ Dictionary Dictionary::read_file(const char* file_name)
 
 void Dictionary::sort_words()
 {
-    selection_sort(std::begin(m_words), std::end(m_words));
+    eece2560::selection_sort(std::begin(m_words), std::end(m_words));
 }
 
 std::ostream& operator<<(std::ostream& out, const Dictionary& dictionary)
 {
     eece2560::print_sequence(out, std::begin(dictionary.m_words), std::end(dictionary.m_words));
     return out;
+}
+
+void Dictionary::normalize_word()
+{
+    for (auto& word : m_words) {
+        std::transform(std::begin(word), std::end(word), std::begin(word),
+            [](char c) { return std::tolower(c); }
+        );
+    }
 }

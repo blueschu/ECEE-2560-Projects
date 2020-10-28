@@ -22,6 +22,7 @@ class Dictionary {
     Dictionary() = default;
 
     explicit Dictionary(std::vector<std::string> words) : m_words(std::move(words)) {
+        normalize_word();
         sort_words();
     }
 
@@ -33,6 +34,7 @@ class Dictionary {
 
   private:
     void sort_words();
+    void normalize_word();
 };
 
 #endif //EECE_2560_PROJECTS_DICTIONARY_H
