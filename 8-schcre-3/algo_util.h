@@ -1,5 +1,5 @@
 /**
- * Sorting utilities for project 3.
+ * Algorithm utilities for project 3.
  *
  * Authors: Brian Schubert  <schubert.b@northeastern.edu>
  *          Chandler Cree   <cree.d@northeastern.edu>
@@ -10,12 +10,15 @@
  *  [1] https://en.cppreference.com/w/cpp/algorithm/iter_swap
  */
 
-#ifndef EECE_2560_PROJECTS_SORTING_UTIL_H
-#define EECE_2560_PROJECTS_SORTING_UTIL_H
+#ifndef EECE_2560_PROJECTS_ALGO_UTIL_H
+#define EECE_2560_PROJECTS_ALGO_UTIL_H
 
 #include <algorithm>        // std::iter_swap
 #include <functional>       // for std::less
+#include <optional>         // for std::optional
 #include <utility>          // for std::swap
+
+namespace eece2560 {
 
 /**
  * Returns the minimum contained in the range [it, end).
@@ -32,7 +35,7 @@
 template<typename Iter, typename Comp = std::less<>>
 Iter min_elem(Iter it, Iter end, Comp compare = Comp())
 {
-    auto curr_min = it;
+    Iter curr_min = it;
     ++it;
     while (it != end) {
         if (compare(*it, *curr_min)) {
@@ -50,7 +53,7 @@ Iter min_elem(Iter it, Iter end, Comp compare = Comp())
  * Runs in O(n^2) time and O(1) space.
  *
  * @tparam Iter Forward iterator type.
- * @param it,end Range to be sorted
+ * @param it,end Range to be sorted.
  */
 template<typename Iter>
 void selection_sort(Iter it, Iter end)
@@ -61,4 +64,31 @@ void selection_sort(Iter it, Iter end)
     }
 }
 
-#endif //EECE_2560_PROJECTS_SORTING_UTIL_H
+template<typename Iter, typename T, typename Compare = std::less<T>>
+std::optional<Iter> binary_search(Iter start, Iter end, const T& needle, Compare comp = Compare())
+{
+    static_assert(std::is_base_of_v<
+        std::random_access_iterator_tag,
+        typename std::iterator_traits<Iter>::iterator_category
+    >);
+
+    if (start == end) {
+        if (comp(*start, needle) || comp(needle, *start)) {
+            return std::nullopt;
+        } else {
+            return start;
+        }
+    } else {
+        Iter mid = start;
+        std::advance(mid, (end - start) / 2);
+        if (comp(*mid, needle)) {
+            return eece2560::binary_search(++mid, end, needle, comp);
+        } else {
+            return eece2560::binary_search(start, mid, needle, comp);
+        }
+    }
+
+}
+
+} // end namespace eece2560
+#endif //EECE_2560_PROJECTS_ALGO_UTIL_H
