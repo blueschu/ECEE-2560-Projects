@@ -64,13 +64,27 @@ void selection_sort(Iter it, Iter end)
     }
 }
 
+/**
+ * Returns an iterator to an element in [start, end) that is equal to needle
+ * under the ordering imposed by comp.
+ *
+ * If multiple elements in the range [start, end) compare equal to the needle,
+ * the element returned will be arbitrary.
+ *
+ * @tparam Iter Random access iterator type.
+ * @tparam T Type of element being searched for.
+ * @tparam Compare Callable type to compare elements.
+ * @param start,end Range to be searched.
+ * @param needle Value being searched for.
+ * @param comp Binary function that returns true when its first argument
+ *             compares less than its  second.
+ * @return Iterator to the matching element if a match is found.
+ */
 template<typename Iter, typename T, typename Compare = std::less<T>>
 std::optional<Iter> binary_search(Iter start, Iter end, const T& needle, Compare comp = Compare())
 {
-    static_assert(std::is_base_of_v<
-        std::random_access_iterator_tag,
-        typename std::iterator_traits<Iter>::iterator_category
-    >);
+    using category = typename std::iterator_traits<Iter>::iterator_category;
+    static_assert(std::is_base_of_v<std::random_access_iterator_tag, category>);
 
     if (start == end) {
         if (comp(*start, needle) || comp(needle, *start)) {

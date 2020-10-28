@@ -52,7 +52,7 @@ class OrdinalWrappingSequenceIter {
     /// The current direction of iteration for producing sequence elements.
     enum { N, NE, E, SE, S, SW, W } m_dir{N};
 
-    /// The matrix being iterated over.
+    /// The matrix being iterated over. This pointer will be null in the end sentinel.
     const Matrix<T>* m_grid_ref;
 
     /// The position of the current starting elements of the sequence
