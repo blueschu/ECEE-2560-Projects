@@ -18,8 +18,8 @@
 #include <fstream>          // for std::ifstream
 #include <iterator>         // for std::istream_iterator
 
-#include "eece2560_io.h"
 #include "algo_util.h"
+#include "eece2560_io.h"
 
 Dictionary Dictionary::read_file(const char* file_name)
 {

@@ -15,6 +15,9 @@
 #include "dictionary.h"
 #include "word_search_grid.h"
 
+/// The minimum length of valid words in the word search grid.
+constexpr std::size_t MIN_WORD_LENGTH{5};
+
 constexpr const char* DICTIONARY_FILE = "resources/dictionary.txt";
 
 /**
@@ -24,10 +27,10 @@ constexpr const char* DICTIONARY_FILE = "resources/dictionary.txt";
  * @param dictionary Dictionary of valid words.
  * @param grid Word search grid.
  */
-void print_matches(const Dictionary& dictionary, const Grid& grid)
+void print_matches(const Dictionary& dictionary, const WordSearchGrid& grid)
 {
     const static auto filter_words = [](auto word) {
-        return word.size() >= 5;
+        return word.size() >= MIN_WORD_LENGTH;
     };
 
     eece2560::FilterIter start(std::begin(grid), std::end(grid), filter_words);
@@ -40,7 +43,7 @@ void print_matches(const Dictionary& dictionary, const Grid& grid)
 
         if (dictionary.contains(key)) {
             ++found_count;
-            std::cout << "Found:" << key << '\n';
+            std::cout << "Found: " << key << '\n';
         }
         ++start;
     }
@@ -59,7 +62,7 @@ void run_word_search()
 
     const auto word_search_file = eece2560::prompt_user<std::string>("Enter the word search file name: ");
 
-    const auto grid = Grid::read_file(word_search_file.c_str());
+    const auto grid = WordSearchGrid::read_file(word_search_file.c_str());
 
     print_matches(dictionary, grid);
 }

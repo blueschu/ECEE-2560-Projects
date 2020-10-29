@@ -14,7 +14,7 @@
 #include <vector>           // for std::vector
 
 
-Grid Grid::read_file(const char* file_name)
+WordSearchGrid WordSearchGrid::read_file(const char* file_name)
 {
     // todo error handling
     std::ifstream in_stream(file_name);
@@ -42,7 +42,7 @@ Grid Grid::read_file(const char* file_name)
     try {
         Matrix<Entry> mat(std::move(grid_letters));
         mat.reshape({rows, cols});
-        return Grid(std::move(mat));
+        return WordSearchGrid(std::move(mat));
     } catch (const MatrixResizeError&) {
         // todo error handling
         throw;

@@ -85,10 +85,13 @@ class OrdinalWrappingSequenceIter {
         m_sequence.push_back((*m_grid_ref)[m_curr_center]);
     }
 
+    // Dereference operator overload.
     reference operator*() const { return m_sequence; }
 
+    // Arrow operator overload.
     pointer operator->() const { return &m_sequence; }
 
+    // Equality operator overload.
     bool operator==(const OrdinalWrappingSequenceIter& rhs) const
     {
         if (!m_grid_ref || !rhs.m_grid_ref) {
@@ -102,6 +105,7 @@ class OrdinalWrappingSequenceIter {
         return !(rhs == *this);
     }
 
+    // Pre-increment operator overload.
     OrdinalWrappingSequenceIter& operator++()
     {
         advance();
@@ -122,6 +126,7 @@ class OrdinalWrappingSequenceIter {
         return *this;
     }
 
+    // Post-increment operator overload.
     OrdinalWrappingSequenceIter operator++(int) {
         auto temp = *this;
         ++(*this);
@@ -130,6 +135,7 @@ class OrdinalWrappingSequenceIter {
 
   private:
 
+    /// Increase the length of this iterators sequence by one in the current direction.
     void advance()
     {
         const auto[rows, cols] = m_grid_ref->dimensions();
@@ -143,6 +149,8 @@ class OrdinalWrappingSequenceIter {
         m_curr_pos = next;
     }
 
+    /// Rotates the direction of this iterator. Updates the "center" position
+    /// if this iterator has completed a full rotation.
     void change_dir()
     {
         switch (m_dir) {
@@ -160,6 +168,8 @@ class OrdinalWrappingSequenceIter {
         }
     }
 
+    /// Updates the center position of this iterator, proceeding left-to-right,
+    /// top-to-bottom.
     void advance_center() {
         const auto[rows, cols] = m_grid_ref->dimensions();
         m_curr_center.first += 1;
@@ -173,8 +183,8 @@ class OrdinalWrappingSequenceIter {
         m_curr_pos = m_curr_center;
     }
 
-    [[nodiscard]]
-    std::pair<int, int> compute_offset() const
+    /// Returns the index offset corresponding to this iterator's current direction.
+    [[nodiscard]] std::pair<int, int> compute_offset() const
     {
         switch (m_dir) {
             case N: return {-1, 0};
