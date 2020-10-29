@@ -36,6 +36,7 @@ constexpr T positive_mod(T value, T base)
  */
 template<typename T>
 class OrdinalWrappingSequenceIter {
+  public:
     /*
      * Standard aliases for iterator traits [1].
      */
@@ -50,7 +51,7 @@ class OrdinalWrappingSequenceIter {
     using Index = typename Matrix<T>::Index;
 
     /// The current direction of iteration for producing sequence elements.
-    enum { N, NE, E, SE, S, SW, W } m_dir{N};
+    enum { N, NE, E, SE, S, SW, W, NW } m_dir{N};
 
     /// The matrix being iterated over. This pointer will be null in the end sentinel.
     const Matrix<T>* m_grid_ref;
@@ -151,10 +152,25 @@ class OrdinalWrappingSequenceIter {
             case SE:{ m_dir = S; break; }
             case S: { m_dir = SW; break; }
             case SW:{ m_dir = W; break; }
-            case W: {
-                m_grid_ref = nullptr;
+            case W:{ m_dir = NW; break; }
+            case NW: {
+                m_dir = N;
+                advance_center();
             };
         }
+    }
+
+    void advance_center() {
+        const auto[rows, cols] = m_grid_ref->dimensions();
+        m_curr_center.first += 1;
+        if (m_curr_center.first == cols) {
+            m_curr_center.first = 0;
+            m_curr_center.second += 1;
+        }
+        if (m_curr_center.second == rows) {
+            m_grid_ref = nullptr;
+        }
+        m_curr_pos = m_curr_center;
     }
 
     [[nodiscard]]
@@ -168,6 +184,7 @@ class OrdinalWrappingSequenceIter {
             case S: return {1, 0};
             case SW: return {1, -1};
             case W: return {0, -1};
+            case NW: return {-1, -1};
         }
     }
 };
