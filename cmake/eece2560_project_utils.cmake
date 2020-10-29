@@ -1,5 +1,7 @@
 # CMake utilities for EECE 2560 project.
 #
+# Author: Brian Schubert <schubert.b@northeastern.edu>
+#
 # References:
 # - https://cmake.org/cmake/help/latest/command/target_compile_options.html
 # - https://cmake.org/cmake/help/latest/command/cmake_parse_arguments.html
@@ -50,10 +52,11 @@ endfunction()
 # Generates CMake targets for an EECE2560 project.
 function(eece2560_add_project_targets PROJ_NUM)
     cmake_parse_arguments(
-            PARSED              # Output variable prefix.
-            ""                  # No boolean arguments.
-            ""                  # No single value arguments.
-            "LIB;PART_A;PART_B" # Multi-value arguments for target sources.
+            PARSED          # Output variable prefix.
+            ""              # No boolean arguments.
+            ""              # No single value arguments.
+            # Multi-value arguments for target sources.
+            "LIB;PART_A;PART_B;RESOURCES"
             ${ARGN}
     )
 
@@ -77,17 +80,22 @@ function(eece2560_add_project_targets PROJ_NUM)
     # Static library for shared elements in Part A and Part B
     add_library(${TARGET_PREFIX}-lib STATIC ${PARSED_LIB})
     eece2560_target_warning_defaults(${TARGET_PREFIX}-lib PRIVATE)
+    # Link common-lib to target-lib as PUBLIC so that it becomes part of the
+    # target-lib's link interface
+    target_link_libraries(${TARGET_PREFIX}-lib PUBLIC eece2560_common)
 
     # Executable for Part A
     add_executable(${TARGET_PREFIX}a ${PARSED_PART_A})
     eece2560_target_warning_defaults(${TARGET_PREFIX}a PRIVATE)
     target_link_libraries(${TARGET_PREFIX}a ${TARGET_PREFIX}-lib)
-    target_link_libraries(${TARGET_PREFIX}a eece2560_common)
 
     # Executable for Part B
     add_executable(${TARGET_PREFIX}b ${PARSED_PART_B})
     eece2560_target_warning_defaults(${TARGET_PREFIX}b PRIVATE)
     target_link_libraries(${TARGET_PREFIX}b ${TARGET_PREFIX}-lib)
-    target_link_libraries(${TARGET_PREFIX}b eece2560_common)
+
+    # Copy target resources to build directory. The "file" command treats empty
+    # sources lists as a no-op, so we don't need to check if RESOURCES was provided.
+    file(COPY ${PARSED_RESOURCES} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 endfunction()
