@@ -10,27 +10,22 @@
 #ifndef EECE_2560_PROJECTS_WORD_SEARCH_GRID_H
 #define EECE_2560_PROJECTS_WORD_SEARCH_GRID_H
 
-
-#include <string>
-#include <vector>
+#include "matrix.h"
 
 class Grid {
+    using Entry = char;
+
+    Matrix<Entry> m_entries;
+
   public:
-    Grid() = default;
+    explicit Grid(Matrix<Entry> entries)
+        : m_entries(std::move(entries)) {};
 
-    void set_row_size(); //Prompts user to enter a size for row
-    void set_col_size(); //Prompts user to enter a size for col
+    [[nodiscard]]
+    Matrix<Entry>::Index dimensions() const { return m_entries.dimensions(); }
 
-    int get_row_size(); //Returns the row size of the grid
-    int get_col_size(); //Returns the col size of the grid
+    static Grid read_file(const char* file_name);
 
-    static Grid read_chars(const char* file_name); //Reads the char values into the grid
-
-
-  private:
-    int row_size;
-    int col_size;
 };
-
 
 #endif //EECE_2560_PROJECTS_WORD_SEARCH_GRID_H
