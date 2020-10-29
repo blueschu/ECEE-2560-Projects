@@ -10,37 +10,61 @@
 #include <iostream>             // for I/O stream definitions
 
 #include "algo_util.h"
+#include "eece2560_io.h"
 #include "eece2560_iter.h"
 #include "dictionary.h"
 #include "word_search_grid.h"
 
-[[maybe_unused]]
 constexpr const char* DICTIONARY_FILE = "resources/dictionary.txt";
-[[maybe_unused]]
-constexpr const char* WORD_SEARCH_FILE = "resources/15x15.txt";
 
-int main()
+/**
+ * Prints all words contained in the given dictionary that appear in the given
+ * word search grid.
+ *
+ * @param dictionary Dictionary of valid words.
+ * @param grid Word search grid.
+ */
+void print_matches(const Dictionary& dictionary, const Grid& grid)
 {
-    // Temporary tests
-
-    const auto dictionary = Dictionary::read_file(DICTIONARY_FILE);
-    std::cout << "Dictionary: " << dictionary << '\n';
-
-    const auto grid = Grid::read_file(WORD_SEARCH_FILE);
-
-    const auto filter_words = [](auto word) {
+    const static auto filter_words = [](auto word) {
         return word.size() >= 5;
     };
 
-    eece2560::FilterIter start(std::begin(grid), std::end(grid), filter_words) ;
-    eece2560::FilterIter end(std::end(grid), std::end(grid), filter_words) ;
+    eece2560::FilterIter start(std::begin(grid), std::end(grid), filter_words);
+    eece2560::FilterIter end(std::end(grid), std::end(grid), filter_words);
+
+    std::size_t found_count{0};
 
     while (start != end) {
         std::string_view key{start->data(), start->size()};
 
         if (dictionary.contains(key)) {
+            ++found_count;
             std::cout << "Found:" << key << '\n';
         }
         ++start;
     }
+    std::cout << "\nFound " << found_count << " words.\n";
+
+}
+
+/**
+ * Prompts the user for a file containing a word search and prints all words
+ * contained in word search.
+ */
+void run_word_search()
+{
+    const auto dictionary = Dictionary::read_file(DICTIONARY_FILE);
+    std::cout << "Dictionary: " << dictionary << '\n';
+
+    const auto word_search_file = eece2560::prompt_user<std::string>("Enter the word search file name: ");
+
+    const auto grid = Grid::read_file(word_search_file.c_str());
+
+    print_matches(dictionary, grid);
+}
+
+int main()
+{
+    run_word_search();
 }

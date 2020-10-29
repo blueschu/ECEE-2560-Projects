@@ -18,19 +18,24 @@ Grid Grid::read_file(const char* file_name)
 {
     // todo error handling
     std::ifstream in_stream(file_name);
+//    in_stream.exceptions(std::ios::badbit | std::ios::failbit);
+
+    if (!in_stream) {
+        throw std::runtime_error("word search file does not exist");
+    }
 
     std::size_t rows;
     std::size_t cols;
 
-    if (!(in_stream >> rows >> cols)) {
+    if (!(in_stream >> rows >> cols >> std::ws)) {
         // todo error handling
     }
 
     std::vector<Entry> grid_letters;
 
     std::copy(
-        std::istream_iterator<char>(in_stream),
-        std::istream_iterator<char>(),
+        std::istream_iterator<Entry>(in_stream),
+        std::istream_iterator<Entry>(),
         std::back_inserter(grid_letters)
     );
 
