@@ -8,14 +8,16 @@
  */
 
 #include <iostream>             // for I/O stream definitions
-#include <numeric>              // for std::iota
 
-#include "eece2560_io.h"
+#include "algo_util.h"
+#include "eece2560_iter.h"
 #include "dictionary.h"
-#include "ordinal_wrapping_sequence.h"
-#include "matrix.h"
+#include "word_search_grid.h"
 
+[[maybe_unused]]
 constexpr const char* DICTIONARY_FILE = "resources/dictionary.txt";
+[[maybe_unused]]
+constexpr const char* WORD_SEARCH_FILE = "resources/15x15.txt";
 
 int main()
 {
@@ -24,23 +26,21 @@ int main()
     const auto dictionary = Dictionary::read_file(DICTIONARY_FILE);
     std::cout << "Dictionary: " << dictionary << '\n';
 
-    constexpr std::size_t dim{3};
+    const auto grid = Grid::read_file(WORD_SEARCH_FILE);
 
-    std::vector<int> values(dim*dim);
-    std::iota(std::begin(values), std::end(values), 0);
+    const auto filter_words = [](auto word) {
+        return word.size() >= 5;
+    };
 
-    Matrix<int> m{std::move(values)};
-    m.reshape({3,3});
+    eece2560::FilterIter start(std::begin(grid), std::end(grid), filter_words) ;
+    eece2560::FilterIter end(std::end(grid), std::end(grid), filter_words) ;
 
-    eece2560::print_sequence(std::cout, std::begin(m), std::end(m));
-    std::cout << '\n';
+    while (start != end) {
+        std::string_view key{start->data(), start->size()};
 
-    OrdinalWrappingSequenceIter<int> it{m};
-    OrdinalWrappingSequenceIter<int> end{};
-
-    while (it != end) {
-        eece2560::print_sequence(std::cout, std::begin(*it), std::end(*it));
-        ++it;
-        std::cout << '\n';
+        if (dictionary.contains(key)) {
+            std::cout << "Found:" << key << '\n';
+        }
+        ++start;
     }
 }

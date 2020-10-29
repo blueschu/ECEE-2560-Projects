@@ -56,3 +56,9 @@ void Dictionary::normalize_word()
         );
     }
 }
+
+bool Dictionary::contains(const std::string_view key) const
+{
+    const auto result = eece2560::binary_search(std::begin(m_words), std::end(m_words), key);
+    return static_cast<bool>(result);
+}

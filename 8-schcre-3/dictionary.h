@@ -28,8 +28,8 @@ class Dictionary {
 
     static Dictionary read_file(const char* file_name);
 
-  private:
-  public:
+    [[nodiscard]] bool contains(std::string_view key) const;
+
     friend std::ostream& operator<<(std::ostream& os, const Dictionary& dictionary);
 
   private:

@@ -11,6 +11,7 @@
 #define EECE_2560_PROJECTS_WORD_SEARCH_GRID_H
 
 #include "matrix.h"
+#include "ordinal_wrapping_sequence.h"
 
 class Grid {
     using Entry = char;
@@ -25,6 +26,14 @@ class Grid {
     Matrix<Entry>::Index dimensions() const { return m_entries.dimensions(); }
 
     static Grid read_file(const char* file_name);
+
+    OrdinalWrappingSequenceIter<char> begin() const {
+        return OrdinalWrappingSequenceIter<Entry>(m_entries);
+    }
+
+    OrdinalWrappingSequenceIter<char> end() const {
+        return OrdinalWrappingSequenceIter<Entry>();
+    }
 
 };
 
