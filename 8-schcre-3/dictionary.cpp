@@ -39,7 +39,7 @@ Dictionary Dictionary::read_file(const char* file_name)
 
 void Dictionary::sort_words()
 {
-    eece2560::selection_sort(std::begin(m_words), std::end(m_words));
+    eece2560::quicksort_unstable(std::begin(m_words), std::end(m_words));
 }
 
 std::ostream& operator<<(std::ostream& out, const Dictionary& dictionary)

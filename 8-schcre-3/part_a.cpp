@@ -58,7 +58,7 @@ void print_matches(const Dictionary& dictionary, const WordSearchGrid& grid)
 void run_word_search()
 {
     const auto dictionary = Dictionary::read_file(DICTIONARY_FILE);
-    std::cout << "Dictionary: " << dictionary << '\n';
+//    std::cout << "Dictionary: " << dictionary << '\n';
 
     const auto word_search_file = eece2560::prompt_user<std::string>("Enter the word search file name: ");
 
