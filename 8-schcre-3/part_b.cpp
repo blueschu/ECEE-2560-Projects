@@ -14,17 +14,17 @@
 
 #include "algo_util.h"
 #include "eece2560_io.h"
+#include "heap.h"
 
+constexpr auto comp_real = [](auto lhs, auto rhs) {
+    return std::real(lhs) < std::real(rhs);
+};
 
-int main()
+void quicksort_demo()
 {
     using namespace std::complex_literals;
-
-    constexpr auto comp_real = [=](auto lhs, auto rhs) {
-        return std::real(lhs) < std::real(rhs);
-    };
     std::vector<std::complex<double>> fred{
-        5.0+0i, 6, 2.0+0i, 89, 1, 2.0+1i, -2.0+0i, 3, -2.0+1i, -2.0+2i, 67, 8, 4, 5.0+1i, 5.0+2i
+        5.0 + 0i, 6, 2.0 + 0i, 89, 1, 2.0 + 1i, -2.0 + 0i, 3, -2.0 + 1i, -2.0 + 2i, 67, 8, 4, 5.0 + 1i, 5.0 + 2i
     };
 //    std::vector<std::complex<double>> fred{
 //        2, -2.0+0i, 3, -2.0+1i, -2.0+2i, 67, 8, 4, 5.0+1i, 5.0+2i
@@ -35,4 +35,26 @@ int main()
     eece2560::quicksort_unstable(std::begin(fred), std::end(fred), comp_real);
 
     eece2560::print_sequence(std::cout, std::begin(fred), std::end(fred));
+}
+
+void heap_demo()
+{
+    using namespace std::complex_literals;
+
+    std::vector<std::complex<double>> fred{
+        5.0 + 0i, 6, 2.0 + 0i, 89, 1, 2.0 + 1i, -2.0 + 0i, 3, -2.0 + 1i, -2.0 + 2i, 67, 8, 4, 5.0 + 1i, 5.0 + 2i
+    };
+
+    heap_sort_unstable(std::begin(fred), std::end(fred), comp_real);
+
+    eece2560::print_sequence(std::cout, std::begin(fred), std::end(fred));
+
+}
+
+int main()
+{
+    std::cout << "Quicksort: ";
+    quicksort_demo();
+    std::cout << "\nHeapsort:  ";
+    heap_demo();
 }
