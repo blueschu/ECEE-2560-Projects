@@ -4,6 +4,10 @@
  * Authors: Brian Schubert  <schubert.b@northeastern.edu>
  *          Chandler Cree   <cree.d@northeastern.edu>
  * Date:    2020-11-02
+ *
+ *  References
+ * ===========
+ *  [1] https://en.cppreference.com/w/cpp/named_req/Container
  */
 
 #ifndef EECE_2560_PROJECTS_HEAP_H
@@ -117,19 +121,30 @@ class OwningHeap {
         typename std::iterator_traits<typename Container::iterator>::iterator_category
     >);
 
-    // The entries of this heap.
+    // Type aliases for C++ container [1].
+    using value_type = typename Container::value_type;
+    using reference = typename Container::reference;
+    using const_reference = typename Container::const_reference;
+    using iterator = typename Container::const_iterator;        // disallow mutable iteration
+    using const_iterator = typename Container::const_iterator;
+    using difference_type = typename Container::difference_type;
+    using size_type = typename Container::size_type;
+
+    /// The entries of this heap.
     Container m_values;
 
-    // The binary functor used to compare heap elements.
+    /// The binary functor used to compare heap elements.
     Compare m_compare;
 
   public:
-    // Creates an OwningHeap with the given entries using the specified comparison function.
+    /// Creates an OwningHeap with the given entries using the specified comparison function.
     explicit OwningHeap(Container values, Compare comp = Compare()) : m_values(std::move(values))
     {
         heapify(std::begin(m_values), std::end(m_values), comp);
     }
 
+    /// Creates an OwningHeap from the values in the given iterator range
+    /// using the specified comparison function.
     template<typename Iter>
     OwningHeap(Iter start, Iter end, Compare comp = Compare())
         : OwningHeap(std::vector(start, end), comp) {}
@@ -138,6 +153,12 @@ class OwningHeap {
     {
         heap_sort_unstable(std::begin(m_values), std::end(m_values), m_compare);
     }
+
+    /// Returns an iterator to the first element of this heap's underlying storage.
+    [[nodiscard]] const_iterator begin() const noexcept { return std::begin(m_values); }
+
+    /// Returns the end iterator of this heap's underlying storage.
+    [[nodiscard]] const_iterator end() const noexcept { return std::end(m_values); }
 };
 
 // Template argument deduction guide for range constructor.
