@@ -80,9 +80,15 @@ class OrdinalWrappingSequenceIter {
     explicit OrdinalWrappingSequenceIter(const Matrix<T>& grid) : m_grid_ref(&grid)
     {
         const auto[rows, cols] = m_grid_ref->dimensions();
-        // Preallocate the storage required to store the longest candidate word.
-        m_sequence.reserve(std::max(rows, cols));
-        m_sequence.push_back((*m_grid_ref)[m_curr_center]);
+
+        if (rows == 0 || cols == 0) {
+             // If the grid is empty, make this iterator an end sentinel.
+            m_grid_ref = nullptr;
+        } else {
+            // Preallocate the storage required to store the longest candidate word.
+            m_sequence.reserve(std::max(rows, cols));
+            m_sequence.push_back((*m_grid_ref)[m_curr_center]);
+        }
     }
 
     // Dereference operator overload.
