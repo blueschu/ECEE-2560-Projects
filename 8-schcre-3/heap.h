@@ -21,6 +21,39 @@
 
 namespace details {
 /**
+ * Returns the "left child" of the given position in the heap.
+ *
+ * If the left child does not exist, the end iterator of the range will be
+ * returned. This function avoids undefined behavior from incrementing an
+ * end iterator.
+ */
+template<typename Iter>
+constexpr Iter heap_child_left(Iter start, Iter end, Iter pos)
+{
+    auto next_index = 2 * std::distance(start, pos);
+    if (next_index <= std::distance(start, end)) {
+        return start + next_index;
+    } else {
+        return end;
+    }
+
+}
+
+/**
+ * Returns the "right child" of the given position in the heap.
+ *
+ * If the right child does not exist, the end iterator of the range will be
+ * returned. This function avoids undefined behavior from incrementing an
+ * end iterator.
+ */
+template<typename Iter>
+constexpr Iter heap_child_right(Iter start, Iter end, Iter pos)
+{
+    auto sibling = details::heap_child_left(start, end, pos);
+    return sibling == end ? sibling : sibling + 1;
+}
+
+/**
  * Ensures the branch rooted at `current` satisfies the heap property, assuming
  * that all of the branches below `current` already satisfy the heap property.
  */
@@ -31,11 +64,9 @@ void heapify_branch(Iter heap_start, Iter heap_end, Iter current, Compare comp)
     using category = typename std::iterator_traits<Iter>::iterator_category;
     static_assert(std::is_base_of_v<std::random_access_iterator_tag, category>);
 
-    const auto index = std::distance(heap_start, current);
-
     auto largest = current;
-    const auto left = heap_start + (2 * index);
-    const auto right = left + 1;
+    const auto left = details::heap_child_left(heap_start, heap_end, current);
+    const auto right = details::heap_child_right(heap_start, heap_end, current);
 
     if (left < heap_end && comp(*largest, *left)) {
         largest = left;
@@ -147,6 +178,27 @@ class OwningHeap {
     void sort()
     {
         heap_sort_unstable(std::begin(m_values), std::end(m_values), m_compare);
+    }
+
+    [[nodiscard]]
+    /// Returns the "parent" of the given position in the heap.
+    const_iterator parent(const_iterator pos) const
+    {
+        return std::begin(m_values) + (std::distance(std::begin(m_values), pos) / 2);
+    }
+
+    [[nodiscard]]
+    /// Returns the "left child" of the given position in the heap.
+    const_iterator left(const_iterator pos) const
+    {
+        return details::heap_child_left(std::begin(m_values), std::end(m_values), pos);
+    }
+
+    [[nodiscard]]
+    /// Returns the "right child" of the given position in the heap.
+    const_iterator right(const_iterator pos) const
+    {
+        return details::heap_child_right(std::begin(m_values), std::end(m_values), pos);
     }
 
     /// Returns an iterator to the first element of this heap's underlying storage.
