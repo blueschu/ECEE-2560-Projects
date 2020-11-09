@@ -55,10 +55,11 @@ void print_matches(const Dictionary& dictionary, const WordSearchGrid& grid)
  * Prompts the user for a file containing a word search and prints all words
  * contained in word search.
  */
-void run_word_search()
+void run_word_search(Dictionary::SortingAlgorithm algorithm)
 {
-    const auto dictionary = Dictionary::read_file(DICTIONARY_FILE);
-//    std::cout << "Dictionary: " << dictionary << '\n';
+    std::cout << "Preparing the dictionary . . . " << std::flush;
+    const auto dictionary = Dictionary::read_file(DICTIONARY_FILE, algorithm);
+    std::cout << "DONE\nDictionary: " << dictionary << '\n';
 
     const auto word_search_file = eece2560::prompt_user<std::string>("Enter the word search file name: ");
 
@@ -69,5 +70,9 @@ void run_word_search()
 
 int main()
 {
-    run_word_search();
+    auto sorting_algorithm = eece2560::prompt_user<Dictionary::SortingAlgorithm>(
+        "Pick the dictionary sorting algorithm (0 for selection sort, 1 for quick sort, 2 for heap sort): "
+        );
+    std::cout << "Using " << sorting_algorithm << '\n';
+    run_word_search(sorting_algorithm);
 }

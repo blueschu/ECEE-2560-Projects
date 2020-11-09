@@ -19,11 +19,11 @@
 #include <iterator>         // for std::istream_iterator
 
 #include "algo_util.h"
+#include "heap.h"
 #include "eece2560_io.h"
 
-Dictionary Dictionary::read_file(const char* file_name)
+Dictionary Dictionary::read_file(const char* file_name, SortingAlgorithm algorithm)
 {
-    // todo error handling
     std::ifstream in_stream(file_name);
     in_stream.exceptions(std::ios::badbit);
 
@@ -35,12 +35,26 @@ Dictionary Dictionary::read_file(const char* file_name)
         std::back_inserter(words)
     );
 
-    return Dictionary(std::move(words));
+    return Dictionary(std::move(words), algorithm);
 }
 
-void Dictionary::sort_words()
+void Dictionary::sort_words(Dictionary::SortingAlgorithm algorithm)
 {
-    eece2560::quicksort_unstable(std::begin(m_words), std::end(m_words));
+    switch (algorithm) {
+        case SortingAlgorithm::SelectionSort: {
+            eece2560::selection_sort(std::begin(m_words), std::end(m_words));
+            break;
+        }
+        case SortingAlgorithm::QuickSort: {
+            eece2560::quicksort_unstable(std::begin(m_words), std::end(m_words));
+            break;
+        }
+        case SortingAlgorithm::HeapSort: {
+            heap_sort_unstable(std::begin(m_words), std::end(m_words));
+            break;
+        }
+    }
+
 }
 
 std::ostream& operator<<(std::ostream& out, const Dictionary& dictionary)
