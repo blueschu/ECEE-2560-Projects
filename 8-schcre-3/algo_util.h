@@ -79,6 +79,8 @@ Iter partition_unstable(Iter it, Iter end, Compare comp)
     Iter pivot = it;
     Iter boundary = it;
 
+    ++it;
+
     while (it != end) {
         if (comp(*it, *pivot)) {
             ++boundary;
