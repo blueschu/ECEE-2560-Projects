@@ -46,6 +46,7 @@ void heapify_branch(Iter heap_start, Iter heap_end, Iter current, Compare comp)
 
     if (largest != current) {
         std::iter_swap(current, largest);
+        // Expected tail call optimization.
         heapify_branch(heap_start, heap_end, largest, comp);
     }
 
@@ -68,13 +69,13 @@ void heapify(Iter start, Iter end, Compare comp = Compare())
     using category = typename std::iterator_traits<Iter>::iterator_category;
     static_assert(std::is_base_of_v<std::random_access_iterator_tag, category>);
 
-    auto mid = start + (end - start) / 2;
+    // Floored midpoint, plus one since we decrement before the first iteration.
+    auto index = 1 + (end - start) / 2;
 
-    while (mid != start) {
-        details::heapify_branch(start, end, mid, comp);
-        --mid;
+    while (index > 0) {
+        --index;
+        details::heapify_branch(start, end, start + index, comp);
     }
-    details::heapify_branch(start, end, start, comp);
 }
 
 /**
@@ -110,25 +111,19 @@ void heap_sort_unstable(Iter start, Iter end, Compare comp = Compare())
  *
  * This class implements the required heap interface for project 3b.
  *
- * @tparam Container Random access container used to store heap elements
- * @tparam Compare
+ * @tparam Container Random access container used to store heap elements.
+ * @tparam Compare Callable type that imposes an ordering among elements.
  */
 template<typename Container, typename Compare = std::less<>>
 class OwningHeap {
-    // Ensure the Container type support random access iteration.
+    // Ensure the Container type supports random access iteration.
     static_assert(std::is_base_of_v<
         std::random_access_iterator_tag,
         typename std::iterator_traits<typename Container::iterator>::iterator_category
     >);
 
-    // Type aliases for C++ container [1].
-    using value_type = typename Container::value_type;
-    using reference = typename Container::reference;
-    using const_reference = typename Container::const_reference;
-    using iterator = typename Container::const_iterator;        // disallow mutable iteration
+    // Type alias for C++ container [1].
     using const_iterator = typename Container::const_iterator;
-    using difference_type = typename Container::difference_type;
-    using size_type = typename Container::size_type;
 
     /// The entries of this heap.
     Container m_values;
