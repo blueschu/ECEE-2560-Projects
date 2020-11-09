@@ -23,6 +23,7 @@ class Dictionary {
     std::vector<std::string> m_words;
 
   public:
+    /// The sorting algorithms that may be used to sort the dictionary.
     enum class SortingAlgorithm { SelectionSort, QuickSort, HeapSort };
 
     /// Creates a dictionary with no words.
@@ -58,10 +59,16 @@ class Dictionary {
 
 inline std::istream& operator>>(std::istream& in, Dictionary::SortingAlgorithm& algorithm)
 {
-    std::underlying_type_t<Dictionary::SortingAlgorithm> temp;
+    using underlying_type = std::underlying_type_t<Dictionary::SortingAlgorithm>;
+    constexpr auto first = static_cast<underlying_type>(Dictionary::SortingAlgorithm::SelectionSort);
+    constexpr auto last = static_cast<underlying_type>(Dictionary::SortingAlgorithm::HeapSort);
+
+    underlying_type temp;
     in >> temp;
 
-    if (temp < 0 || temp > 2) {
+    // underling_type could be unsigned, so we can't test (temp < first) and
+    // instead need to use inclusive bounds checks.
+    if (!(temp >= first && temp <= last)) {
         in.setstate(std::ios::failbit);
     } else {
         algorithm = static_cast<Dictionary::SortingAlgorithm>(temp);

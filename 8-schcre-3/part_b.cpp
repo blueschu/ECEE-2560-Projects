@@ -61,7 +61,9 @@ void run_word_search(Dictionary::SortingAlgorithm algorithm)
     const auto dictionary = Dictionary::read_file(DICTIONARY_FILE, algorithm);
     std::cout << "DONE\nDictionary: " << dictionary << '\n';
 
-    const auto word_search_file = eece2560::prompt_user<std::string>("Enter the word search file name: ");
+    const auto word_search_file = eece2560::prompt_user<std::string>(
+        "Enter the word search file name (e.g. \"resources/15x15.txt\"): "
+    );
 
     const auto grid = WordSearchGrid::read_file(word_search_file.c_str());
 
@@ -72,7 +74,7 @@ int main()
 {
     auto sorting_algorithm = eece2560::prompt_user<Dictionary::SortingAlgorithm>(
         "Pick the dictionary sorting algorithm (0 for selection sort, 1 for quick sort, 2 for heap sort): "
-        );
+    );
     std::cout << "Using " << sorting_algorithm << '\n';
     run_word_search(sorting_algorithm);
 }

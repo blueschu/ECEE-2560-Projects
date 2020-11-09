@@ -31,12 +31,12 @@ template<typename Iter>
 constexpr Iter heap_child_left(Iter start, Iter end, Iter pos)
 {
     auto next_index = 2 * std::distance(start, pos);
+    // We cannot increment a random access iterator past its end value.
     if (next_index <= std::distance(start, end)) {
         return start + next_index;
     } else {
         return end;
     }
-
 }
 
 /**
@@ -80,8 +80,7 @@ void heapify_branch(Iter heap_start, Iter heap_end, Iter current, Compare comp)
         // Expected tail call optimization.
         heapify_branch(heap_start, heap_end, largest, comp);
     }
-
-};
+}
 } // end namespace details
 
 /**

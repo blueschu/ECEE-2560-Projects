@@ -202,6 +202,10 @@ class OrdinalWrappingSequenceIter {
             case W: return {0, -1};
             case NW: return {-1, -1};
         }
+        // Signal to GCC that reaching the end of this function is impossible,
+        // since the version of GCC we're using emits a warning despite the above
+        // switch being exhaustive.
+        __builtin_unreachable();
     }
 };
 

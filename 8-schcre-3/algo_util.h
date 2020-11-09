@@ -87,7 +87,7 @@ Iter partition_unstable(Iter it, Iter end, Compare comp)
         ++it;
     }
     // Note: this step places the element at the boundary position at the
-    // start of the range. If this eleemnts compares equal to another element in
+    // start of the range. If this elements compares equal to another element in
     // the range, then its relative ordering will be lost, making this algorithm
     // unstable. This could be fixed by either imposing a stricter iterator
     // requirement (e.g., requiring a random access iterator so that the pivot
@@ -176,7 +176,8 @@ void quicksort_unstable(Iter it, Iter end, Compare comp = Compare())
     if (it != end) {
         Iter mid = eece2560::details::partition_unstable(it, end, comp);
         eece2560::quicksort_unstable(it, mid, comp);
-        eece2560::quicksort_unstable(++mid, end, comp);
+        ++mid;
+        eece2560::quicksort_unstable(mid, end, comp);
     }
 }
 

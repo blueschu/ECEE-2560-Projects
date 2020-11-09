@@ -110,7 +110,7 @@ struct StreamExtractor {
         // Wrap the user-provided line in a stream so that input stream
         // operations can be performed on it.
         std::istringstream stream(line);
-        T temp;
+        T temp{};
         // Read T value from stream and consume any trailing whitespace.
         stream >> temp >> std::ws;
         if (!stream || !stream.eof()) {
