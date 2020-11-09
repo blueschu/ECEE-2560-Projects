@@ -25,6 +25,7 @@ Dictionary Dictionary::read_file(const char* file_name)
 {
     // todo error handling
     std::ifstream in_stream(file_name);
+    in_stream.exceptions(std::ios::badbit);
 
     std::vector<std::string> words;
 

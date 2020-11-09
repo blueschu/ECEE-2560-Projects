@@ -29,7 +29,7 @@ constexpr const char* DICTIONARY_FILE = "resources/dictionary.txt";
  */
 void print_matches(const Dictionary& dictionary, const WordSearchGrid& grid)
 {
-    const static auto filter_words = [](auto word) {
+    constexpr static auto filter_words = [](auto word) {
         return word.size() >= MIN_WORD_LENGTH;
     };
 

@@ -3,58 +3,71 @@
  *
  * Authors: Brian Schubert  <schubert.b@northeastern.edu>
  *          Chandler Cree   <cree.d@northeastern.edu>
- * Date:    2020-10-22
+ * Date:    2020-11-06
  *
  */
 
-#include <algorithm>
-#include <complex>
-#include <iostream>
-#include <vector>
+#include <iostream>             // for I/O stream definitions
 
 #include "algo_util.h"
 #include "eece2560_io.h"
-#include "heap.h"
+#include "eece2560_iter.h"
+#include "dictionary.h"
+#include "word_search_grid.h"
 
-constexpr auto comp_real = [](auto lhs, auto rhs) {
-    return std::real(lhs) < std::real(rhs);
-};
+/// The minimum length of valid words in the word search grid.
+constexpr std::size_t MIN_WORD_LENGTH{5};
 
-void quicksort_demo()
+constexpr const char* DICTIONARY_FILE = "resources/dictionary.txt";
+
+/**
+ * Prints all words contained in the given dictionary that appear in the given
+ * word search grid.
+ *
+ * @param dictionary Dictionary of valid words.
+ * @param grid Word search grid.
+ */
+void print_matches(const Dictionary& dictionary, const WordSearchGrid& grid)
 {
-    using namespace std::complex_literals;
-    std::vector<std::complex<double>> fred{
-        5.0 + 0i, 6, 2.0 + 0i, 89, 1, 2.0 + 1i, -2.0 + 0i, 3, -2.0 + 1i, -2.0 + 2i, 67, 8, 4, 5.0 + 1i, 5.0 + 2i
+    constexpr static auto filter_words = [](auto word) {
+        return word.size() >= MIN_WORD_LENGTH;
     };
-//    std::vector<std::complex<double>> fred{
-//        2, -2.0+0i, 3, -2.0+1i, -2.0+2i, 67, 8, 4, 5.0+1i, 5.0+2i
-//    };
 
-//    auto it = eece2560::details::partition_unstable(std::begin(fred), std::end(fred), comp_real);
-//    std::cout << *it << '\n';
-    eece2560::quicksort_unstable(std::begin(fred), std::end(fred), comp_real);
+    eece2560::FilterIter start(std::begin(grid), std::end(grid), filter_words);
+    eece2560::FilterIter end(std::end(grid), std::end(grid), filter_words);
 
-    eece2560::print_sequence(std::cout, std::begin(fred), std::end(fred));
+    std::size_t found_count{0};
+
+    while (start != end) {
+        std::string_view key{start->data(), start->size()};
+
+        if (dictionary.contains(key)) {
+            ++found_count;
+            std::cout << "Found: " << key << '\n';
+        }
+        ++start;
+    }
+    std::cout << "\nFound " << found_count << " words.\n";
+
 }
 
-void heap_demo()
+/**
+ * Prompts the user for a file containing a word search and prints all words
+ * contained in word search.
+ */
+void run_word_search()
 {
-    using namespace std::complex_literals;
+    const auto dictionary = Dictionary::read_file(DICTIONARY_FILE);
+//    std::cout << "Dictionary: " << dictionary << '\n';
 
-    std::vector<std::complex<double>> fred{
-        5.0 + 0i, 6, 2.0 + 0i, 89, 1, 2.0 + 1i, -2.0 + 0i, 3, -2.0 + 1i, -2.0 + 2i, 67, 8, 4, 5.0 + 1i, 5.0 + 2i
-    };
+    const auto word_search_file = eece2560::prompt_user<std::string>("Enter the word search file name: ");
 
-    heap_sort_unstable(std::begin(fred), std::end(fred), comp_real);
+    const auto grid = WordSearchGrid::read_file(word_search_file.c_str());
 
-    eece2560::print_sequence(std::cout, std::begin(fred), std::end(fred));
-
+    print_matches(dictionary, grid);
 }
 
 int main()
 {
-    std::cout << "Quicksort: ";
-    quicksort_demo();
-    std::cout << "\nHeapsort:  ";
-    heap_demo();
+    run_word_search();
 }

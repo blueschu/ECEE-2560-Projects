@@ -13,12 +13,10 @@
 #include <iterator>         // for std::istream_iterator
 #include <vector>           // for std::vector
 
-
 WordSearchGrid WordSearchGrid::read_file(const char* file_name)
 {
-    // todo error handling
     std::ifstream in_stream(file_name);
-//    in_stream.exceptions(std::ios::badbit | std::ios::failbit);
+    in_stream.exceptions(std::ios::badbit);
 
     if (!in_stream) {
         throw std::runtime_error("word search file does not exist");
@@ -27,9 +25,8 @@ WordSearchGrid WordSearchGrid::read_file(const char* file_name)
     std::size_t rows;
     std::size_t cols;
 
-    if (!(in_stream >> rows >> cols >> std::ws)) {
-        // todo error handling
-    }
+    // Exception raised on invalid input since badbit is set.
+    in_stream >> rows >> cols >> std::ws;
 
     std::vector<Entry> grid_letters;
 
@@ -39,13 +36,8 @@ WordSearchGrid WordSearchGrid::read_file(const char* file_name)
         std::back_inserter(grid_letters)
     );
 
-    try {
-        Matrix<Entry> mat(std::move(grid_letters));
-        mat.reshape({rows, cols});
-        return WordSearchGrid(std::move(mat));
-    } catch (const MatrixResizeError&) {
-        // todo error handling
-        throw;
-    }
+    Matrix<Entry> mat(std::move(grid_letters));
+    mat.reshape({rows, cols});
+    return WordSearchGrid(std::move(mat));
 
 }
