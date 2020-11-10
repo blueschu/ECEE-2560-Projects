@@ -134,7 +134,7 @@ class Matrix {
     {
         const auto[row, col] = index;
         // size_type is an unsigned integer [2], so we only need to check the upper bounds.
-        if (row > m_rows || col > m_cols) {
+        if (row >= m_rows || col >= m_cols) {
             throw MatrixIndexError("invalid matrix index");
         }
         return m_entries[row * m_cols + col];

@@ -155,7 +155,7 @@ std::optional<Iter> binary_search(Iter start, Iter end, const T& needle, Compare
         // Search [start, mid).
         return eece2560::binary_search(start, mid, needle, comp);
     } else {
-        // The value under `start` compare equal with needle.
+        // The value under `start` compares equal with needle.
         return start;
     }
 }
