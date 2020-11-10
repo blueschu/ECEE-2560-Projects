@@ -117,10 +117,10 @@ class OrdinalWrappingSequenceIter {
         advance();
         if (m_curr_pos == m_curr_center) {
             m_sequence.clear();
-            m_sequence.push_back((*m_grid_ref)[m_curr_pos]);
             change_dir();
 
             if (m_grid_ref) {
+                m_sequence.push_back((*m_grid_ref)[m_curr_pos]);
                 advance();
             } else {
                 // Return prematurely before the candidate is updated again.
