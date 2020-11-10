@@ -141,22 +141,23 @@ std::optional<Iter> binary_search(Iter start, Iter end, const T& needle, Compare
     using category = typename std::iterator_traits<Iter>::iterator_category;
     static_assert(std::is_base_of_v<std::random_access_iterator_tag, category>);
 
+    // Empty ranges cannot contain the needle.
     if (start == end) {
-        if (comp(*start, needle) || comp(needle, *start)) {
-            return std::nullopt;
-        } else {
-            return start;
-        }
-    } else {
-        Iter mid = start;
-        std::advance(mid, (end - start) / 2);
-        if (comp(*mid, needle)) {
-            return eece2560::binary_search(++mid, end, needle, comp);
-        } else {
-            return eece2560::binary_search(start, mid, needle, comp);
-        }
+        return std::nullopt;
     }
 
+    Iter mid = start + (end - start) / 2;
+
+    if (comp(*mid, needle)) {
+        // Search [mid + 1, end).
+        return eece2560::binary_search(++mid, end, needle, comp);
+    } else if (comp(needle, *mid)) {
+        // Search [start, mid).
+        return eece2560::binary_search(start, mid, needle, comp);
+    } else {
+        // The value under `start` compare equal with needle.
+        return start;
+    }
 }
 
 /**
