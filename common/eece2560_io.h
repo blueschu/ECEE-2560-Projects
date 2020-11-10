@@ -13,6 +13,7 @@
 #ifndef EECE_2560_PROJECTS_EECE2560_IO_H
 #define EECE_2560_PROJECTS_EECE2560_IO_H
 
+#include <array>                // for std::array
 #include <iostream>             // for I/O definitions (iosfwd not sufficient)
 #include <iterator>             // for std::iterator_traits
 #include <sstream>              // for std::istringstream
@@ -47,6 +48,11 @@ void print_sequence(
     static_assert(std::is_base_of_v<std::input_iterator_tag, category>);
 
     out << open_symbol;
+
+    if (it == end) {
+        std::cout << close_symbol;
+        return;
+    }
 
     // For random access and bidirectional iterators, we can directly compute
     // the iterator to the last element.
@@ -104,7 +110,7 @@ struct StreamExtractor {
         // Wrap the user-provided line in a stream so that input stream
         // operations can be performed on it.
         std::istringstream stream(line);
-        T temp;
+        T temp{};
         // Read T value from stream and consume any trailing whitespace.
         stream >> temp >> std::ws;
         if (!stream || !stream.eof()) {
