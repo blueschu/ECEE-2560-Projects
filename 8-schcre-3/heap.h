@@ -30,7 +30,7 @@ namespace details {
 template<typename Iter>
 constexpr Iter heap_child_left(Iter start, Iter end, Iter pos)
 {
-    auto next_index = 2 * std::distance(start, pos);
+    auto next_index = 2 * (std::distance(start, pos) + 1) - 1;
     // We cannot increment a random access iterator past its end value.
     if (next_index <= std::distance(start, end)) {
         return start + next_index;
@@ -99,12 +99,15 @@ void heapify(Iter start, Iter end, Compare comp = Compare())
     using category = typename std::iterator_traits<Iter>::iterator_category;
     static_assert(std::is_base_of_v<std::random_access_iterator_tag, category>);
 
-    // Floored midpoint, plus one since we decrement before the first iteration.
-    auto index = 1 + (end - start) / 2;
+    // Index of the bottom-right move branch with children. The difference type
+    // of the iterator will be a signed type, so we do not have to worry about
+    // underflow.
+    auto index = (end - start) / 2 - 1;
 
-    while (index > 0) {
-        --index;
+    // Iterate over [0, index) in reverse.
+    while (index >= 0) {
         details::heapify_branch(start, end, start + index, comp);
+        --index;
     }
 }
 
