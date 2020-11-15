@@ -17,7 +17,8 @@ set(EECE2560_PROJECT_LIST
 #        8-schcre-non-existent-project-test-sentinel
         8-schcre-1
         8-schcre-2
-        8-schcre-3)
+        8-schcre-3
+        8-schcre-4)
 
 add_subdirectory(common)
 
