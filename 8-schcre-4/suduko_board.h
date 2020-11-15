@@ -76,7 +76,7 @@ class SudukoBoard {
     using Board = Matrix<Entry, k_dim>;
 
     /// The type used to index cell on this Sudoku board.
-    using CellIndex = typename Board::Index;
+    using Coordinate = typename Board::Coordinate;
 
     /**
      * Aggregate storing information about row, column, and block conflicts in
@@ -109,6 +109,7 @@ class SudukoBoard {
         }
     };
 
+    /// Ensure that Conflicts is an aggregate.
     static_assert(std::is_aggregate_v<Conflicts>);
 
     /**
@@ -157,34 +158,35 @@ class SudukoBoard {
      * @param index Board index to be update.
      * @param entry New entry value.
      */
-    void set_cell(CellIndex index, Entry entry)
+    void set_cell(Coordinate coord, Entry entry)
     {
-        if ((*m_board_entries)[index] != m_entry_policy.blank_sentinel) {
-            clear_cell(index);
+        if (auto old_entry = (*m_board_entries)[coord]; old_entry != m_entry_policy.blank_sentinel) {
+            // Remove the conflicts associated with the old entry.
+            set_conflict_state(coord, old_entry, false);
         }
 
-        auto[row, col] = index;
+        // Write the new entry.
+        (*m_board_entries)[coord] = entry;
 
-        (*m_board_entries)[index] = entry;
-        m_conflicts->rows[{row, m_entry_policy.index_of(entry)}] = true;
-        m_conflicts->cols[{col, m_entry_policy.index_of(entry)}] = true;
-        m_conflicts->blocks[{block_index(index), m_entry_policy.index_of(entry)}] = true;
+        // Add the row, column, and block conflicts for the new entry.
+        set_conflict_state(coord, entry, true);
     }
 
     /**
-     * Sets the cell at the given index to a blank value and removes the
+     * Sets the cell at the given coordinate to a blank value and removes the
      * conflicts associated with that entry.
      *
-     * @param index Board index to be cleared.
+     * @param coord Board coordinate to be cleared.
      */
-    void clear_cell(CellIndex index)
+    void clear_cell(Coordinate coord)
     {
-        auto[row, col] = index;
-        auto old_entry = (*m_board_entries)[index];
-        (*m_board_entries)[index] = m_entry_policy.blank_sentinel;
-        m_conflicts->rows[{row, m_entry_policy.index_of(old_entry)}] = false;
-        m_conflicts->cols[{col, m_entry_policy.index_of(old_entry)}] = false;
-        m_conflicts->blocks[{block_index(index), m_entry_policy.index_of(old_entry)}] = false;
+        // Set the specified coordinate to a blank value.
+        const auto old_entry = (*m_board_entries)[coord];
+        (*m_board_entries)[coord] = m_entry_policy.blank_sentinel;
+
+        // Remove the row, column, and block conflicts associated with
+        // the old cell value.
+        set_conflict_state(coord, old_entry, false);
     }
 
     /**
@@ -195,21 +197,42 @@ class SudukoBoard {
         // Fill the Sudoku board with blank entries.
         std::fill(std::begin(*m_board_entries), std::end(*m_board_entries), m_entry_policy.blank_sentinel);
         // Set all of the conflict tables to all false. [2]
-        for (auto& src : {std::ref(m_conflicts->rows), std::ref(m_conflicts->cols), std::ref(m_conflicts->blocks)}) {
-            std::fill(std::begin(src.get()), std::end(src.get()), false);
+        for (auto conflict_table : {
+            std::ref(m_conflicts->rows),
+            std::ref(m_conflicts->cols),
+            std::ref(m_conflicts->blocks)
+        }) {
+            std::fill(std::begin(conflict_table.get()), std::end(conflict_table.get()), false);
         }
     }
 
   private:
+    /**
+     * Sets the `entry` conflict state for the column, row, and block containing
+     * the given coordinate.
+     *
+     * @param coord Cell whose conflict state is being modified.
+     * @param entry Value being added or removed as a conflict for the cell's
+     *              row, column, and block.
+     * @param state Whether the `entry` conflict is being added or removed.
+     */
+    void set_conflict_state(Coordinate coord, Entry entry, bool state) {
+        const auto[row, col] = coord;
+        m_conflicts->rows[{row, m_entry_policy.index_of(entry)}] = state;
+        m_conflicts->cols[{col, m_entry_policy.index_of(entry)}] = state;
+        m_conflicts->blocks[{block_index(coord), m_entry_policy.index_of(entry)}] = state;
+    }
+
+
     /**
      * Returns index of the block that contains the given cell.
      *
      * Blocks are numbered left-to-right, top-to-bottom. When N=3, cell (0,0)
      * is in block 0, cell (0, 8) in in block 2, and cell (8,0) is in block 6.
      */
-    static std::size_t block_index(CellIndex index)
+    static std::size_t block_index(Coordinate coord)
     {
-        return N * (index.first % N) + (index.second % N);
+        return N * (coord.first % N) + (coord.second % N);
     }
 
     friend std::ostream& operator<<(std::ostream& out, const SudukoBoard& suduko_board)
