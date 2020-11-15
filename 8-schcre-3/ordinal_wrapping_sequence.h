@@ -48,7 +48,7 @@ class OrdinalWrappingSequenceIter {
 
   private:
     /// Type used to access elements of the underlying matrix.
-    using Index = typename Matrix<T>::Index;
+    using Coordinate = typename Matrix<T>::Coordinate;
 
     /// The current direction of iteration for producing sequence elements.
     enum { N, NE, E, SE, S, SW, W, NW } m_dir{N};
@@ -57,10 +57,10 @@ class OrdinalWrappingSequenceIter {
     const Matrix<T>* m_grid_ref;
 
     /// The position of the current starting elements of the sequence
-    Index m_curr_center{};
+    Coordinate m_curr_center{};
 
     /// The position of the current ending element in the sequence.
-    Index m_curr_pos{};
+    Coordinate m_curr_pos{};
 
     /**
      * The sequence of consecutive elements from the matrix produce by iterating
@@ -147,7 +147,7 @@ class OrdinalWrappingSequenceIter {
         const auto[rows, cols] = m_grid_ref->dimensions();
         auto offset = compute_offset();
 
-        Index next {
+        Coordinate next {
             details::positive_mod(static_cast<int>(m_curr_pos.first) + offset.first, static_cast<int>(cols)),
             details::positive_mod(static_cast<int>(m_curr_pos.second) + offset.second, static_cast<int>(rows))
         };
@@ -189,7 +189,7 @@ class OrdinalWrappingSequenceIter {
         m_curr_pos = m_curr_center;
     }
 
-    /// Returns the index offset corresponding to this iterator's current direction.
+    /// Returns the coordinate offset corresponding to this iterator's current direction.
     [[nodiscard]] std::pair<int, int> compute_offset() const
     {
         switch (m_dir) {

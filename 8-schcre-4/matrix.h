@@ -57,7 +57,7 @@ class Matrix {
     using size_type = typename Storage::size_type;
 
     /// Type used to access matrix elements using a coordinate pair.
-    using Index = std::pair<size_type, size_type>;
+    using Coordinate = std::pair<size_type, size_type>;
 
   private:
     /// Consecutive storage of matrix elements.
@@ -71,7 +71,7 @@ class Matrix {
     explicit Matrix(Storage entries) : m_entries(std::move(entries)) {}
 
     /// Returns the dimensions of this matrix.
-    [[nodiscard]] Index dimensions() const noexcept { return {N, N}; }
+    [[nodiscard]] Coordinate dimensions() const noexcept { return {N, N}; }
 
     // Returns the entry at the Nth position, counting left-to-right,
     // top-to-bottom, where N=index.
@@ -84,12 +84,12 @@ class Matrix {
     }
 
     // Returns the entry at the position (i,j), where both i and j
-    // are 0-based indices, where N=index.
-    reference operator[](Index index)
+    // are 0-based indices.
+    reference operator[](Coordinate coord)
     {
         // Safely delegate to const implementation [3].
         return const_cast<reference>(
-            static_cast<const Matrix*>(this)->operator[](index)
+            static_cast<const Matrix*>(this)->operator[](coord)
         );
     }
 
@@ -105,7 +105,7 @@ class Matrix {
 
     // Returns the entry at the position (i,j), where both i and j
     // are 0-based indices.
-    const_reference operator[](Index index) const
+    const_reference operator[](Coordinate index) const
     {
         const auto[row, col] = index;
         // size_type is an unsigned integer [2], so we only need to check the upper bounds.
