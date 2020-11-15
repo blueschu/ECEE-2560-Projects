@@ -83,6 +83,10 @@ function(eece2560_add_project_targets PROJ_NUM)
     # Link common-lib to target-lib as PUBLIC so that it becomes part of the
     # target-lib's link interface
     target_link_libraries(${TARGET_PREFIX}-lib PUBLIC eece2560_common)
+    # Explicitly set linker language for lib so that this build configuration
+    # works with new projects that have no cpp files.
+    set_target_properties(${TARGET_PREFIX}-lib PROPERTIES LINKER_LANGUAGE CXX)
+
 
     # Executable for Part A
     add_executable(${TARGET_PREFIX}a ${PARSED_PART_A})
