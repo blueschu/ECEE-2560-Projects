@@ -1,5 +1,5 @@
 /**
- * 2D grid  for project 4.
+ * 2D grid for project 4.
  *
  * Authors: Brian Schubert  <schubert.b@northeastern.edu>
  *          Chandler Cree   <cree.d@northeastern.edu>

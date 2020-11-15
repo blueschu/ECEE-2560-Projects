@@ -38,10 +38,19 @@ template<typename T>
 struct SudukoEntryPolicy {
     static_assert(std::is_integral_v<T>);
 
+    /// Value used to represent a blank cell in the Sudoku board.
     const T blank_sentinel{0};
 
+    /**
+     * Converts the given entry to a unique array-index in the interval [0, N)
+     * where N is any value such that entry_valid(entry, N) returns true.
+     */
     constexpr std::size_t index_of(T entry) const { return entry - 1; }
 
+    /**
+     * Returns true if the given entry is a legal value for a board with the
+     * given dimension.
+     */
     constexpr bool entry_valid(T entry, std::size_t board_dimension) const
     {
         return entry > 0 && entry <= board_dimension;
@@ -124,7 +133,13 @@ class SudukoBoard {
     explicit SudukoBoard(Policy policy = Policy())
         : m_entry_policy(std::move(policy)) {};
 
-    /// Create a Suduko board with the given initial board values.
+    /**
+     * Create a Suduko board with the given initial board values.
+     *
+     * This constructor DO NOT check whether the given board values are legal.
+     * Nonsense will ensue if there are multiple instances of the same vaule in
+     * the same row, column, or block.
+     */
     explicit SudukoBoard(std::unique_ptr<Board> board, Policy policy = Policy())
         : m_board_entries(std::move(board)), m_entry_policy(std::move(policy))
     {
@@ -135,6 +150,13 @@ class SudukoBoard {
         }
     }
 
+    /**
+     * Sets the cell at the given index to the given entry and updates the
+     * conflict tables accordingly.
+     *
+     * @param index Board index to be update.
+     * @param entry New entry value.
+     */
     void set_cell(CellIndex index, Entry entry)
     {
         if ((*m_board_entries)[index] != m_entry_policy.blank_sentinel) {
@@ -149,6 +171,12 @@ class SudukoBoard {
         m_conflicts->blocks[{block_index(index), m_entry_policy.index_of(entry)}] = true;
     }
 
+    /**
+     * Sets the cell at the given index to a blank value and removes the
+     * conflicts associated with that entry.
+     *
+     * @param index Board index to be cleared.
+     */
     void clear_cell(CellIndex index)
     {
         auto[row, col] = index;
@@ -159,6 +187,9 @@ class SudukoBoard {
         m_conflicts->blocks[{block_index(index), m_entry_policy.index_of(old_entry)}] = false;
     }
 
+    /**
+     * Fill this Sudoku board with blank entries and removes all conflicts.
+     */
     void clear()
     {
         // Fill the Sudoku board with blank entries.
@@ -199,6 +230,7 @@ class SudukoBoard {
         suduko_board.clear();
 
         for (Entry& entry : *suduko_board.m_board_entries) {
+            // Each Sudoku entry is represented by a single character.
             char entry_symbol;
             if (!(in >> entry_symbol)) {
                 // We can no longer read a character from the input stream.
@@ -206,6 +238,8 @@ class SudukoBoard {
                 break;
             }
 
+            // Place the character into a string stream so that we can use
+            // Entry's operator>> overload to convert it into an entry.
             std::stringstream symbol_stream;
             symbol_stream << entry_symbol;
 
