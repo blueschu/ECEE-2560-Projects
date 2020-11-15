@@ -20,9 +20,6 @@
 #include <iostream>         // for I/O stream definitions
 #include <memory>           // for std::unique_ptr
 
-#include <algorithm>
-#include <iterator>
-
 #include "eece2560_io.h"
 #include "matrix.h"
 
