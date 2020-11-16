@@ -27,7 +27,7 @@
  * Policy for associating blank cell representations and conflict lookup table
  * indices with types being used as Sudoku cell values.
  *
- * This template can be specialize for used defined types to allow for more
+ * This template can be specialized for user defined types to allow for more
  * interesting classes to be used as Sudoku cell values.
  *
  * This class was created mostly as an excuse for experimenting with policies.
@@ -53,14 +53,14 @@ struct SudokuEntryPolicy {
      */
     constexpr bool entry_valid(T entry, std::size_t board_dimension) const
     {
-        return entry > 0 && entry <= board_dimension;
+        return entry >= 1 && entry <= board_dimension;
     }
 };
 
 /**
  * A Sudoku board.
  *
- * @tparam N Characteristic board size, usually 3. The board will be composted
+ * @tparam N Characteristic board size, usually 3. The board will be composed
  * of N an N grid of blocks where each block contains an N by N grid of cells.
  * @tparam Entry Type used to represent cell values on the board.
  * @tparam Policy Policy [1] for associating blank cell representation and
@@ -95,17 +95,17 @@ class SudokuBoard {
 
         [[nodiscard]] bool check_row(std::size_t row_index, std::size_t entry_index) const
         {
-            rows[{row_index, entry_index}];
+            return rows[{row_index, entry_index}];
         }
 
         [[nodiscard]] bool check_col(std::size_t col_index, std::size_t entry_index) const
         {
-            rows[{col_index, entry_index}];
+            return rows[{col_index, entry_index}];
         }
 
         [[nodiscard]] bool check_block(std::size_t block_index, std::size_t entry_index) const
         {
-            rows[{block_index, entry_index}];
+            return rows[{block_index, entry_index}];
         }
     };
 
@@ -216,13 +216,15 @@ class SudokuBoard {
      *              row, column, and block.
      * @param state Whether the `entry` conflict is being added or removed.
      */
-    void set_conflict_state(Coordinate coord, Entry entry, bool state) {
+    void set_conflict_state(Coordinate coord, Entry entry, bool state)
+    {
         const auto[row, col] = coord;
-        m_conflicts->rows[{row, m_entry_policy.index_of(entry)}] = state;
-        m_conflicts->cols[{col, m_entry_policy.index_of(entry)}] = state;
-        m_conflicts->blocks[{block_index(coord), m_entry_policy.index_of(entry)}] = state;
+        const auto block = block_index(coord);
+        const auto entry_index = m_entry_policy.index_of(entry);
+        m_conflicts->rows[{row, entry_index}] = state;
+        m_conflicts->cols[{col, entry_index}] = state;
+        m_conflicts->blocks[{block, entry_index}] = state;
     }
-
 
     /**
      * Returns index of the block that contains the given cell.
@@ -230,7 +232,7 @@ class SudokuBoard {
      * Blocks are numbered left-to-right, top-to-bottom. When N=3, cell (0,0)
      * is in block 0, cell (0, 8) in in block 2, and cell (8,0) is in block 6.
      */
-    static std::size_t block_index(Coordinate coord)
+    constexpr static std::size_t block_index(Coordinate coord)
     {
         return N * (coord.first % N) + (coord.second % N);
     }
