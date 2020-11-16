@@ -10,6 +10,7 @@
  *  [1] https://en.cppreference.com/w/cpp/iterator/iterator_traits
  *  [2] https://en.cppreference.com/w/cpp/named_req/Container
  *  [3] https://stackoverflow.com/questions/856542/
+ *  [4] https://stackoverflow.com/questions/4178175/
  */
 
 #ifndef EECE_2560_PROJECTS_MATRIX_H
@@ -35,15 +36,14 @@ class MatrixResizeError : public std::runtime_error {
 };
 
 /**
- * A two-dimensional square matrix of elements. Not intended for linear algebra.
+ * Aggregate representing a two-dimensional square matrix of elements.
+ * Not intended for linear algebra.
  *
  * @tparam T Type of elements to be stored.
  * @tparam N The number of rows/columns in the matrix.
  */
 template<typename T, std::size_t N>
-class Matrix {
-
-  public:
+struct Matrix {
     /// Container type used to storage matrix elements.
     using Storage = std::array<T, N * N>;
 
@@ -59,16 +59,12 @@ class Matrix {
     /// Type used to access matrix elements using a coordinate pair.
     using Coordinate = std::pair<size_type, size_type>;
 
-  private:
-    /// Consecutive storage of matrix elements.
+    /**
+     * Consecutive storage of matrix elements.
+     *
+     * This data member is public so that Matrix can be an aggregate [4].
+     */
     Storage m_entries;
-
-  public:
-
-    Matrix() = default;
-
-    /// Creates an N by N matrix with the given elements.
-    explicit Matrix(Storage entries) : m_entries(std::move(entries)) {}
 
     /// Returns the dimensions of this matrix.
     [[nodiscard]] Coordinate dimensions() const noexcept { return {N, N}; }
@@ -128,7 +124,7 @@ class Matrix {
     [[nodiscard]] const_iterator end() const noexcept { return std::end(m_entries); }
 };
 
-/// Ensure that Matrix is plain old data.
-static_assert(std::is_pod_v<Matrix<int, 1>>);
+/// Ensure that Matrix is an aggregate.
+static_assert(std::is_aggregate_v<Matrix<int, 1>>);
 
 #endif //EECE_2560_PROJECTS_MATRIX_H
