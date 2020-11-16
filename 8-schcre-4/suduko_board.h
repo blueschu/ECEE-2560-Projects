@@ -25,9 +25,9 @@
 
 /**
  * Policy for associating blank cell representations and conflict lookup table
- * indices with types being used to represent Sudoku cell values.
+ * indices with types being used as Sudoku cell values.
  *
- * This template can be specialize for other used defined types to allow most
+ * This template can be specialize for used defined types to allow for more
  * interesting classes to be used as Sudoku cell values.
  *
  * This class was created mostly as an excuse for experimenting with policies.

@@ -7,15 +7,20 @@
  *
  */
 
+#include <fstream>
+#include <iomanip>
 #include <iostream>
 
 #include "suduko_board.h"
 
+constexpr const char k_default_sudoku_file[]{"resources/sudoku1.txt"};
+
 struct SudokuEntry {
+    using Value = unsigned int;
 
     constexpr static char k_blank_symbol{'.'};
 
-    unsigned int value;
+    Value value;
 
     constexpr bool operator==(SudokuEntry rhs) const { return value == rhs.value; }
 
@@ -23,7 +28,9 @@ struct SudokuEntry {
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "google-explicit-constructor"
-    operator unsigned int() const { return value; }
+
+    operator Value() const { return value; }
+
 #pragma clang diagnostic pop
 
     friend std::istream& operator>>(std::istream& in, SudokuEntry& entry)
@@ -58,19 +65,47 @@ class SudukoEntryPolicy<SudokuEntry> {
 
 int main()
 {
+    constexpr std::size_t k_title_width{24};
+
     // Default entry formatting
-//    SudukoBoard<3> board;
-//    board.set_cell({0, 1}, 2);
+    {
+        SudukoBoard<3> board;
+        board.set_cell({0, 1}, 2);
+        std::cout << std::setw(k_title_width) << "Default formatting: " << board << '\n';
+    }
 
     // Specialized entry formatting.
-    SudukoBoard<3, SudokuEntry> board;
-    board.set_cell({0, 1}, {2});
-    std::cout << board << '\n';
+    {
+        SudukoBoard<3, SudokuEntry> board;
+        board.set_cell({0, 1}, {2});
+        std::cout << std::setw(k_title_width) << "Specialized formatting: " << board << '\n';
+    }
 
-//    std::stringstream stream(".....2.......7...17..3...9.8..7......2.89.6...13..6....9..5.824.....891..........");
-//    std::stringstream stream("01234567890abAB..17..3...9.8..7......2.89.6...13..6....9..5.824.....891.......");       // too short
-    std::stringstream stream("01234567890abAB..17..3...9.8..7......2.89.6...13..6....9..5.824.....891.......321111111111111111");       // too long
+    // Read from stream.
+    for (auto input_str : {
+        ".....2.......7...17..3...9.8..7......2.89.6...13..6....9..5.824.....891..........",                // example from doc
+        "01234567890abAB..17..3...9.8..7......2.89.6...13..6....9..5.824.....891.......",                   // too short
+        "01234567890abAB..17..3...9.8..7......2.89.6...13..6....9..5.824.....891.......321111111111111111"  // too long
+    }) {
+        SudukoBoard<3, SudokuEntry> board;
+        std::stringstream stream(input_str);
 
-    stream >> board;
-    std::cout << board;
+        stream >> board;
+        std::cout << std::setw(k_title_width) << "Read from stream: " << board << '\n';
+    }
+
+    // Read from file.
+    {
+        std::cout << std::setw(k_title_width) << "Read from file: ";
+        SudukoBoard<3, SudokuEntry> board;
+        std::ifstream file_in(k_default_sudoku_file);
+
+        std::string line;
+        while (std::getline(file_in, line)) {
+            std::istringstream stream(line);
+            stream >> board;
+            std::cout << board << '\n';
+        }
+
+    }
 }
