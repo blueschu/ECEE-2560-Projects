@@ -12,7 +12,7 @@
 #include <iostream>
 #include <sstream>
 
-#include "suduko_board.h"
+#include "sudoku_board.h"
 
 constexpr const char k_default_sudoku_file[]{"resources/sudoku1.txt"};
 
@@ -52,7 +52,7 @@ struct SudokuEntry {
 };
 
 template<>
-class SudukoEntryPolicy<SudokuEntry> {
+class SudokuEntryPolicy<SudokuEntry> {
   public:
     const SudokuEntry blank_sentinel{0};
 
@@ -70,14 +70,14 @@ int main()
 
     // Default entry formatting
     {
-        SudukoBoard<3> board;
+        SudokuBoard<3> board;
         board.set_cell({0, 1}, 2);
         std::cout << std::setw(k_title_width) << "Default formatting: " << board << '\n';
     }
 
     // Specialized entry formatting.
     {
-        SudukoBoard<3, SudokuEntry> board;
+        SudokuBoard<3, SudokuEntry> board;
         board.set_cell({0, 1}, {2});
         std::cout << std::setw(k_title_width) << "Specialized formatting: " << board << '\n';
     }
@@ -88,7 +88,7 @@ int main()
         "01234567890abAB..17..3...9.8..7......2.89.6...13..6....9..5.824.....891.......",                   // too short
         "01234567890abAB..17..3...9.8..7......2.89.6...13..6....9..5.824.....891.......321111111111111111"  // too long
     }) {
-        SudukoBoard<3, SudokuEntry> board;
+        SudokuBoard<3, SudokuEntry> board;
         std::istringstream stream(input_str);
 
         stream >> board;
@@ -98,7 +98,7 @@ int main()
     // Read from file.
     {
         std::cout << std::setw(k_title_width) << "Read from file: ";
-        SudukoBoard<3, SudokuEntry> board;
+        SudokuBoard<3, SudokuEntry> board;
         std::ifstream file_in(k_default_sudoku_file);
 
         std::string line;

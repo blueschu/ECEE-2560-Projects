@@ -12,8 +12,8 @@
  *  [3] https://en.cppreference.com/w/cpp/iterator/istream_iterator
  */
 
-#ifndef EECE_2560_PROJECTS_SUDUKO_BOARD_H
-#define EECE_2560_PROJECTS_SUDUKO_BOARD_H
+#ifndef EECE_2560_PROJECTS_SUDOKU_BOARD_H
+#define EECE_2560_PROJECTS_SUDOKU_BOARD_H
 
 #include <array>            // for std::array
 #include <cstddef>          // for std::size_t
@@ -35,7 +35,7 @@
  * @tparam T Entry type for Sudoku cells
  */
 template<typename T>
-struct SudukoEntryPolicy {
+struct SudokuEntryPolicy {
     static_assert(std::is_integral_v<T>);
 
     /// Value used to represent a blank cell in the Sudoku board.
@@ -66,8 +66,8 @@ struct SudukoEntryPolicy {
  * @tparam Policy Policy [1] for associating blank cell representation and
  *                conflict lookup table indices with cell entries.
  */
-template<std::size_t N, typename Entry = unsigned int, typename Policy = SudukoEntryPolicy<Entry>>
-class SudukoBoard {
+template<std::size_t N, typename Entry = unsigned int, typename Policy = SudokuEntryPolicy<Entry>>
+class SudokuBoard {
 
     /// The number of rows / number of columns on this Sudoku board.
     constexpr static std::size_t k_dim{N * N};
@@ -130,18 +130,18 @@ class SudukoBoard {
 
   public:
 
-    /// Create a Suduko board with an empty board.
-    explicit SudukoBoard(Policy policy = Policy())
+    /// Create a Sudoku board with an empty board.
+    explicit SudokuBoard(Policy policy = Policy())
         : m_entry_policy(std::move(policy)) {};
 
     /**
-     * Create a Suduko board with the given initial board values.
+     * Create a Sudoku board with the given initial board values.
      *
      * This constructor DO NOT check whether the given board values are legal.
      * Nonsense will ensue if there are multiple instances of the same vaule in
      * the same row, column, or block.
      */
-    explicit SudukoBoard(std::unique_ptr<Board> board, Policy policy = Policy())
+    explicit SudokuBoard(std::unique_ptr<Board> board, Policy policy = Policy())
         : m_board_entries(std::move(board)), m_entry_policy(std::move(policy))
     {
         for (auto& entry : *m_board_entries) {
@@ -235,12 +235,12 @@ class SudukoBoard {
         return N * (coord.first % N) + (coord.second % N);
     }
 
-    friend std::ostream& operator<<(std::ostream& out, const SudukoBoard& suduko_board)
+    friend std::ostream& operator<<(std::ostream& out, const SudokuBoard& sudoku_board)
     {
         eece2560::print_sequence(
             out,
-            std::begin(*suduko_board.m_board_entries),
-            std::end(*suduko_board.m_board_entries),
+            std::begin(*sudoku_board.m_board_entries),
+            std::end(*sudoku_board.m_board_entries),
             ""
         );
         return out;
@@ -248,11 +248,11 @@ class SudukoBoard {
 
     // Attempts to read a Sudoku board from the given input stream.
     // Missing and invalid entries are filled with the blank sentinel.
-    friend std::istream& operator>>(std::istream& in, SudukoBoard& suduko_board)
+    friend std::istream& operator>>(std::istream& in, SudokuBoard& sudoku_board)
     {
-        suduko_board.clear();
+        sudoku_board.clear();
 
-        for (Entry& entry : *suduko_board.m_board_entries) {
+        for (Entry& entry : *sudoku_board.m_board_entries) {
             // Each Sudoku entry is represented by a single character.
             char entry_symbol;
             if (!(in >> entry_symbol)) {
@@ -268,7 +268,7 @@ class SudukoBoard {
 
             if (Entry entry_candidate;
                 symbol_stream >> entry_candidate
-                    && suduko_board.m_entry_policy.entry_valid(entry_candidate, suduko_board.k_dim)
+                    && sudoku_board.m_entry_policy.entry_valid(entry_candidate, sudoku_board.k_dim)
                 ) {
                 entry = entry_candidate;
             }
@@ -278,4 +278,4 @@ class SudukoBoard {
     }
 };
 
-#endif //EECE_2560_PROJECTS_SUDUKO_BOARD_H
+#endif //EECE_2560_PROJECTS_SUDOKU_BOARD_H
