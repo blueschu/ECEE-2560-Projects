@@ -10,6 +10,7 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <sstream>
 
 #include "suduko_board.h"
 
@@ -88,7 +89,7 @@ int main()
         "01234567890abAB..17..3...9.8..7......2.89.6...13..6....9..5.824.....891.......321111111111111111"  // too long
     }) {
         SudukoBoard<3, SudokuEntry> board;
-        std::stringstream stream(input_str);
+        std::istringstream stream(input_str);
 
         stream >> board;
         std::cout << std::setw(k_title_width) << "Read from stream: " << board << '\n';
