@@ -9,8 +9,12 @@
 
 #include <fstream>          // for file I/O stream definitions
 #include <iostream>         // for I/O stream definition
+#include <iomanip>          // for I/O stream manipulators
 #include <sstream>          // for std::istringstream
 
+// When defined, the SudokuBoard class will include additional debugging
+// functionality which is required for part A of this project.
+#define EECE2560_PART_A_DEMO
 #include "sudoku_board.h"
 
 namespace {
@@ -48,6 +52,8 @@ struct SudokuEntry {
 
 static_assert(std::is_aggregate_v<SudokuEntry>);
 
+using Board = SudokuBoard<3, SudokuEntry>;
+
 } // end namespace
 
 template<>
@@ -69,10 +75,37 @@ struct SudokuEntryPolicy<SudokuEntry> {
     }
 };
 
+void print_conflicts(const Board& board)
+{
+    constexpr static std::size_t k_label_width{18};
+    const static auto legend = [&]() {
+        std::vector<std::size_t> legend_values(Board::dim() * Board::dim());
+        std::generate(std::begin(legend_values), std::end(legend_values), []() {
+            static std::size_t counter{Board::dim() - 1};
+            counter = (counter + 1) % Board::dim();
+            return counter + 1;
+        });
+        return legend_values;
+    }();
+
+    const auto conflicts = board.debug_conflicts();
+
+    std::cout << std::string(k_label_width + 1, ' ');
+    eece2560::print_sequence(std::cout, std::begin(legend), std::end(legend), "", "", "\n");
+
+    std::cout << std::setw(k_label_width) << "Row conflicts: ";
+    eece2560::print_sequence(std::cout, std::begin(conflicts.rows), std::end(conflicts.rows), "", "[", "]\n");
+    std::cout << std::setw(k_label_width) << "Column conflicts: ";
+    eece2560::print_sequence(std::cout, std::begin(conflicts.cols), std::end(conflicts.cols), "", "[", "]\n");
+    std::cout << std::setw(k_label_width) << "Block conflicts: ";
+    eece2560::print_sequence(std::cout, std::begin(conflicts.blocks), std::end(conflicts.blocks), "", "[", "]\n");
+    std::cout << '\n';
+}
+
 int main()
 {
     unsigned int board_counter{0};
-    SudokuBoard<3, SudokuEntry> board;
+    Board board;
 
     std::ifstream file_in(k_default_sudoku_file);
 
@@ -84,17 +117,7 @@ int main()
 
         std::cout << "======== Board " << board_counter << " ========\n";
         std::cout << board.board_string();
-        std::cout << "======== Solution ========\n";
 
-        // todo print conflicts
-
-        const auto[solved, call_coutner] = board.solve();
-        if (solved) {
-            std::cout << board.board_string();
-        } else {
-            std::cout << "No solution exists.\n";
-        }
-        std::cout << "Total calls made: " << call_coutner << "\n\n";
-
+        print_conflicts(board);
     }
 }

@@ -19,8 +19,8 @@
 #include <array>            // for std::array
 #include <cstddef>          // for std::size_t
 #include <iostream>         // for I/O stream definitions
+#include <limits>           // for std::numeric_limits
 #include <memory>           // for std::unique_ptr
-#include <optional>
 
 #include "eece2560_io.h"
 #include "matrix.h"
@@ -163,6 +163,9 @@ class SudokuBoard {
         }
     }
 
+    /// Returns the number of rows / number of columns on this Sudoku board.
+    constexpr static std::size_t dim() { return k_dim; }
+
     /**
      * Sets the cell at the given index to the given entry and updates the
      * conflict tables accordingly.
@@ -262,8 +265,11 @@ class SudokuBoard {
      */
     [[nodiscard]] std::string board_string() const
     {
+        // Make sure the counter technique used below won't overflow.
+        static_assert(k_dim * k_dim <= std::numeric_limits<unsigned int>::max());
+
         std::ostringstream stream;
-        std::size_t entry_counter{0};
+        unsigned int entry_counter{0};
 
         for (auto entry : *m_board_entries) {
             if (entry_counter % N == 0) {
@@ -286,6 +292,12 @@ class SudokuBoard {
 
         return stream.str();
     }
+
+#ifdef EECE2560_PART_A_DEMO
+
+    const Conflicts& debug_conflicts() const { return *m_conflicts; }
+
+#endif
 
   private:
     /**
