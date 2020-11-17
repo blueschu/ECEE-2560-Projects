@@ -7,15 +7,13 @@
  *
  */
 
-#include <fstream>
-#include <iomanip>
-#include <iostream>
-#include <sstream>
+#include <fstream>          // for file I/O stream definitions
+#include <iostream>         // for I/O stream definition
+#include <sstream>          // for std::istringstream
 
 #include "sudoku_board.h"
 
-[[maybe_unused]]
-constexpr const char k_default_sudoku_file[]{"resources/sudoku1.txt"};
+constexpr const char k_default_sudoku_file[]{"resources/sudoku_all.txt"};
 
 struct SudokuEntry {
     using Value = unsigned int;
@@ -38,8 +36,10 @@ struct SudokuEntry {
     {
         if (entry.value == 0) {
             out << k_blank_symbol;
+        } else if (entry.value < 16) {
+            out << std::hex << entry.value;
         } else {
-            out << entry.value;
+            out << static_cast<char>('a' - 10 + entry.value);
         }
         return out;
     }
@@ -58,64 +58,38 @@ struct SudokuEntryPolicy<SudokuEntry> {
         return entry.value > 0 && entry.value <= board_dimension;
     }
 
-    constexpr SudokuEntry entry_of(std::size_t index) const { return SudokuEntry{static_cast<SudokuEntry::Value>(index + 1)}; }
+    constexpr SudokuEntry entry_of(std::size_t index) const
+    {
+        return SudokuEntry{
+            static_cast<SudokuEntry::Value>(index + 1)
+        };
+    }
 };
 
 int main()
 {
+    unsigned int board_counter{0};
     SudokuBoard<3, SudokuEntry> board;
-    std::istringstream stream(".....2.......7...17..3...9.8..7......2.89.6...13..6....9..5.824.....891..........");
-//    std::istringstream stream("3...8.......7....51..............36...2..4....7...........6.13..452...........8..");
-    stream >> board;
-    std::cout << "Start: " << board << '\n' << std::flush;
-    auto solved = board.solve();
-    std::cout << "End :  " << board << std::boolalpha << " (" << solved.first << ',' << solved.second << ")\n";
 
-    std::cout << board.board_string();
+    std::ifstream file_in(k_default_sudoku_file);
 
+    std::string line;
+    while (std::getline(file_in, line)) {
+        ++board_counter;
+        std::istringstream stream(line);
+        stream >> board;
 
+        std::cout << "======== Board " << board_counter << " ========\n";
+        std::cout << board.board_string();
+        std::cout << "======== Solution ========\n";
 
-//    constexpr std::size_t k_title_width{24};
-//
-//    // Default entry formatting
-//    {
-//        SudokuBoard<3> board;
-//        board.set_cell({0, 1}, 2);
-//        std::cout << std::setw(k_title_width) << "Default formatting: " << board << '\n';
-//    }
-//
-//    // Specialized entry formatting.
-//    {
-//        SudokuBoard<3, SudokuEntry> board;
-//        board.set_cell({0, 1}, {2});
-//        std::cout << std::setw(k_title_width) << "Specialized formatting: " << board << '\n';
-//    }
-//
-//    // Read from stream.
-//    for (auto input_str : {
-//        ".....2.......7...17..3...9.8..7......2.89.6...13..6....9..5.824.....891..........",                // example from doc
-//        "01234567890abAB..17..3...9.8..7......2.89.6...13..6....9..5.824.....891.......",                   // too short
-//        "01234567890abAB..17..3...9.8..7......2.89.6...13..6....9..5.824.....891.......321111111111111111"  // too long
-//    }) {
-//        SudokuBoard<3, SudokuEntry> board;
-//        std::istringstream stream(input_str);
-//
-//        stream >> board;
-//        std::cout << std::setw(k_title_width) << "Read from stream: " << board << '\n';
-//    }
-//
-//    // Read from file.
-//    {
-//        std::cout << std::setw(k_title_width) << "Read from file: ";
-//        SudokuBoard<3, SudokuEntry> board;
-//        std::ifstream file_in(k_default_sudoku_file);
-//
-//        std::string line;
-//        while (std::getline(file_in, line)) {
-//            std::istringstream stream(line);
-//            stream >> board;
-//            std::cout << board << '\n';
-//        }
-//
-//    }
+        const auto[solved, call_coutner] = board.solve();
+        if (solved) {
+            std::cout << board.board_string();
+        } else {
+            std::cout << "No solution exists.\n";
+        }
+        std::cout << "Total calls made: " << call_coutner << "\n\n";
+
+    }
 }
