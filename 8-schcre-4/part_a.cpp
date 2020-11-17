@@ -13,6 +13,7 @@
 
 #include "sudoku_board.h"
 
+namespace {
 constexpr const char k_default_sudoku_file[]{"resources/sudoku_all.txt"};
 
 struct SudokuEntry {
@@ -46,6 +47,8 @@ struct SudokuEntry {
 };
 
 static_assert(std::is_aggregate_v<SudokuEntry>);
+
+} // end namespace
 
 template<>
 struct SudokuEntryPolicy<SudokuEntry> {
@@ -82,6 +85,8 @@ int main()
         std::cout << "======== Board " << board_counter << " ========\n";
         std::cout << board.board_string();
         std::cout << "======== Solution ========\n";
+
+        // todo print conflicts
 
         const auto[solved, call_coutner] = board.solve();
         if (solved) {
