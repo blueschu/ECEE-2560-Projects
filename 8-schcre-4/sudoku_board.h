@@ -93,21 +93,24 @@ class SudokuBoard {
          */
         using ConflictTable = Matrix<bool, k_dim>;
 
+        /// Unsigned type used to lookup conflicts for a specific cell value.
+        using Index = typename ConflictTable::size_type;
+
         ConflictTable rows;
         ConflictTable cols;
         ConflictTable blocks;
 
-        [[nodiscard]] bool check_row(std::size_t row_index, std::size_t entry_index) const
+        [[nodiscard]] bool check_row(Index row_index, Index entry_index) const
         {
             return rows[{row_index, entry_index}];
         }
 
-        [[nodiscard]] bool check_col(std::size_t col_index, std::size_t entry_index) const
+        [[nodiscard]] bool check_col(Index col_index, Index entry_index) const
         {
             return cols[{col_index, entry_index}];
         }
 
-        [[nodiscard]] bool check_block(std::size_t block_index, std::size_t entry_index) const
+        [[nodiscard]] bool check_block(Index block_index, Index entry_index) const
         {
             return blocks[{block_index, entry_index}];
         }
@@ -164,38 +167,56 @@ class SudokuBoard {
      * Sets the cell at the given index to the given entry and updates the
      * conflict tables accordingly.
      *
+     * This function returns true if the board was successfully updated with the
+     * new cell value. If the new value conflicts with a value in the same row,
+     * column, or block, no change will be made and this function will return
+     * false.
+     *
      * @param index Board index to be update.
      * @param entry New entry value.
+     * @return true if the board was updated with the new cell value.
      */
-    void set_cell(Coordinate coord, Entry entry)
+    bool set_cell(Coordinate coord, Entry entry)
     {
-        if (auto old_entry = (*m_board_entries)[coord]; old_entry != m_entry_policy.blank_sentinel) {
+        if (!check_legal_move(coord, entry)) {
+            return false;
+        }
+
+        auto& cell = (*m_board_entries)[coord];
+
+        if (cell != m_entry_policy.blank_sentinel) {
             // Remove the conflicts associated with the old entry.
-            set_conflict_state(coord, old_entry, false);
+            set_conflict_state(coord, cell, false);
         }
 
         // Write the new entry.
-        (*m_board_entries)[coord] = entry;
+        cell = entry;
 
         // Add the row, column, and block conflicts for the new entry.
         set_conflict_state(coord, entry, true);
+
+        return true;
     }
 
     /**
      * Sets the cell at the given coordinate to a blank value and removes the
      * conflicts associated with that entry.
      *
+     * If the cell is already blank, this function takes no action.
+     *
      * @param coord Board coordinate to be cleared.
      */
     void clear_cell(Coordinate coord)
     {
-        // Set the specified coordinate to a blank value.
-        const auto old_entry = (*m_board_entries)[coord];
-        (*m_board_entries)[coord] = m_entry_policy.blank_sentinel;
+        auto& cell = (*m_board_entries)[coord];
 
-        // Remove the row, column, and block conflicts associated with
-        // the old cell value.
-        set_conflict_state(coord, old_entry, false);
+        if (cell != m_entry_policy.blank_sentinel) {
+            // Remove the row, column, and block conflicts associated with
+            // the old cell value.
+            set_conflict_state(coord, cell, false);
+            // Set the entry at the specified coordinate to a blank value.
+            cell = m_entry_policy.blank_sentinel;
+        }
     }
 
     /**
@@ -235,48 +256,20 @@ class SudokuBoard {
     }
 
   private:
-    std::pair<bool, unsigned int> solve_after(typename Board::const_iterator pos)
-    {
-        unsigned int call_count{1u};
-        const auto entries_end{std::cend(*m_board_entries)};
-
-        if (pos == entries_end) {
-            return {true, call_count};
-        }
-
-        const auto coord = m_board_entries->coordinate_of(pos);
-
-        for (const auto candidate : find_candidates(coord)) {
-            set_cell(coord, candidate);
-
-            const auto[found_solution, calls] = try_solve(
-                std::find(pos, entries_end, m_entry_policy.blank_sentinel)
-            );
-            call_count += calls;
-
-            if (found_solution) {
-                return {true, call_count};
-            } else {
-                clear_cell(coord);
-            }
-        }
-        // All possible cell values have a conflict at the current position.
-        // Signal to the caller that this branch does not lead to a solution.
-        return {false, call_count};
-    }
-
-    std::vector<Entry> find_candidates(Coordinate coord) const
-    {
+    /**
+     * Returns true if the cell at the given coordinate has no conflicts for
+     * the given entry.
+     *
+     * @param coord Cell whose conflicts are to be checked.
+     * @param entry Entry candidate for the cell.
+     * @return True if the cell has no conflicts for the entry.
+     */
+    bool check_legal_move(Coordinate coord, Entry entry) {
         const auto[row, col] = coord;
-        std::vector<Entry> candidates;
-        for (std::size_t index{0}; index < k_dim; ++index) {
-            if (!m_conflicts->check_row(row, index)
-                && !m_conflicts->check_col(col, index)
-                && !m_conflicts->check_block(block_index(coord), index)) {
-                candidates.push_back(m_entry_policy.entry_of(index));
-            }
-        }
-        return candidates;
+        const auto entry_index = m_entry_policy.index_of(entry);
+        return !m_conflicts->check_row(row, entry_index)
+            && !m_conflicts->check_col(col, entry_index)
+            && !m_conflicts->check_block(block_index(coord), entry_index);
     }
 
     /**
@@ -299,16 +292,61 @@ class SudokuBoard {
     }
 
     /**
+     * Attempts the solve starting at the given position and proceeding left-to-
+     * right, top-to-bottom.
+     *
+     * @param pos Next cell to attempt to fill with a value..
+     * @return Pair of 0) whether the board is solved, 1) the number of recursive
+     *         calls required to determine the solution.
+     */
+    std::pair<bool, unsigned int> solve_after(typename Board::const_iterator pos)
+    {
+        unsigned int call_count{1u};
+        const auto entries_end{std::cend(*m_board_entries)};
+
+        if (pos == entries_end) {
+            return {true, call_count};
+        }
+
+        const auto coord = m_board_entries->coordinate_of(pos);
+
+        // Iterate over the k_dim conflict table indices to find entry candidates.
+        for (typename Conflicts::Index index{0}; index < k_dim; ++index) {
+            // Attempt set the cell at coord with the value associated with index.
+            // set_cell returns false if the candidate value has a conflict.
+            if (set_cell(coord, m_entry_policy.entry_of(index))) {
+
+                // Continue solving at the next blank, proceeding left-to-right,
+                // top to bottom
+                const auto[found_solution, calls] = solve_after(
+                    std::find(pos, entries_end, m_entry_policy.blank_sentinel)
+                );
+                call_count += calls;
+
+                if (found_solution) {
+                    return {true, call_count};
+                } else {
+                    clear_cell(coord);
+                }
+            }
+        }
+        // All possible cell values have a conflict at the current position.
+        // Signal to the caller that this branch does not lead to a solution.
+        return {false, call_count};
+    }
+
+    /**
      * Returns index of the block that contains the given cell.
      *
      * Blocks are numbered left-to-right, top-to-bottom. When N=3, cell (0,0)
      * is in block 0, cell (0, 8) in in block 2, and cell (8,0) is in block 6.
      */
-    constexpr static std::size_t block_index(Coordinate coord)
+    constexpr static typename Conflicts::Index block_index(Coordinate coord)
     {
         return N * (coord.first / N) + (coord.second / N);
     }
 
+    // Output stream operator overload.
     friend std::ostream& operator<<(std::ostream& out, const SudokuBoard& sudoku_board)
     {
         eece2560::print_sequence(
@@ -349,6 +387,7 @@ class SudokuBoard {
                 symbol_stream >> entry_candidate
                     && sudoku_board.m_entry_policy.entry_valid(entry_candidate, sudoku_board.k_dim)
                 ) {
+                // todo decide how to handle invalid sudoku boards. For now we silently omit illegal entries.
                 sudoku_board.set_cell(
                     sudoku_board.m_board_entries->coordinate_of(it),
                     entry_candidate
