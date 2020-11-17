@@ -64,8 +64,8 @@ struct SudokuEntryPolicy<SudokuEntry> {
 int main()
 {
     SudokuBoard<3, SudokuEntry> board;
-//    std::istringstream stream(".....2.......7...17..3...9.8..7......2.89.6...13..6....9..5.824.....891..........");
-    std::istringstream stream("3...8.......7....51..............36...2..4....7...........6.13..452...........8..");
+    std::istringstream stream(".....2.......7...17..3...9.8..7......2.89.6...13..6....9..5.824.....891..........");
+//    std::istringstream stream("3...8.......7....51..............36...2..4....7...........6.13..452...........8..");
     stream >> board;
     std::cout << "Start: " << board << '\n' << std::flush;
     auto solved = board.solve();

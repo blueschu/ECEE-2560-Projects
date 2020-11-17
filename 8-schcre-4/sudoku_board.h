@@ -215,9 +215,17 @@ class SudokuBoard {
         }
     }
 
-    std::pair<bool, std::size_t> solve()
+    /**
+     * Attempts to solve this Sudoku board. Returns a pair containing 0) a bool
+     * indicating whether the board was successfully solved, and 1) the number
+     * of recursive function calls required to determine the solution.
+     *
+     * @return Pair of 0) whether the board was solved, 1) the number of
+     *         recursive calls made to find the solution.
+     */
+    std::pair<bool, unsigned int> solve()
     {
-        return try_solve(
+        return solve_after(
             std::find(
                 std::begin(*m_board_entries),
                 std::end(*m_board_entries),
@@ -227,26 +235,23 @@ class SudokuBoard {
     }
 
   private:
-    std::pair<bool, std::size_t> try_solve(typename Board::const_iterator pos)
+    std::pair<bool, unsigned int> solve_after(typename Board::const_iterator pos)
     {
-        std::size_t call_count{1};
+        unsigned int call_count{1u};
+        const auto entries_end{std::cend(*m_board_entries)};
 
-        if (pos == std::end(*m_board_entries)) {
+        if (pos == entries_end) {
             return {true, call_count};
         }
 
         const auto coord = m_board_entries->coordinate_of(pos);
 
-        for (const auto candidate :  find_candidates(coord)) {
+        for (const auto candidate : find_candidates(coord)) {
             set_cell(coord, candidate);
 
-            const auto next = std::find(
-                pos,
-                std::cend(*m_board_entries),
-                m_entry_policy.blank_sentinel
+            const auto[found_solution, calls] = try_solve(
+                std::find(pos, entries_end, m_entry_policy.blank_sentinel)
             );
-
-            const auto [found_solution, calls] = try_solve(next);
             call_count += calls;
 
             if (found_solution) {
