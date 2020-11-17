@@ -15,7 +15,7 @@
 #ifndef EECE_2560_PROJECTS_SUDOKU_BOARD_H
 #define EECE_2560_PROJECTS_SUDOKU_BOARD_H
 
-#include <algorithm>
+#include <algorithm>        // for std::find
 #include <array>            // for std::array
 #include <cstddef>          // for std::size_t
 #include <iostream>         // for I/O stream definitions
@@ -222,15 +222,14 @@ class SudokuBoard {
                 std::begin(*m_board_entries),
                 std::end(*m_board_entries),
                 m_entry_policy.blank_sentinel
-            ),
-            0
+            )
         );
     }
 
   private:
-    std::pair<bool, std::size_t> try_solve(typename Board::const_iterator pos, std::size_t call_count)
+    std::pair<bool, std::size_t> try_solve(typename Board::const_iterator pos)
     {
-        ++call_count;
+        std::size_t call_count{1};
 
         if (pos == std::end(*m_board_entries)) {
             return {true, call_count};
@@ -247,7 +246,7 @@ class SudokuBoard {
                 m_entry_policy.blank_sentinel
             );
 
-            const auto [found_solution, calls] = try_solve(next, 0);
+            const auto [found_solution, calls] = try_solve(next);
             call_count += calls;
 
             if (found_solution) {
