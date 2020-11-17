@@ -122,6 +122,17 @@ struct Matrix {
 
     /// Returns an iterator to the last (bottom right) entry of this matrix.
     [[nodiscard]] const_iterator end() const noexcept { return std::end(m_entries); }
+
+    /**
+     * Returns the matrix coordinate corresponding to the given iterator position.
+     *
+     * @param pos Iterator position.
+     * @return Matrix coordinate.
+     */
+    constexpr Coordinate coordinate_of(const_iterator pos) const {
+        const auto index = std::distance(begin(), pos);
+        return {static_cast<size_type>(index) / N, static_cast<size_type>(index) % N};
+    }
 };
 
 /// Ensure that Matrix is an aggregate.

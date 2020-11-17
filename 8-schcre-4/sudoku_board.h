@@ -15,10 +15,12 @@
 #ifndef EECE_2560_PROJECTS_SUDOKU_BOARD_H
 #define EECE_2560_PROJECTS_SUDOKU_BOARD_H
 
+#include <algorithm>
 #include <array>            // for std::array
 #include <cstddef>          // for std::size_t
 #include <iostream>         // for I/O stream definitions
 #include <memory>           // for std::unique_ptr
+#include <optional>
 
 #include "eece2560_io.h"
 #include "matrix.h"
@@ -46,6 +48,8 @@ struct SudokuEntryPolicy {
      * where N is any value such that entry_valid(entry, N) returns true.
      */
     constexpr std::size_t index_of(T entry) const { return entry - 1; }
+
+    constexpr T entry_of(std::size_t index) const { return index + 1; }
 
     /**
      * Returns true if the given entry is a legal value for a board with the
@@ -100,12 +104,12 @@ class SudokuBoard {
 
         [[nodiscard]] bool check_col(std::size_t col_index, std::size_t entry_index) const
         {
-            return rows[{col_index, entry_index}];
+            return cols[{col_index, entry_index}];
         }
 
         [[nodiscard]] bool check_block(std::size_t block_index, std::size_t entry_index) const
         {
-            return rows[{block_index, entry_index}];
+            return blocks[{block_index, entry_index}];
         }
     };
 
@@ -144,10 +148,15 @@ class SudokuBoard {
     explicit SudokuBoard(std::unique_ptr<Board> board, Policy policy = Policy())
         : m_board_entries(std::move(board)), m_entry_policy(std::move(policy))
     {
-        for (auto& entry : *m_board_entries) {
-            if (!m_entry_policy.check_valid(entry)) {
-                entry = m_entry_policy.blank_sentinel;
+        auto it = std::begin(*m_board_entries);
+        auto end = std::end(*m_board_entries);
+        while (it != end) {
+            if (!m_entry_policy.check_valid(*it)) {
+                *it = m_entry_policy.blank_sentinel;
+            } else {
+                set_conflict_state(m_board_entries->coordinate_of(it), *it, true);
             }
+            ++it;
         }
     }
 
@@ -206,7 +215,66 @@ class SudokuBoard {
         }
     }
 
+    std::pair<bool, std::size_t> solve()
+    {
+        return try_solve(
+            std::find(
+                std::begin(*m_board_entries),
+                std::end(*m_board_entries),
+                m_entry_policy.blank_sentinel
+            ),
+            0
+        );
+    }
+
   private:
+    std::pair<bool, std::size_t> try_solve(typename Board::const_iterator pos, std::size_t call_count)
+    {
+        ++call_count;
+
+        if (pos == std::end(*m_board_entries)) {
+            return {true, call_count};
+        }
+
+        const auto coord = m_board_entries->coordinate_of(pos);
+
+        for (const auto candidate :  find_candidates(coord)) {
+            set_cell(coord, candidate);
+
+            const auto next = std::find(
+                pos,
+                std::cend(*m_board_entries),
+                m_entry_policy.blank_sentinel
+            );
+
+            const auto [found_solution, calls] = try_solve(next, 0);
+            call_count += calls;
+
+            if (found_solution) {
+                return {true, call_count};
+            } else {
+                clear_cell(coord);
+            }
+        }
+        // All possible cell values have a conflict at the current position.
+        // Signal to the caller that this branch does not lead to a solution.
+        return {false, call_count};
+    }
+
+    std::vector<Entry> find_candidates(Coordinate coord) const
+    {
+        const auto[row, col] = coord;
+        std::vector<Entry> candidates;
+        for (std::size_t index{0}; index < k_dim; ++index) {
+            if (!m_conflicts->check_row(row, index)
+                && !m_conflicts->check_col(col, index)
+                && !m_conflicts->check_block(block_index(coord), index)) {
+                candidates.push_back(m_entry_policy.entry_of(index));
+            }
+        }
+        return candidates;
+    }
+
     /**
      * Sets the `entry` conflict state for the column, row, and block containing
      * the given coordinate.
@@ -234,7 +302,7 @@ class SudokuBoard {
      */
     constexpr static std::size_t block_index(Coordinate coord)
     {
-        return N * (coord.first % N) + (coord.second % N);
+        return N * (coord.first / N) + (coord.second / N);
     }
 
     friend std::ostream& operator<<(std::ostream& out, const SudokuBoard& sudoku_board)
@@ -254,7 +322,12 @@ class SudokuBoard {
     {
         sudoku_board.clear();
 
-        for (Entry& entry : *sudoku_board.m_board_entries) {
+        auto it = std::begin(*sudoku_board.m_board_entries);
+        auto end = std::end(*sudoku_board.m_board_entries);
+
+        // Manually iterate over iterator range since we need access to the raw
+        // iterator to determine the board coordinate.
+        while (it != end) {
             // Each Sudoku entry is represented by a single character.
             char entry_symbol;
             if (!(in >> entry_symbol)) {
@@ -272,8 +345,12 @@ class SudokuBoard {
                 symbol_stream >> entry_candidate
                     && sudoku_board.m_entry_policy.entry_valid(entry_candidate, sudoku_board.k_dim)
                 ) {
-                entry = entry_candidate;
+                sudoku_board.set_cell(
+                    sudoku_board.m_board_entries->coordinate_of(it),
+                    entry_candidate
+                );
             }
+            ++it;
         }
 
         return in;
