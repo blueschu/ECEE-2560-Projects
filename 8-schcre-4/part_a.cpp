@@ -71,6 +71,8 @@ int main()
     auto solved = board.solve();
     std::cout << "End :  " << board << std::boolalpha << " (" << solved.first << ',' << solved.second << ")\n";
 
+    std::cout << board.board_string();
+
 
 
 //    constexpr std::size_t k_title_width{24};

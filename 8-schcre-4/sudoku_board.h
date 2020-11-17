@@ -255,6 +255,38 @@ class SudokuBoard {
         );
     }
 
+    /**
+     * Generates a string representing this Sudoku board.
+     *
+     * @return Human-readable board representation.
+     */
+    [[nodiscard]] std::string board_string() const
+    {
+        std::ostringstream stream;
+        std::size_t entry_counter{0};
+
+        for (auto entry : *m_board_entries) {
+            if (entry_counter % N == 0) {
+                stream << "| ";
+            }
+
+            if (entry_counter != 0) {
+                if (entry_counter % (k_dim * N) == 0) {
+                    stream << '\n' << std::string(2 * (k_dim + N) + 1, '-');
+                }
+
+                if (entry_counter % k_dim == 0) {
+                    stream << '\n' << "| ";
+                }
+            }
+            stream << entry << ' ';
+            ++entry_counter;
+        }
+        stream << "|\n";
+
+        return stream.str();
+    }
+
   private:
     /**
      * Returns true if the cell at the given coordinate has no conflicts for
@@ -264,7 +296,8 @@ class SudokuBoard {
      * @param entry Entry candidate for the cell.
      * @return True if the cell has no conflicts for the entry.
      */
-    bool check_legal_move(Coordinate coord, Entry entry) {
+    bool check_legal_move(Coordinate coord, Entry entry)
+    {
         const auto[row, col] = coord;
         const auto entry_index = m_entry_policy.index_of(entry);
         return !m_conflicts->check_row(row, entry_index)
