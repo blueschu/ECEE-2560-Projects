@@ -294,9 +294,8 @@ class SudokuBoard {
     }
 
 #ifdef EECE2560_PART_A_DEMO
-
+    // Access to the internal conflict implementation for part a demo.
     const Conflicts& debug_conflicts() const { return *m_conflicts; }
-
 #endif
 
   private:

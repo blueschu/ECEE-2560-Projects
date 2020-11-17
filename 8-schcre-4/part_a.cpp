@@ -52,8 +52,8 @@ struct SudokuEntry {
 
 static_assert(std::is_aggregate_v<SudokuEntry>);
 
+// Sudoku board specialization for part a demo.
 using Board = SudokuBoard<3, SudokuEntry>;
-
 } // end namespace
 
 template<>
@@ -75,9 +75,12 @@ struct SudokuEntryPolicy<SudokuEntry> {
     }
 };
 
+namespace {
 void print_conflicts(const Board& board)
 {
+    using namespace std::string_view_literals;
     constexpr static std::size_t k_label_width{18};
+
     const static auto legend = [&]() {
         std::vector<std::size_t> legend_values(Board::dim() * Board::dim());
         std::generate(std::begin(legend_values), std::end(legend_values), []() {
@@ -88,19 +91,33 @@ void print_conflicts(const Board& board)
         return legend_values;
     }();
 
-    const auto conflicts = board.debug_conflicts();
+    const auto& conflicts = board.debug_conflicts();
+
+    const auto conflict_sources = {
+        std::make_pair("Row conflicts: "sv, std::cref(conflicts.rows)),
+        std::make_pair("Column conflicts: "sv, std::cref(conflicts.cols)),
+        std::make_pair("Block conflicts: "sv, std::cref(conflicts.blocks)),
+    };
 
     std::cout << std::string(k_label_width + 1, ' ');
     eece2560::print_sequence(std::cout, std::begin(legend), std::end(legend), "", "", "\n");
 
-    std::cout << std::setw(k_label_width) << "Row conflicts: ";
-    eece2560::print_sequence(std::cout, std::begin(conflicts.rows), std::end(conflicts.rows), "", "[", "]\n");
-    std::cout << std::setw(k_label_width) << "Column conflicts: ";
-    eece2560::print_sequence(std::cout, std::begin(conflicts.cols), std::end(conflicts.cols), "", "[", "]\n");
-    std::cout << std::setw(k_label_width) << "Block conflicts: ";
-    eece2560::print_sequence(std::cout, std::begin(conflicts.blocks), std::end(conflicts.blocks), "", "[", "]\n");
-    std::cout << '\n';
+    for (const auto[label, conflicts] : conflict_sources) {
+        // Make sure we're not accidentally copying the large aggregate.
+        static_assert(std::is_same_v<const Matrix<bool, Board::dim()>&, decltype(conflicts)>);
+
+        std::cout << std::setw(k_label_width) << label;
+        eece2560::print_sequence(
+            std::cout,
+            std::begin(conflicts),
+            std::end(conflicts),
+            ""sv,
+            "["sv,
+            "]\n"sv
+        );
+    }
 }
+} // end namespace
 
 int main()
 {
@@ -119,5 +136,6 @@ int main()
         std::cout << board.board_string();
 
         print_conflicts(board);
+        std::cout << '\n';
     }
 }
