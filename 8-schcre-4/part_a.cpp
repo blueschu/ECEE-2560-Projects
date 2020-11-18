@@ -18,13 +18,21 @@
 #include "sudoku_board.h"
 
 namespace {
+/// Relative path to sudoku puzzle file.
 constexpr const char k_default_sudoku_file[]{"resources/sudoku_all.txt"};
 
+/**
+ * Simple single-member aggregate class providing custom formatting for sudoku
+ * cell entries.
+ */
 struct SudokuEntry {
+    /// Type used to represent an entry's value.
     using Value = unsigned int;
 
+    /// Symbol used to indicate the a sudoku board cell is blank.
     constexpr static char k_blank_symbol{'.'};
 
+    /// This entry's values.
     Value value;
 
     constexpr bool operator==(SudokuEntry rhs) const { return value == rhs.value; }
@@ -50,12 +58,15 @@ struct SudokuEntry {
     }
 };
 
+/// Confirm that SudokuEntry is an aggregate.
 static_assert(std::is_aggregate_v<SudokuEntry>);
 
-// Sudoku board specialization for part a demo.
+// SudokuBoard specialization for part a demo.
 using Board = SudokuBoard<3, SudokuEntry>;
 } // end namespace
 
+// SudokuEntryPolicy specialization for SudokuEntry. This must be placed in the
+// global namespace.
 template<>
 struct SudokuEntryPolicy<SudokuEntry> {
     const SudokuEntry blank_sentinel{0};
@@ -67,7 +78,7 @@ struct SudokuEntryPolicy<SudokuEntry> {
         return entry.value > 0 && entry.value <= board_dimension;
     }
 
-    constexpr SudokuEntry entry_of(std::size_t index) const
+    constexpr SudokuEntry reverse_index(std::size_t index) const
     {
         return SudokuEntry{
             static_cast<SudokuEntry::Value>(index + 1)
@@ -76,6 +87,12 @@ struct SudokuEntryPolicy<SudokuEntry> {
 };
 
 namespace {
+/**
+ * Prints the internal row, column, and block conflicts stored by the given
+ * sudoku board.
+ *
+ * @param board Sudoku board whose conflicts are to be printed.
+ */
 void print_conflicts(const Board& board)
 {
     using namespace std::string_view_literals;
@@ -91,18 +108,15 @@ void print_conflicts(const Board& board)
         return legend_values;
     }();
 
-    const auto& conflicts = board.debug_conflicts();
+    std::cout << std::string(k_label_width + 1, ' ');
+    eece2560::print_sequence(std::cout, std::begin(legend), std::end(legend), ""sv, ""sv, "\n"sv);
 
-    const auto conflict_sources = {
+    const auto& conflicts = board.debug_conflicts();
+    for (const auto[label, conflicts] : {
         std::make_pair("Row conflicts: "sv, std::cref(conflicts.rows)),
         std::make_pair("Column conflicts: "sv, std::cref(conflicts.cols)),
         std::make_pair("Block conflicts: "sv, std::cref(conflicts.blocks)),
-    };
-
-    std::cout << std::string(k_label_width + 1, ' ');
-    eece2560::print_sequence(std::cout, std::begin(legend), std::end(legend), "", "", "\n");
-
-    for (const auto[label, conflicts] : conflict_sources) {
+    }) {
         // Make sure we're not accidentally copying the large aggregate.
         static_assert(std::is_same_v<const Matrix<bool, Board::dim()>&, decltype(conflicts)>);
 

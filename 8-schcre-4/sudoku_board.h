@@ -21,6 +21,7 @@
 #include <iostream>         // for I/O stream definitions
 #include <limits>           // for std::numeric_limits
 #include <memory>           // for std::unique_ptr
+#include <type_traits>      // for std::is_integral
 
 #include "eece2560_io.h"
 #include "matrix.h"
@@ -49,7 +50,10 @@ struct SudokuEntryPolicy {
      */
     constexpr std::size_t index_of(T entry) const { return entry - 1; }
 
-    constexpr T entry_of(std::size_t index) const { return index + 1; }
+    /**
+     * Returns the entry associated with the given index.
+     */
+    constexpr T reverse_index(std::size_t index) const { return index + 1; }
 
     /**
      * Returns true if the given entry is a legal value for a board with the
@@ -121,7 +125,7 @@ class SudokuBoard {
 
     /**
      * Policy instance for associating Sudoku cell behaviors will arbitrary
-     * cell entry types.
+     * entry types.
      */
     Policy m_entry_policy;
 
@@ -358,7 +362,7 @@ class SudokuBoard {
         for (typename Conflicts::Index index{0}; index < k_dim; ++index) {
             // Attempt set the cell at coord with the value associated with index.
             // set_cell returns false if the candidate value has a conflict.
-            if (set_cell(coord, m_entry_policy.entry_of(index))) {
+            if (set_cell(coord, m_entry_policy.reverse_index(index))) {
 
                 // Continue solving at the next blank, proceeding left-to-right,
                 // top to bottom

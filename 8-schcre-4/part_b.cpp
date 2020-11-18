@@ -15,13 +15,21 @@
 #include "sudoku_board.h"
 
 namespace {
+/// Relative path to sudoku puzzle file.
 constexpr const char k_default_sudoku_file[]{"resources/sudoku_all.txt"};
 
+/**
+ * Simple single-member aggregate class providing custom formatting for sudoku
+ * cell entries.
+ */
 struct SudokuEntry {
+    /// Type used to represent an entry's value.
     using Value = unsigned int;
 
+    /// Symbol used to indicate the a sudoku board cell is blank.
     constexpr static char k_blank_symbol{'.'};
 
+    /// This entry's values.
     Value value;
 
     constexpr bool operator==(SudokuEntry rhs) const { return value == rhs.value; }
@@ -47,10 +55,13 @@ struct SudokuEntry {
     }
 };
 
+/// Confirm that SudokuEntry is an aggregate.
 static_assert(std::is_aggregate_v<SudokuEntry>);
 
 } // end namespace
 
+// SudokuEntryPolicy specialization for SudokuEntry. This must be placed in the
+// global namespace.
 template<>
 struct SudokuEntryPolicy<SudokuEntry> {
     const SudokuEntry blank_sentinel{0};
@@ -62,7 +73,7 @@ struct SudokuEntryPolicy<SudokuEntry> {
         return entry.value > 0 && entry.value <= board_dimension;
     }
 
-    constexpr SudokuEntry entry_of(std::size_t index) const
+    constexpr SudokuEntry reverse_index(std::size_t index) const
     {
         return SudokuEntry{
             static_cast<SudokuEntry::Value>(index + 1)
