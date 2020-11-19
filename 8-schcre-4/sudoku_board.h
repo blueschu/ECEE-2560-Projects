@@ -302,6 +302,18 @@ class SudokuBoard {
     const Conflicts& debug_conflicts() const { return *m_conflicts; }
 #endif
 
+    /// Returns true if this Sudoku board is solved.
+    [[nodiscard]] bool fully_solved() const
+    {
+        // Note - could replace explicit loop with std::find
+        for (std::size_t i{0}; i < k_dim * k_dim; ++i) {
+            if ((*m_board_entries)[i] == m_entry_policy.blank_sentinel) {
+                return false;
+            }
+        }
+        return true;
+    };
+
   private:
     /**
      * Returns true if the cell at the given coordinate has no conflicts for
