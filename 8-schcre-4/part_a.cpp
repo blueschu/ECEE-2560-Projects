@@ -150,6 +150,7 @@ int main()
         std::cout << board.board_string();
 
         print_conflicts(board);
+        std::cout << "Solved?: " << std::boolalpha << board.fully_solved() << std::noboolalpha << '\n';
         std::cout << '\n';
     }
 }
