@@ -298,19 +298,16 @@ class SudokuBoard {
     }
 
     bool fully_solved() {
-        bool solved = false;
+        bool solved = true;
         for (std::size_t i{0}; i < k_dim * k_dim; ++i)
         {
-            if ((*m_board_entries)[i] != m_entry_policy.blank_sentinel)
-            {
-                solved = true;
-            }
-            else
+            if ((*m_board_entries)[i] == m_entry_policy.blank_sentinel)
             {
                 solved = false;
+                return solved;
             }
         }
-        return solved;
+//        return solved;
     };
 
 #ifdef EECE2560_PART_A_DEMO
