@@ -269,22 +269,27 @@ class SudokuBoard {
      */
     [[nodiscard]] std::string board_string() const
     {
+        using Counter = unsigned int;
         // Make sure the counter technique used below won't overflow.
-        static_assert(k_dim * k_dim <= std::numeric_limits<unsigned int>::max());
+        static_assert(k_dim * k_dim <= std::numeric_limits<Counter>::max());
 
         std::ostringstream stream;
-        unsigned int entry_counter{0};
+        Counter entry_counter{0};
 
         for (auto entry : *m_board_entries) {
+            // Check if the current entry precedes a horizontal-block boundary.
             if (entry_counter % N == 0) {
-                stream << "| ";
+                stream << "| ";     // Write a vertical divider.
             }
 
             if (entry_counter != 0) {
+                // Check if the current entry precedes a vertical-block boundary
                 if (entry_counter % (k_dim * N) == 0) {
+                    // Write a horizontal divider with the width of a full row.
                     stream << '\n' << std::string(2 * (k_dim + N) + 1, '-');
                 }
 
+                // Check if the current entry is the end of a row.
                 if (entry_counter % k_dim == 0) {
                     stream << '\n' << "| ";
                 }
@@ -301,6 +306,18 @@ class SudokuBoard {
     // Access to the internal conflict implementation for part a demo.
     const Conflicts& debug_conflicts() const { return *m_conflicts; }
 #endif
+
+    /// Returns true if this Sudoku board is solved.
+    [[nodiscard]] bool fully_solved() const
+    {
+        // Note - could replace explicit loop with std::find
+        for (std::size_t i{0}; i < k_dim * k_dim; ++i) {
+            if ((*m_board_entries)[i] == m_entry_policy.blank_sentinel) {
+                return false;
+            }
+        }
+        return true;
+    };
 
   private:
     /**
