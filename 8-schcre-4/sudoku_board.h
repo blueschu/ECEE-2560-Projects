@@ -10,6 +10,7 @@
  *  [1] https://stackoverflow.com/questions/14718055/
  *  [2] https://stackoverflow.com/questions/64794809/#64794991
  *  [3] https://en.cppreference.com/w/cpp/iterator/istream_iterator
+ *  [4] https://en.cppreference.com/w/cpp/named_req/Container
  */
 
 #ifndef EECE_2560_PROJECTS_SUDOKU_BOARD_H
@@ -24,7 +25,41 @@
 #include <type_traits>      // for std::is_integral
 
 #include "eece2560_io.h"
+#include "eece2560_iter.h"
 #include "matrix.h"
+
+//namespace details {
+//template<typename Iter, typename Needle, typename Compare = std::less<>>
+//Iter max_bounded(Iter it, Iter end, Needle needle, Needle cap, Compare compare = Compare())
+//{
+//    Iter current_max;
+//    ++it;
+//    while (it != end) {
+//        if (!compare(*it, cap)) {
+//            continue;
+//        }
+//
+//        if (compare(*current_max, *it)) {
+//            current_max = it;
+//
+//            if (!compare(*current_max, needle)) {
+//                return current_max;
+//            }
+//        }
+//        ++it;
+//    }
+//    return current_max;
+//}
+//}
+
+namespace details {
+/**
+ * Aggregate storing information about row, column, and block conflicts in
+ * a Sudoku board.
+ */
+template<std::size_t N>
+struct BoardConflicts;
+} // end namespace details
 
 /**
  * Policy for associating blank cell representations and conflict lookup table
@@ -83,45 +118,12 @@ class SudokuBoard {
     /// Type used to store the cell entries for this Sudoku board.
     using Board = Matrix<Entry, k_dim>;
 
+    using Conflicts = details::BoardConflicts<k_dim>;
+
     /// The type used to index cell on this Sudoku board.
     using Coordinate = typename Board::Coordinate;
 
-    /**
-     * Aggregate storing information about row, column, and block conflicts in
-     * a Sudoku board.
-     */
-    struct Conflicts {
-        /**
-         * Grid of k_dim rows where each row stores whether the entry associated
-         * with a given column has a conflict elsewhere in the row/column/block.
-         */
-        using ConflictTable = Matrix<bool, k_dim>;
-
-        /// Unsigned type used to lookup conflicts for a specific cell value.
-        using Index = typename ConflictTable::size_type;
-
-        ConflictTable rows;
-        ConflictTable cols;
-        ConflictTable blocks;
-
-        [[nodiscard]] bool check_row(Index row_index, Index entry_index) const
-        {
-            return rows[{row_index, entry_index}];
-        }
-
-        [[nodiscard]] bool check_col(Index col_index, Index entry_index) const
-        {
-            return cols[{col_index, entry_index}];
-        }
-
-        [[nodiscard]] bool check_block(Index block_index, Index entry_index) const
-        {
-            return blocks[{block_index, entry_index}];
-        }
-    };
-
-    /// Ensure that Conflicts is an aggregate.
-    static_assert(std::is_aggregate_v<Conflicts>);
+    using CallCount = unsigned int;
 
     /**
      * Policy instance for associating Sudoku cell behaviors will arbitrary
@@ -235,9 +237,9 @@ class SudokuBoard {
         std::fill(std::begin(*m_board_entries), std::end(*m_board_entries), m_entry_policy.blank_sentinel);
         // Set all of the conflict tables to all false. [2]
         for (auto conflict_table : {
-            std::ref(m_conflicts->rows),
-            std::ref(m_conflicts->cols),
-            std::ref(m_conflicts->blocks)
+            std::ref(m_conflicts->rows.table),
+            std::ref(m_conflicts->cols.table),
+            std::ref(m_conflicts->blocks.table)
         }) {
             std::fill(std::begin(conflict_table.get()), std::end(conflict_table.get()), false);
         }
@@ -251,16 +253,63 @@ class SudokuBoard {
      * @return Pair of 0) whether the board was solved, 1) the number of
      *         recursive calls made to find the solution.
      */
-    std::pair<bool, unsigned int> solve()
+    std::pair<bool, CallCount> solve_scanning_row()
     {
-        return solve_after(
-            std::find(
-                std::begin(*m_board_entries),
-                std::end(*m_board_entries),
-                m_entry_policy.blank_sentinel
-            )
+        const auto first_blank = std::find(
+            m_board_entries->cbegin(),
+            m_board_entries->cend(),
+            m_entry_policy.blank_sentinel
         );
+        return solve_after(first_blank, m_board_entries->end());
     }
+
+    /**
+     * Attempts to solve this Sudoku board. Returns a pair containing 0) a bool
+     * indicating whether the board was successfully solved, and 1) the number
+     * of recursive function calls required to determine the solution.
+     *
+     * @return Pair of 0) whether the board was solved, 1) the number of
+     *         recursive calls made to find the solution.
+     */
+    std::pair<bool, CallCount> solve_scanning_column()
+    {
+        const auto first_blank = std::find(
+            m_board_entries->begin_column(),
+            m_board_entries->end_column(),
+            m_entry_policy.blank_sentinel
+        );
+        return solve_after(first_blank, m_board_entries->end_column());
+    }
+
+    /**
+     * Attempts to solve this Sudoku board. Returns a pair containing 0) a bool
+     * indicating whether the board was successfully solved, and 1) the number
+     * of recursive function calls required to determine the solution.
+     *
+     * @return Pair of 0) whether the board was solved, 1) the number of
+     *         recursive calls made to find the solution.
+     */
+//    std::pair<bool, CallCount> solve_heuristic()
+//    {
+//        const auto first_blank = std::find(begin(), end(), m_entry_policy.blank_sentinel);
+//
+//        // Attempts to find the most promising cell occurring after the
+//        const auto most_promising = [&](const const_iterator curr_pos) {
+//            return std::find(curr_pos, end(), m_entry_policy.blank_sentinel);
+//        };
+//
+//        return solve_after(first_blank, most_promising);
+
+//        const auto first_blank = find_blank({0, 0}, &step_row);
+//        if (!first_blank) {
+//            return {true, 0};
+//        }
+//        return solve_after(*first_blank, [&](auto) {
+//            auto index = m_conflicts->promising_index(&Conflicts::rows, 5);
+//            return find_blank({index, 0}, &step_row);
+//        });
+
+//    }
 
     /**
      * Generates a string representing this Sudoku board.
@@ -319,7 +368,6 @@ class SudokuBoard {
         return true;
     };
 
-  private:
     /**
      * Returns true if the cell at the given coordinate has no conflicts for
      * the given entry.
@@ -332,9 +380,9 @@ class SudokuBoard {
     {
         const auto[row, col] = coord;
         const auto entry_index = m_entry_policy.index_of(entry);
-        return !m_conflicts->check_row(row, entry_index)
-            && !m_conflicts->check_col(col, entry_index)
-            && !m_conflicts->check_block(block_index(coord), entry_index);
+        return !m_conflicts->check_source(&Conflicts::rows, row, entry_index)
+            && !m_conflicts->check_source(&Conflicts::cols, col, entry_index)
+            && !m_conflicts->check_source(&Conflicts::blocks, block_index(coord), entry_index);
     }
 
     /**
@@ -351,25 +399,26 @@ class SudokuBoard {
         const auto[row, col] = coord;
         const auto block = block_index(coord);
         const auto entry_index = m_entry_policy.index_of(entry);
-        m_conflicts->rows[{row, entry_index}] = state;
-        m_conflicts->cols[{col, entry_index}] = state;
-        m_conflicts->blocks[{block, entry_index}] = state;
+        m_conflicts->set_source(&Conflicts::rows, row, entry_index, state);
+        m_conflicts->set_source(&Conflicts::cols, col, entry_index, state);
+        m_conflicts->set_source(&Conflicts::blocks, block, entry_index, state);
     }
 
     /**
      * Attempts the solve starting at the given position and proceeding left-to-
      * right, top-to-bottom.
      *
-     * @param pos Next cell to attempt to fill with a value..
+     * @tparam Iterator type for the board.
+     * @param cell Next cell to attempt to fill with a value..
      * @return Pair of 0) whether the board is solved, 1) the number of recursive
      *         calls required to determine the solution.
      */
-    std::pair<bool, unsigned int> solve_after(typename Board::const_iterator pos)
+    template<typename Iter>
+    std::pair<bool, CallCount> solve_after(Iter pos, Iter end)
     {
         unsigned int call_count{1u};
-        const auto entries_end{std::cend(*m_board_entries)};
 
-        if (pos == entries_end) {
+        if (pos == end) {
             return {true, call_count};
         }
 
@@ -381,10 +430,10 @@ class SudokuBoard {
             // set_cell returns false if the candidate value has a conflict.
             if (set_cell(coord, m_entry_policy.reverse_index(index))) {
 
-                // Continue solving at the next blank, proceeding left-to-right,
-                // top to bottom
+                // Continue solving at the next blank.
                 const auto[found_solution, calls] = solve_after(
-                    std::find(pos, entries_end, m_entry_policy.blank_sentinel)
+                    std::find(pos, end, m_entry_policy.blank_sentinel),
+                    end
                 );
                 call_count += calls;
 
@@ -406,7 +455,7 @@ class SudokuBoard {
      * Blocks are numbered left-to-right, top-to-bottom. When N=3, cell (0,0)
      * is in block 0, cell (0, 8) in in block 2, and cell (8,0) is in block 6.
      */
-    constexpr static typename Conflicts::Index block_index(Coordinate coord)
+    constexpr static std::size_t block_index(Coordinate coord)
     {
         return N * (coord.first / N) + (coord.second / N);
     }
@@ -464,5 +513,81 @@ class SudokuBoard {
         return in;
     }
 };
+
+namespace details {
+/**
+ * Aggregate storing information about row, column, and block conflicts in
+ * a Sudoku board.
+ */
+template<std::size_t N>
+struct BoardConflicts {
+    using Table = Matrix<bool, N>;
+    using Count = unsigned int;
+    using Index = typename Table::size_type;
+
+    struct ConflictSource {
+        /*
+         * Grid of k_dim rows where each row stores whether the entry associated
+         * with a given column has a conflict elsewhere in the row/column/block.
+         */
+        Table table;
+
+        /// Cache of the number of conflicts present in each row of the conflict table.
+        std::array<Count, N> counts;
+    };
+
+    using Source = ConflictSource BoardConflicts::*;
+
+    ConflictSource rows;
+    ConflictSource cols;
+    ConflictSource blocks;
+
+    /**
+     *
+     * @param source_index Which row/column/block.
+     * @param entry_index Which entry within the row/column/block.
+     */
+    void set_source(const Source source, Index source_index, Index entry_index, bool state)
+    {
+        // Whether the given entry has a conflict in the row/column/block indexed by source_index.
+        bool& conflict_flag = (this->*source).table[{source_index, entry_index}];
+
+        // Update the conflict count for row/column/block.
+        if (conflict_flag != state) {
+            if (state) {
+                (this->*source).counts[source_index] += 1;
+            } else {
+                (this->*source).counts[source_index] -= 1;
+            }
+        }
+        conflict_flag = state;
+    }
+
+    [[nodiscard]] bool check_source(const Source source, Index source_index, Index entry_index) const
+    {
+        return (this->*source).table[{source_index, entry_index}];
+    }
+
+//        Count conflict_count(const Source source, Index source_index) const
+//        {
+//            return (this->*source).counts[source_index];
+//        }
+
+    [[nodiscard]] Index promising_index(const Source source) const
+    {
+        constexpr static auto not_full = [](Count count) { return count < N; };
+        const auto& count_array = (this->*source).counts;
+        const auto start = eece2560::make_filter_iter(count_array, not_full);
+        const auto end = eece2560::make_filter_iter_end(count_array, not_full);
+        const auto pos = std::max_element(start, end);
+        return static_cast<Index>(std::distance(start, pos));
+    }
+
+};
+
+/// Ensure that Conflicts is an aggregate.
+static_assert(std::is_aggregate_v<BoardConflicts<1>>);
+
+} // end namespace details
 
 #endif //EECE_2560_PROJECTS_SUDOKU_BOARD_H
