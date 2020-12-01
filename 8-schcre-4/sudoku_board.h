@@ -16,43 +16,53 @@
 #ifndef EECE_2560_PROJECTS_SUDOKU_BOARD_H
 #define EECE_2560_PROJECTS_SUDOKU_BOARD_H
 
-#include <algorithm>        // for std::find
+#include <algorithm>        // for std::random_shuffle
 #include <array>            // for std::array
 #include <cstddef>          // for std::size_t
 #include <iostream>         // for I/O stream definitions
 #include <limits>           // for std::numeric_limits
 #include <memory>           // for std::unique_ptr
+#include <numeric>          // for std::iota
+#include <optional>         // for std::optional
 #include <type_traits>      // for std::is_integral
 
 #include "eece2560_io.h"
-#include "eece2560_iter.h"
 #include "matrix.h"
 
-//namespace details {
-//template<typename Iter, typename Needle, typename Compare = std::less<>>
-//Iter max_bounded(Iter it, Iter end, Needle needle, Needle cap, Compare compare = Compare())
-//{
-//    Iter current_max;
-//    ++it;
-//    while (it != end) {
-//        if (!compare(*it, cap)) {
-//            continue;
-//        }
-//
-//        if (compare(*current_max, *it)) {
-//            current_max = it;
-//
-//            if (!compare(*current_max, needle)) {
-//                return current_max;
-//            }
-//        }
-//        ++it;
-//    }
-//    return current_max;
-//}
-//}
-
 namespace details {
+/**
+ * Returns an iterator to the greatest element in the given range that is less
+ * than cap.
+ */
+template<typename Iter, typename Needle, typename Compare = std::less<>>
+Iter max_bounded(Iter it, Iter end, Needle cap, Compare compare = Compare())
+{
+    Iter current_max{it};
+    ++it;
+    while (it != end) {
+        if (!compare(*it, cap)) {
+            ++it;
+            continue;
+        }
+
+        if (compare(*current_max, *it)) {
+            current_max = it;
+        }
+        ++it;
+    }
+    return current_max;
+}
+
+template<typename T, typename F, typename P>
+std::optional<T> iterate_optional_until(T initial_value, F func = F(), P pred = P())
+{
+    std::optional<T> current_value = std::optional(std::move(initial_value));
+    while (current_value && !pred(*current_value)) {
+        current_value = func(*current_value);
+    }
+    return current_value;
+}
+
 /**
  * Aggregate storing information about row, column, and block conflicts in
  * a Sudoku board.
@@ -255,12 +265,18 @@ class SudokuBoard {
      */
     std::pair<bool, CallCount> solve_scanning_row()
     {
-        const auto first_blank = std::find(
-            m_board_entries->cbegin(),
-            m_board_entries->cend(),
-            m_entry_policy.blank_sentinel
-        );
-        return solve_after(first_blank, m_board_entries->end());
+        const static auto find_next_row = [&](Coordinate coord) {
+            return details::iterate_optional_until(coord, step_row, [&](Coordinate c) {
+                return ((*m_board_entries)[c] == m_entry_policy.blank_sentinel);
+            });
+        };
+
+        auto start = find_next_row({0, 0});
+        if (!start) {
+            // The board is already solved.
+            return {true, 0};
+        }
+        return solve_after(*start, find_next_row);
     }
 
     /**
@@ -271,14 +287,44 @@ class SudokuBoard {
      * @return Pair of 0) whether the board was solved, 1) the number of
      *         recursive calls made to find the solution.
      */
-    std::pair<bool, CallCount> solve_scanning_column()
+    std::pair<bool, CallCount> solve_scanning_col()
     {
-        const auto first_blank = std::find(
-            m_board_entries->begin_column(),
-            m_board_entries->end_column(),
-            m_entry_policy.blank_sentinel
-        );
-        return solve_after(first_blank, m_board_entries->end_column());
+        const static auto find_next_col = [&](Coordinate coord) -> std::optional<Coordinate> {
+            return details::iterate_optional_until(coord, step_col, [&](Coordinate c) {
+                return ((*m_board_entries)[c] == m_entry_policy.blank_sentinel);
+            });
+        };
+
+        auto start = find_next_col({0, 0});
+        if (!start) {
+            // The board is already solved.
+            return {true, 0};
+        }
+        return solve_after(*start, find_next_col);
+    }
+
+    /**
+    * Attempts to solve this Sudoku board. Returns a pair containing 0) a bool
+    * indicating whether the board was successfully solved, and 1) the number
+    * of recursive function calls required to determine the solution.
+    *
+    * @return Pair of 0) whether the board was solved, 1) the number of
+    *         recursive calls made to find the solution.
+    */
+    std::pair<bool, CallCount> solve_scanning_block()
+    {
+        const static auto find_next_block = [&](Coordinate coord) -> std::optional<Coordinate> {
+            return details::iterate_optional_until(coord, step_block, [&](Coordinate c) {
+                return ((*m_board_entries)[c] == m_entry_policy.blank_sentinel);
+            });
+        };
+
+        auto start = find_next_block({0, 0});
+        if (!start) {
+            // The board is already solved.
+            return {true, 0};
+        }
+        return solve_after(*start, find_next_block);
     }
 
     /**
@@ -289,27 +335,30 @@ class SudokuBoard {
      * @return Pair of 0) whether the board was solved, 1) the number of
      *         recursive calls made to find the solution.
      */
-//    std::pair<bool, CallCount> solve_heuristic()
-//    {
-//        const auto first_blank = std::find(begin(), end(), m_entry_policy.blank_sentinel);
-//
-//        // Attempts to find the most promising cell occurring after the
-//        const auto most_promising = [&](const const_iterator curr_pos) {
-//            return std::find(curr_pos, end(), m_entry_policy.blank_sentinel);
-//        };
-//
-//        return solve_after(first_blank, most_promising);
+    std::pair<bool, CallCount> solve_heuristic()
+    {
+        const static auto guess_next = [&](auto) -> std::optional<Coordinate> {
+            const auto[best_row_index, row_conflict] = m_conflicts->promising_index(&Conflicts::rows);
+            const auto[best_col_index, col_conflict] = m_conflicts->promising_index(&Conflicts::cols);
 
-//        const auto first_blank = find_blank({0, 0}, &step_row);
-//        if (!first_blank) {
-//            return {true, 0};
-//        }
-//        return solve_after(*first_blank, [&](auto) {
-//            auto index = m_conflicts->promising_index(&Conflicts::rows, 5);
-//            return find_blank({index, 0}, &step_row);
-//        });
+            if (row_conflict > col_conflict) {
+                return details::iterate_optional_until(Coordinate{best_row_index, 0}, step_row, [&](Coordinate c) {
+                    return ((*m_board_entries)[c] == m_entry_policy.blank_sentinel);
+                });
+            } else {
+                return details::iterate_optional_until(Coordinate{0, best_col_index}, step_col, [&](Coordinate c) {
+                    return ((*m_board_entries)[c] == m_entry_policy.blank_sentinel);
+                });
+            }
+        };
+        auto start = guess_next(Coordinate{});
+        if (!start) {
+            // The board is already solved.
+            return {true, 0};
+        }
 
-//    }
+        return solve_after(*start, guess_next);
+    }
 
     /**
      * Generates a string representing this Sudoku board.
@@ -357,7 +406,7 @@ class SudokuBoard {
 #endif
 
     /// Returns true if this Sudoku board is solved.
-    [[nodiscard]] bool fully_solved() const
+    [[nodiscard]] bool is_solved() const
     {
         // Note - could replace explicit loop with std::find
         for (std::size_t i{0}; i < k_dim * k_dim; ++i) {
@@ -367,6 +416,8 @@ class SudokuBoard {
         }
         return true;
     };
+
+  private:
 
     /**
      * Returns true if the cell at the given coordinate has no conflicts for
@@ -405,36 +456,42 @@ class SudokuBoard {
     }
 
     /**
-     * Attempts the solve starting at the given position and proceeding left-to-
-     * right, top-to-bottom.
+     * Attempts to solve this sudoku puzzle starting at the given coordinate.
      *
-     * @tparam Iterator type for the board.
+     * @tparam F Functor that returns the next blank cell to be filled.
      * @param cell Next cell to attempt to fill with a value..
      * @return Pair of 0) whether the board is solved, 1) the number of recursive
      *         calls required to determine the solution.
      */
-    template<typename Iter>
-    std::pair<bool, CallCount> solve_after(Iter pos, Iter end)
+    template<typename F>
+    std::pair<bool, CallCount> solve_after(Coordinate coord, F find_next_blank = F())
     {
         unsigned int call_count{1u};
 
-        if (pos == end) {
-            return {true, call_count};
-        }
+        // Weakly randomize the order of entry guesses.
+        auto m_entry_indices = []() {
+            std::array<typename Conflicts::Index, k_dim> temp;
+            std::iota(std::begin(temp), std::end(temp), 0);
+            return temp;
+        }();
+        std::random_shuffle(std::begin(m_entry_indices), std::end(m_entry_indices));
 
-        const auto coord = m_board_entries->coordinate_of(pos);
 
         // Iterate over the k_dim conflict table indices to find entry candidates.
-        for (typename Conflicts::Index index{0}; index < k_dim; ++index) {
+        for (const auto index : m_entry_indices) {
             // Attempt set the cell at coord with the value associated with index.
             // set_cell returns false if the candidate value has a conflict.
             if (set_cell(coord, m_entry_policy.reverse_index(index))) {
 
+                auto next = find_next_blank(coord);
+
+                if (!next) {
+                    // There are no remaining blank cells - the board has been solved.
+                    return {true, call_count};
+                }
+
                 // Continue solving at the next blank.
-                const auto[found_solution, calls] = solve_after(
-                    std::find(pos, end, m_entry_policy.blank_sentinel),
-                    end
-                );
+                const auto[found_solution, calls] = solve_after(*next, find_next_blank);
                 call_count += calls;
 
                 if (found_solution) {
@@ -512,19 +569,97 @@ class SudokuBoard {
 
         return in;
     }
+
+    /// Returns the coordinate that follows `coord` when scanning a board left-
+    /// to-right, top-to-bottom.
+    constexpr static std::optional<Coordinate> step_row(Coordinate coord)
+    {
+        Coordinate next = {coord.first, coord.second + 1};
+        if (next.second >= k_dim) {
+            next.first += 1;
+            next.second = 0;
+            if (next.first == k_dim) {
+                return std::nullopt;
+            }
+        }
+        return next;
+    }
+
+    /// Returns the coordinate that follows `coord` when scanning a board top-
+    /// to-bottom, left-to-right.
+    constexpr static std::optional<Coordinate> step_col(Coordinate coord)
+    {
+        const auto temp = step_row({coord.second, coord.first});
+
+        if (temp) {
+            return {{temp->second, temp->first}};
+        } else {
+            return std::nullopt;
+        }
+    }
+
+    /// Returns the coordinate that follows `coord` when scanning the board by
+    /// blocks, left-to-right, top-to-bottom.
+    constexpr static std::optional<Coordinate> step_block(Coordinate coord)
+    {
+        const auto[row, col] = coord;
+        if ((col + 1) % N != 0) {
+            // The current coord is NOT on the right edge of a block.
+            // Step to the right within the current block.
+            return {{row, col + 1}};
+        }
+
+        if ((row + 1) % N != 0) {
+            // The current coord is NOT on the bottom edge of a block.
+            // Move to the next row of the current block.
+            return {{row + 1, col + 1 - N}};
+        }
+
+        // If control reaches here, the current coord is on the bottom-right
+        // corner of a block. We need to determine where the next block begins.
+
+        if ((col + 1) % k_dim == 0) {
+            // The current coord in on the right edge of the *board*.
+            if (row == k_dim - 1) {
+                // The current coord in on the bottom-right corner of the board.
+                // There is not next block.
+                return std::nullopt;
+            } else {
+                // The next block is the first block on the next row.
+                return {{row + 1, 0}};
+            }
+        } else {
+            // The next block is to the right of this block.
+            return {{row + 1 - N, col + 1}};
+        }
+
+    }
 };
 
 namespace details {
 /**
  * Aggregate storing information about row, column, and block conflicts in
  * a Sudoku board.
+ *
+ * @tparam N The number of rows/columns/blocks in the board.
  */
 template<std::size_t N>
 struct BoardConflicts {
+    /**
+     * Matrix used to store whether a conflict exists for each entry value in
+     * each row/column/block. Each row in the matrix represents a single row/
+     * column/block.
+     */
     using Table = Matrix<bool, N>;
+
+    /// Integral type used to store the number of conflicts in a conflict source.
     using Count = unsigned int;
+
+    /// Type used to index the rows of a Table.
     using Index = typename Table::size_type;
 
+    /// Aggregate storing the conflict table togethor with the number of conflicts
+    /// contained in each row of the table.
     struct ConflictSource {
         /*
          * Grid of k_dim rows where each row stores whether the entry associated
@@ -536,17 +671,15 @@ struct BoardConflicts {
         std::array<Count, N> counts;
     };
 
+    /// Member pointer to a conflict source. Used to abstract over operations that
+    /// may be performed identically on the row, column, or block conflicts.
     using Source = ConflictSource BoardConflicts::*;
 
     ConflictSource rows;
     ConflictSource cols;
     ConflictSource blocks;
 
-    /**
-     *
-     * @param source_index Which row/column/block.
-     * @param entry_index Which entry within the row/column/block.
-     */
+    /// Sets the conflict states of the specified row/column/block for the given entry.
     void set_source(const Source source, Index source_index, Index entry_index, bool state)
     {
         // Whether the given entry has a conflict in the row/column/block indexed by source_index.
@@ -563,24 +696,32 @@ struct BoardConflicts {
         conflict_flag = state;
     }
 
+    /// Returns the conflict states of the specified row/column/block for the given entry.
     [[nodiscard]] bool check_source(const Source source, Index source_index, Index entry_index) const
     {
         return (this->*source).table[{source_index, entry_index}];
     }
 
-//        Count conflict_count(const Source source, Index source_index) const
-//        {
-//            return (this->*source).counts[source_index];
-//        }
-
-    [[nodiscard]] Index promising_index(const Source source) const
+    /**
+     * Returns the index of the row/column/block index with the most conflicts
+     * that is not fully filled.
+     *
+     * @param source Row/column/block index.
+     * @return Pair containg 0) the row/column/block index, 1) the number of conflicts
+     *         in the row/column/block.
+     */
+    [[nodiscard]] std::pair<Index, Count> promising_index(const Source source) const
     {
-        constexpr static auto not_full = [](Count count) { return count < N; };
         const auto& count_array = (this->*source).counts;
-        const auto start = eece2560::make_filter_iter(count_array, not_full);
-        const auto end = eece2560::make_filter_iter_end(count_array, not_full);
-        const auto pos = std::max_element(start, end);
-        return static_cast<Index>(std::distance(start, pos));
+
+        const auto pos = details::max_bounded(std::cbegin(count_array), std::cend(count_array), N);
+
+        if (pos != std::cend(count_array)) {
+            return {static_cast<Index>(std::distance(std::cbegin(count_array), pos)), *pos};
+        } else {
+            // This row/column/block has been filled, so there is not promising index.
+            return {0, -1};
+        }
     }
 
 };

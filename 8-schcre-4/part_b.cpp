@@ -16,7 +16,7 @@
 
 namespace {
 /// Relative path to sudoku puzzle file.
-constexpr const char k_default_sudoku_file[]{"resources/sudoku_all.txt"};
+constexpr const char k_default_sudoku_file[]{"resources/sudoku.txt"};
 
 /**
  * Simple single-member aggregate class providing custom formatting for sudoku
@@ -47,7 +47,7 @@ struct SudokuEntry {
         if (entry.value == 0) {
             out << k_blank_symbol;
         } else if (entry.value < 16) {
-            out << std::hex << entry.value;
+            out << entry.value;
         } else {
             out << static_cast<char>('a' - 10 + entry.value);
         }
@@ -81,11 +81,16 @@ struct SudokuEntryPolicy<SudokuEntry> {
     }
 };
 
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "cert-msc51-cpp" // Suppress std::srand warnings.
 int main()
 {
     unsigned int board_counter{0};
     unsigned long total_calls{0};
     SudokuBoard<3, SudokuEntry> board;
+
+    // We use a weak random number source for simplicity.
+    std::srand(static_cast<unsigned int>(std::time(nullptr)));
 
     std::ifstream file_in(k_default_sudoku_file);
 
@@ -99,7 +104,7 @@ int main()
         std::cout << board.board_string();
         std::cout << "======== Solution ========\n";
 
-        const auto[solved, call_count] = board.solve();
+        const auto[solved, call_count] = board.solve_heuristic();
         if (solved) {
             std::cout << board.board_string();
         } else {
@@ -112,3 +117,4 @@ int main()
     std::cout << std::fixed << std::setprecision(0);
     std::cout << "Avg. calls made:  " << (static_cast<double>(total_calls) / board_counter) << '\n';
 }
+#pragma clang diagnostic pop

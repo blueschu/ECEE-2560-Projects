@@ -113,9 +113,9 @@ void print_conflicts(const Board& board)
 
     const auto& conflicts = board.debug_conflicts();
     for (const auto[label, conflicts] : {
-        std::make_pair("Row conflicts: "sv, std::cref(conflicts.rows)),
-        std::make_pair("Column conflicts: "sv, std::cref(conflicts.cols)),
-        std::make_pair("Block conflicts: "sv, std::cref(conflicts.blocks)),
+        std::make_pair("Row conflicts: "sv, std::cref(conflicts.rows.table)),
+        std::make_pair("Column conflicts: "sv, std::cref(conflicts.cols.table)),
+        std::make_pair("Block conflicts: "sv, std::cref(conflicts.blocks.table)),
     }) {
         // Make sure we're not accidentally copying the large aggregate.
         static_assert(std::is_same_v<const Matrix<bool, Board::dim()>&, decltype(conflicts)>);
@@ -150,7 +150,7 @@ int main()
         std::cout << board.board_string();
 
         print_conflicts(board);
-        std::cout << "Solved?: " << std::boolalpha << board.fully_solved() << std::noboolalpha << '\n';
+        std::cout << "Solved?: " << std::boolalpha << board.is_solved() << std::noboolalpha << '\n';
         std::cout << '\n';
     }
 }
