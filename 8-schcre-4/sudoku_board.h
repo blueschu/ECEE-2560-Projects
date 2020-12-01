@@ -338,15 +338,20 @@ class SudokuBoard {
     std::pair<bool, CallCount> solve_heuristic()
     {
         const static auto guess_next = [&](auto) -> std::optional<Coordinate> {
-            const auto[best_row_index, row_conflict] = m_conflicts->promising_index(&Conflicts::rows);
-            const auto[best_col_index, col_conflict] = m_conflicts->promising_index(&Conflicts::cols);
+            const auto best_row = m_conflicts->promising_index(&Conflicts::rows);
+            const auto best_col = m_conflicts->promising_index(&Conflicts::cols);
 
-            if (row_conflict > col_conflict) {
-                return details::iterate_optional_until(Coordinate{best_row_index, 0}, step_row, [&](Coordinate c) {
+            if (!best_row) {
+                // The board is filled.
+                return std::nullopt;
+            }
+
+            if (best_row->second > best_col->second) {
+                return details::iterate_optional_until(Coordinate{best_row->first, 0}, step_row, [&](Coordinate c) {
                     return ((*m_board_entries)[c] == m_entry_policy.blank_sentinel);
                 });
             } else {
-                return details::iterate_optional_until(Coordinate{0, best_col_index}, step_col, [&](Coordinate c) {
+                return details::iterate_optional_until(Coordinate{0, best_col->first}, step_col, [&](Coordinate c) {
                     return ((*m_board_entries)[c] == m_entry_policy.blank_sentinel);
                 });
             }
@@ -710,17 +715,17 @@ struct BoardConflicts {
      * @return Pair containg 0) the row/column/block index, 1) the number of conflicts
      *         in the row/column/block.
      */
-    [[nodiscard]] std::pair<Index, Count> promising_index(const Source source) const
+    [[nodiscard]] std::optional<std::pair<Index, Count>> promising_index(const Source source) const
     {
         const auto& count_array = (this->*source).counts;
 
         const auto pos = details::max_bounded(std::cbegin(count_array), std::cend(count_array), N);
 
         if (pos != std::cend(count_array)) {
-            return {static_cast<Index>(std::distance(std::cbegin(count_array), pos)), *pos};
+            return {{static_cast<Index>(std::distance(std::cbegin(count_array), pos)), *pos}};
         } else {
             // This row/column/block has been filled, so there is not promising index.
-            return {0, -1};
+            return std::nullopt;
         }
     }
 

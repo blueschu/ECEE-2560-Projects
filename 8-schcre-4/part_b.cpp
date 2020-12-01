@@ -83,10 +83,11 @@ struct SudokuEntryPolicy<SudokuEntry> {
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "cert-msc51-cpp" // Suppress std::srand warnings.
+
 int main()
 {
     unsigned int board_counter{0};
-    unsigned long total_calls{0};
+    std::vector<unsigned long> board_call_counts;
     SudokuBoard<3, SudokuEntry> board;
 
     // We use a weak random number source for simplicity.
@@ -111,10 +112,26 @@ int main()
             std::cout << "No solution exists.\n";
         }
         std::cout << "Total calls made: " << call_count << "\n\n";
-        total_calls += call_count;
+        board_call_counts.push_back(call_count);
     }
 
+    std::sort(std::begin(board_call_counts), std::end(board_call_counts));
+
+    const auto median = board_counter % 2 == 0
+        ? (board_call_counts[board_counter / 2 - 1] + board_call_counts[board_counter / 2]) / 2
+        : board_call_counts[board_counter / 2];
+
+    const auto average = static_cast<double>(std::accumulate(
+        std::begin(board_call_counts),
+        std::end(board_call_counts),
+        0ul)
+    ) / board_counter;
+
     std::cout << std::fixed << std::setprecision(0);
-    std::cout << "Avg. calls made:  " << (static_cast<double>(total_calls) / board_counter) << '\n';
+    std::cout << "Min. call made:    " << std::setw(8) << board_call_counts[0] << '\n';
+    std::cout << "Max. call made:    " << std::setw(8) << board_call_counts[board_counter -1] << '\n';
+    std::cout << "Median calls made: " << std::setw(8) << median << '\n';
+    std::cout << "Avg. calls made:   " << std::setw(8) << average << '\n';
 }
+
 #pragma clang diagnostic pop
