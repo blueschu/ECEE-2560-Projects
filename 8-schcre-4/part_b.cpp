@@ -86,7 +86,6 @@ struct SudokuEntryPolicy<SudokuEntry> {
 
 int main()
 {
-    unsigned int board_counter{0};
     std::vector<unsigned long> board_call_counts;
     SudokuBoard<3, SudokuEntry> board;
 
@@ -97,13 +96,12 @@ int main()
 
     std::string line;
     while (std::getline(file_in, line)) {
-        ++board_counter;
         std::istringstream stream(line);
         stream >> board;
 
-        std::cout << "======== Board " << board_counter << " ========\n";
+        std::cout << "======= Board " << std::setw(3) << board_call_counts.size() << " =======\n";
         std::cout << board.board_string();
-        std::cout << "======== Solution ========\n";
+        std::cout << "======= Solution ========\n";
 
         const auto[solved, call_count] = board.solve_heuristic();
         if (solved) {
@@ -116,22 +114,22 @@ int main()
     }
 
     std::sort(std::begin(board_call_counts), std::end(board_call_counts));
+    const auto board_count = board_call_counts.size();
 
-    const auto median = board_counter % 2 == 0
-        ? (board_call_counts[board_counter / 2 - 1] + board_call_counts[board_counter / 2]) / 2
-        : board_call_counts[board_counter / 2];
+    const auto median = board_count % 2 == 0
+        ? (board_call_counts[board_count / 2 - 1] + board_call_counts[board_count / 2]) / 2
+        : board_call_counts[board_count / 2];
 
     const auto average = static_cast<double>(std::accumulate(
-        std::begin(board_call_counts),
-        std::end(board_call_counts),
-        0ul)
-    ) / board_counter;
+        std::cbegin(board_call_counts),
+        std::cend(board_call_counts),
+        0ul)) / static_cast<double>(board_count);
 
-    std::cout << std::fixed << std::setprecision(0);
-    std::cout << "Min. call made:    " << std::setw(8) << board_call_counts[0] << '\n';
-    std::cout << "Max. call made:    " << std::setw(8) << board_call_counts[board_counter -1] << '\n';
-    std::cout << "Median calls made: " << std::setw(8) << median << '\n';
-    std::cout << "Avg. calls made:   " << std::setw(8) << average << '\n';
+    std::cout << std::fixed << std::setprecision(0)
+              << "Min. call made:    " << std::setw(8) << board_call_counts[0] << '\n'
+              << "Max. call made:    " << std::setw(8) << board_call_counts[board_count - 1] << '\n'
+              << "Median calls made: " << std::setw(8) << median << '\n'
+              << "Avg. calls made:   " << std::setw(8) << average << '\n';
 }
 
 #pragma clang diagnostic pop
