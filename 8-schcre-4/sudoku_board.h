@@ -271,7 +271,7 @@ class SudokuBoard {
             });
         };
 
-        auto start = find_next_row({0, 0});
+        const auto start = find_next_row({0, 0});
         if (!start) {
             // The board is already solved.
             return {true, 0};
@@ -295,7 +295,7 @@ class SudokuBoard {
             });
         };
 
-        auto start = find_next_col({0, 0});
+        const auto start = find_next_col({0, 0});
         if (!start) {
             // The board is already solved.
             return {true, 0};
@@ -356,7 +356,7 @@ class SudokuBoard {
                 });
             }
         };
-        auto start = guess_next(Coordinate{});
+        const auto start = guess_next(Coordinate{});
         if (!start) {
             // The board is already solved.
             return {true, 0};
@@ -471,7 +471,9 @@ class SudokuBoard {
     template<typename F>
     std::pair<bool, CallCount> solve_after(Coordinate coord, F find_next_blank = F())
     {
-        unsigned int call_count{1u};
+        static_assert(std::is_same_v<std::invoke_result_t<F, Coordinate>, std::optional<Coordinate>>);
+
+        CallCount call_count{1u};
 
         // Generate an array of all entry indices
         auto m_entry_indices = []() {
@@ -688,6 +690,7 @@ struct BoardConflicts {
     ConflictSource cols;
     ConflictSource blocks;
 
+    /// Cache of number of conflicts associated with each entry index.
     std::array<Count, N> entry_counts;
 
     /// Sets the conflict states of the specified row/column/block for the given entry.
