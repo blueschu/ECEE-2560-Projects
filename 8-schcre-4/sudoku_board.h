@@ -473,13 +473,17 @@ class SudokuBoard {
     {
         unsigned int call_count{1u};
 
-        // Weakly randomize the order of entry guesses.
+        // Generate an array of all entry indices
         auto m_entry_indices = []() {
             std::array<typename Conflicts::Index, k_dim> temp;
             std::iota(std::begin(temp), std::end(temp), 0);
             return temp;
         }();
-        std::random_shuffle(std::begin(m_entry_indices), std::end(m_entry_indices));
+
+        // Sort the entry indices based on the number of times each entry appears in the board.
+        std::sort(std::begin(m_entry_indices), std::end(m_entry_indices), [&](auto lhs, auto rhs) {
+            return m_conflicts->entry_counts[lhs] < m_conflicts->entry_counts[rhs];
+        });
 
 
         // Iterate over the k_dim conflict table indices to find entry candidates.
@@ -684,6 +688,8 @@ struct BoardConflicts {
     ConflictSource cols;
     ConflictSource blocks;
 
+    std::array<Count, N> entry_counts;
+
     /// Sets the conflict states of the specified row/column/block for the given entry.
     void set_source(const Source source, Index source_index, Index entry_index, bool state)
     {
@@ -694,8 +700,10 @@ struct BoardConflicts {
         if (conflict_flag != state) {
             if (state) {
                 (this->*source).counts[source_index] += 1;
+                entry_counts[entry_index] += 1;
             } else {
                 (this->*source).counts[source_index] -= 1;
+                entry_counts[entry_index] -= 1;
             }
         }
         conflict_flag = state;

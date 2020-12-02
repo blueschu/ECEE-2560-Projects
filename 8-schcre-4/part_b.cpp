@@ -81,16 +81,10 @@ struct SudokuEntryPolicy<SudokuEntry> {
     }
 };
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "cert-msc51-cpp" // Suppress std::srand warnings.
-
 int main()
 {
     std::vector<unsigned long> board_call_counts;
     SudokuBoard<3, SudokuEntry> board;
-
-    // We use a weak random number source for simplicity.
-    std::srand(static_cast<unsigned int>(std::time(nullptr)));
 
     std::ifstream file_in(k_default_sudoku_file);
 
@@ -131,5 +125,3 @@ int main()
               << "Median calls made: " << std::setw(8) << median << '\n'
               << "Avg. calls made:   " << std::setw(8) << average << '\n';
 }
-
-#pragma clang diagnostic pop
