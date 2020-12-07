@@ -9,11 +9,52 @@
 
 #include "maze.h"
 
+#include <algorithm>        // for std::find
+#include <fstream>          // for file I/O stream definitions
+#include <iterator>         // for std::istream_iterator
+
+Maze Maze::read_file(const char* file_name)
+{
+    std::ifstream in_stream(file_name);
+    in_stream.exceptions(std::ios::badbit);
+
+    if (!in_stream) {
+        throw std::runtime_error("maze file does not exist");
+    }
+
+    std::size_t rows;
+    std::size_t cols;
+
+    // Exception raised on invalid input since badbit is set.
+    in_stream >> rows >> cols >> std::ws;
+
+    std::vector<Tile> grid_letters;
+
+    std::copy(
+        std::istream_iterator<Tile>(in_stream),
+        std::istream_iterator<Tile>(),
+        std::back_inserter(grid_letters)
+    );
+
+    if (grid_letters.size() != rows * cols + 1) {
+        throw std::runtime_error("invalid maze file format");
+    }
+
+    // Ignore trailing 'Z'.
+    grid_letters.pop_back();
+
+    Matrix<Tile> mat(std::move(grid_letters));
+    mat.reshape({rows, cols});
+
+    return Maze(std::move(mat));
+}
+
 Graph<Maze::Coordinate, Maze::PathWeight> Maze::make_graph() const
 {
     const auto[max_row, max_col] = m_tiles.dimensions();
     std::vector<Coordinate> path_nodes;
 
+    // Locate all passable tiles in the maze.
     for (std::size_t row{0}; row < max_row; ++row) {
         for (std::size_t col{0}; col < max_col; ++col) {
             if (m_tiles[{row, col}] == Tile::Path) {
@@ -22,8 +63,10 @@ Graph<Maze::Coordinate, Maze::PathWeight> Maze::make_graph() const
         }
     }
 
+    // Create a graph (with no edges) with the passable tiles in the maze.
     Graph<Coordinate, PathWeight> graph(std::move(path_nodes));
 
+    // Add an edge between each adjacent nodes in the maze.
     for (auto& node : graph) {
         for (const auto& neighbor : paths_from(*node)) {
             // std::find is guaranteed to succeed here since all tiles
@@ -57,10 +100,17 @@ std::vector<Maze::Coordinate> Maze::paths_from(Maze::Coordinate pos) const
                 result.push_back(nb_coord);
             }
         } catch (const MatrixIndexError&) {
-            // We ignore neighbors.
+            // We ignore invalid neighbors that fall off the edge of the maze.
         }
-
     }
 
     return result;
+}
+
+std::istream& operator>>(std::istream& in, Maze::Tile& tile)
+{
+    char symbol;
+    in >> symbol;
+    tile = (symbol == 'O') ? Maze::Tile::Path : Maze::Tile::Blocked;
+    return in;
 }

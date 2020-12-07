@@ -26,4 +26,15 @@ int main()
     for (auto n : first.neighbors()) {
         std::cout << n.index() << '\n';
     }
+
+    auto maze = Maze::read_file("resources/maze1.txt");
+    auto graph = maze.make_graph();
+
+    for (const auto& node : graph) {
+        std::cout << node.index() << ":";
+        for (const auto& neighbor : node.neighbors()) {
+            std::cout << ' ' << neighbor.index();
+        }
+        std::cout << '\n';
+    }
 }

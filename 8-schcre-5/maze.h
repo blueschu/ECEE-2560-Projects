@@ -10,7 +10,7 @@
 #ifndef EECE_2560_PROJECTS_MAZE_H
 #define EECE_2560_PROJECTS_MAZE_H
 
-#include <algorithm>        // for std::find
+#include <iosfwd>
 
 #include "matrix.h"
 #include "graph.h"
@@ -27,11 +27,19 @@ class Maze {
 
     constexpr static PathWeight k_path_weight{1};
 
+  private:
     Matrix<Tile> m_tiles;
+
+  public:
+    explicit Maze(Matrix<Tile> tiles) : m_tiles(std::move(tiles)) {}
+
+    static Maze read_file(const char* file_name);
 
     [[nodiscard]] Graph<Coordinate, PathWeight> make_graph() const;
 
     [[nodiscard]] std::vector<Coordinate> paths_from(Coordinate pos) const;
 };
+
+std::istream& operator>>(std::istream& in, Maze::Tile& tile);
 
 #endif //EECE_2560_PROJECTS_MAZE_H
