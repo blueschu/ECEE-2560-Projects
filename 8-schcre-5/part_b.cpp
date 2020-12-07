@@ -7,33 +7,31 @@
  *
  */
 
+#include <array>
 #include <iostream>
-#include "graph.h"
+
 #include "maze.h"
+
+constexpr auto k_maze_files = std::array{
+    "resources/maze1.txt",
+    "resources/maze2.txt",
+    "resources/maze3.txt"
+};
 
 int main()
 {
-    Graph<int, int> g(std::vector{1, 2});
 
-    auto it = std::begin(g);
+    for (const auto file_name : k_maze_files) {
+        std::cout << file_name << ":\n";
+        const auto maze = Maze::read_file(file_name);
+        auto graph = maze.make_graph();
 
-    auto first = *it;
-
-    ++it;
-
-    first.connect(*it, 1);
-
-    for (auto n : first.neighbors()) {
-        std::cout << n.index() << '\n';
-    }
-
-    auto maze = Maze::read_file("resources/maze1.txt");
-    auto graph = maze.make_graph();
-
-    for (const auto& node : graph) {
-        std::cout << node.index() << ":";
-        for (const auto& neighbor : node.neighbors()) {
-            std::cout << ' ' << neighbor.index();
+        for (const auto& node : graph) {
+            std::cout << node.index() << ":";
+            for (const auto& neighbor : node.neighbors()) {
+                std::cout << ' ' << neighbor.index();
+            }
+            std::cout << '\n';
         }
         std::cout << '\n';
     }
