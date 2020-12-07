@@ -18,7 +18,8 @@ set(EECE2560_PROJECT_LIST
         8-schcre-1
         8-schcre-2
         8-schcre-3
-        8-schcre-4)
+        8-schcre-4
+        8-schcre-5)
 
 add_subdirectory(common)
 
