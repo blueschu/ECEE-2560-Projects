@@ -1,15 +1,16 @@
 /**
- * 2D grid  for project 3.
+ * 2D grid for project 4.
  *
  * Authors: Brian Schubert  <schubert.b@northeastern.edu>
  *          Chandler Cree   <cree.d@northeastern.edu>
- * Date:    2020-10-22
+ * Date:    2020-11-14
  *
  * References
  * ===========
  *  [1] https://en.cppreference.com/w/cpp/iterator/iterator_traits
  *  [2] https://en.cppreference.com/w/cpp/named_req/Container
  *  [3] https://stackoverflow.com/questions/856542/
+ *  [4] https://stackoverflow.com/questions/4178175/
  */
 
 #ifndef EECE_2560_PROJECTS_MATRIX_H
@@ -20,31 +21,23 @@
 #include <utility>              // for std::pair
 #include <vector>               // for std::vector
 
-/// Exception raised upon accessing a non-existant matrix entry.
-class MatrixIndexError : public std::out_of_range {
-  public:
+/// Exception raised upon accessing a non-existent matrix entry.
+struct MatrixIndexError : std::out_of_range {
     // Use parent class constructor.
     using std::out_of_range::out_of_range;
 };
 
-/// Exception raised upon attempting to reshape a matrix to an incompatible shape.
-class MatrixResizeError : public std::runtime_error {
-  public:
-    // Use parent class constructor.
-    using std::runtime_error::runtime_error;
-};
-
 /**
- * A two-dimensional matrix of elements. Not intended for linear algebra.
+ * Aggregate representing a two-dimensional square matrix of elements.
+ * Not intended for linear algebra.
  *
  * @tparam T Type of elements to be stored.
+ * @tparam N The number of rows/columns in the matrix.
  */
-template<typename T>
-class Matrix {
-
-  public:
+template<typename T, std::size_t N>
+struct Matrix {
     /// Container type used to storage matrix elements.
-    using Storage = std::vector<T>;
+    using Storage = std::array<T, N * N>;
 
     // Type aliases for C++ container [2].
     using value_type = typename Storage::value_type;
@@ -58,45 +51,18 @@ class Matrix {
     /// Type used to access matrix elements using a coordinate pair.
     using Coordinate = std::pair<size_type, size_type>;
 
-  private:
-    /// Consecutive storage of matrix elements.
+    /**
+     * Consecutive storage of matrix elements.
+     *
+     * This data member is public so that Matrix can be an aggregate [4].
+     */
     Storage m_entries;
 
-    /// The number of rows in this matrix.
-    size_type m_rows;
+    /// Returns the dimension of this matrix.
+    [[nodiscard]] constexpr static size_type dim() noexcept { return N; }
 
-    /// The number of columns in this matrix.
-    size_type m_cols;
-
-  public:
-
-    /// Creates a 1 by N matrix with the given elements.
-    explicit Matrix(Storage entries)
-        : m_entries(std::move(entries)), m_rows{1}, m_cols{m_entries.size()} {}
-
-    /// Returns the dimensions of this matrix.
-    [[nodiscard]] Coordinate dimensions() const noexcept { return {m_rows, m_cols}; }
-
-    /**
-     * Attempts to reshape this matrix as a M by N matrix, where [M, N] = new_dim.
-     *
-     * @param new_dim The new dimensions for this matrix.
-     * @throws MatrixResizeError if the entries in this matrix cannot be represented
-     *                           as an M by N grid.
-     */
-    void reshape(Coordinate new_dim)
-    {
-        const auto[rows, cols] = new_dim;
-        if (rows * cols == m_rows * m_cols) {
-            m_rows = rows;
-            m_cols = cols;
-        } else {
-            std::ostringstream err_message;
-            err_message << "cannot reshape " << m_rows << " by " << m_rows
-                        << " matrix to a " << rows << " by " << cols << " matrix";
-            throw MatrixResizeError(err_message.str());
-        }
-    }
+    /// Returns the size of this matrix.
+    [[nodiscard]] constexpr static size_type size() noexcept { return N * N; }
 
     // Returns the entry at the Nth position, counting left-to-right,
     // top-to-bottom, where N=index.
@@ -122,7 +88,7 @@ class Matrix {
     // top-to-bottom.
     const_reference operator[](size_type index) const
     {
-        if (index >= m_rows * m_cols) {
+        if (index >= N * N) {
             throw MatrixIndexError("invalid matrix index");
         }
         return m_entries[index];
@@ -130,14 +96,14 @@ class Matrix {
 
     // Returns the entry at the position (i,j), where both i and j
     // are 0-based indices.
-    const_reference operator[](Coordinate coord) const
+    const_reference operator[](Coordinate index) const
     {
-        const auto[row, col] = coord;
+        const auto[row, col] = index;
         // size_type is an unsigned integer [2], so we only need to check the upper bounds.
-        if (row >= m_rows || col >= m_cols) {
+        if (row >= N || col >= N) {
             throw MatrixIndexError("invalid matrix index");
         }
-        return m_entries[row * m_cols + col];
+        return m_entries[row * N + col];
     }
 
     /// Returns an iterator to the first (top left) entry of this matrix.
@@ -151,6 +117,24 @@ class Matrix {
 
     /// Returns an iterator to the last (bottom right) entry of this matrix.
     [[nodiscard]] const_iterator end() const noexcept { return std::end(m_entries); }
+
+    /**
+     * Returns the matrix coordinate corresponding to the given iterator position.
+     *
+     * @param pos Iterator position.
+     * @return Matrix coordinate.
+     */
+    constexpr Coordinate coordinate_of(const_iterator pos) const
+    {
+        // Cast pos to const_iterator so that this function can be used on
+        // ColumnIterators.
+        const auto index = std::distance(begin(), pos);
+        return {static_cast<size_type>(index) / N, static_cast<size_type>(index) % N};
+    }
+
 };
+
+/// Ensure that Matrix is an aggregate.
+static_assert(std::is_aggregate_v<Matrix<int, 1>>);
 
 #endif //EECE_2560_PROJECTS_MATRIX_H

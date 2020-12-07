@@ -29,7 +29,7 @@ class WordSearchGrid {
         : m_entries(std::move(entries)) {};
 
     /// Returns the dimensions of this word search.
-    [[nodiscard]] Matrix<Entry>::Index dimensions() const {
+    [[nodiscard]] Matrix<Entry>::Coordinate dimensions() const {
         return m_entries.dimensions();
     }
 
