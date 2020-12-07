@@ -7,6 +7,23 @@
  *
  */
 
-int main() {
+#include <iostream>
+#include "graph.h"
+#include "maze.h"
 
+int main()
+{
+    Graph<int, int> g(std::vector{1, 2});
+
+    auto it = std::begin(g);
+
+    auto first = *it;
+
+    ++it;
+
+    first.connect(*it, 1);
+
+    for (auto n : first.neighbors()) {
+        std::cout << n.index() << '\n';
+    }
 }
