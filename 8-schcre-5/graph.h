@@ -19,6 +19,12 @@
 
 #include "matrix.h"
 
+/**
+ * A directed graph that stores edges using an adjacency matrix.
+ *
+ * @tparam Node
+ * @tparam Edge
+ */
 template<typename Node, typename Edge>
 class Graph {
   public:
@@ -62,14 +68,21 @@ class Graph {
             m_graph->connect_indices(m_index, other.m_index, std::forward<Edge>(edge));
         }
 
-        std::vector<NodeHandle> neighbors() const
+        /**
+         * Returns a the neighbors of this node. Each neighbor is described by
+         * a pair containing 1) a handle for the neighboring node, and 2) a
+         * reference to the edge connects the two nodes.
+         *
+         * @return The neighbors of this node.
+         */
+        std::vector<std::pair<NodeHandle, const Edge&>> neighbors() const
         {
             const auto row = m_index;
-            std::vector<NodeHandle> result;
+            std::vector<std::pair<NodeHandle, const Edge&>> result;
 
             for (size_type col{0}; col < m_graph->m_edges.dimensions().second; ++col) {
-                if (m_graph->m_edges[{row, col}]) {
-                    result.push_back(m_graph->m_nodes[col]);
+                if (const auto& edge = m_graph->m_edges[{row, col}]) {
+                    result.emplace_back(m_graph->m_nodes[col], *edge);
                 }
             }
             return result;

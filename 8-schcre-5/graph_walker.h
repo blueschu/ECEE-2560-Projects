@@ -11,6 +11,7 @@
 #define EECE_2560_PROJECTS_GRAPH_WALKER_H
 
 #include <optional>         // for std::optional
+
 #include "graph.h"
 
 template<typename Node, typename Edge>
@@ -54,7 +55,7 @@ class GraphWalker {
             return {goal};
         }
 
-        for (const auto& neighbor : current.neighbors()) {
+        for (const auto& [neighbor, _edge] : current.neighbors()) {
             if (m_visited[neighbor.index()]) {
                 continue;
             }
