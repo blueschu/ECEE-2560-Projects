@@ -14,26 +14,34 @@
 
 #include "graph.h"
 
-template<typename Node, typename Edge>
+template<typename Node, typename Weight>
 class GraphWalker {
 
-    using GraphType = Graph<Node, Edge>;
+    using GraphType = Graph<Node, Weight>;
     using NodeHandle = typename GraphType::NodeHandle;
 
     std::vector<bool> m_visited;
 
   public:
+
+    struct PathSearchResult {
+        std::vector<NodeHandle> path;
+        Weight weight{};
+
+        explicit operator bool() { return !path.empty(); }
+    };
+
     GraphWalker() = default;
 
-    std::vector<NodeHandle> find_path_dfs(
+    PathSearchResult find_path_dfs(
         const GraphType& graph,
         const NodeHandle& start,
         const NodeHandle& goal)
     {
         prepare_for(graph);
-        auto path = find_path_dfs_helper(start, goal);
-        std::reverse(std::begin(path), std::end(path));
-        return path;
+        auto result = find_path_dfs_helper(start, goal);
+        std::reverse(std::begin(result.path), std::end(result.path));
+        return result;
     }
 
   private:
@@ -44,7 +52,7 @@ class GraphWalker {
         std::fill(std::begin(m_visited), std::end(m_visited), 0);
     }
 
-    std::vector<NodeHandle> find_path_dfs_helper(
+    PathSearchResult find_path_dfs_helper(
         const NodeHandle& current,
         const NodeHandle& goal
     )
@@ -52,24 +60,25 @@ class GraphWalker {
         m_visited[current.index()] = true;
 
         if (current.index() == goal.index()) {
-            return {goal};
+            return {{goal}, Weight{}};
         }
 
-        for (const auto& [neighbor, _edge] : current.neighbors()) {
+        for (const auto&[neighbor, weight] : current.neighbors()) {
             if (m_visited[neighbor.index()]) {
                 continue;
             }
 
-            auto maybe_path = find_path_dfs_helper(neighbor, goal);
+            auto result = find_path_dfs_helper(neighbor, goal);
 
-            if (!maybe_path.empty()) {
-                maybe_path.push_back(current);
-                return maybe_path;
+            if (result) {
+                result.path.push_back(current);
+                result.weight += weight;
+                return result;
             }
 
         }
         m_visited[current.index()] = false;
-        return {};
+        return {{}, {}};
     }
 
 };

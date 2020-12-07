@@ -23,9 +23,9 @@
  * A directed graph that stores edges using an adjacency matrix.
  *
  * @tparam Node
- * @tparam Edge
+ * @tparam Weight
  */
-template<typename Node, typename Edge>
+template<typename Node, typename Weight>
 class Graph {
   public:
     class NodeHandle;
@@ -58,39 +58,43 @@ class Graph {
         /// This node's index in its graph.
         [[nodiscard]] size_type index() const noexcept { return m_index; }
 
-        void connect(const NodeHandle& other, const Edge& edge)
+        void connect(const NodeHandle& other, const Weight& weight)
         {
-            m_graph->connect_indices(m_index, other.m_index, edge);
+            m_graph->connect_indices(m_index, other.m_index, weight);
         }
 
-        void connect(const NodeHandle& other, Edge&& edge)
+        void connect(const NodeHandle& other, Weight&& weight)
         {
-            m_graph->connect_indices(m_index, other.m_index, std::forward<Edge>(edge));
+            m_graph->connect_indices(m_index, other.m_index, std::forward<Weight>(weight));
         }
 
         /**
          * Returns a the neighbors of this node. Each neighbor is described by
          * a pair containing 1) a handle for the neighboring node, and 2) a
-         * reference to the edge connects the two nodes.
+         * reference to the weight value of the edge that connects the two nodes.
          *
          * @return The neighbors of this node.
          */
-        std::vector<std::pair<NodeHandle, const Edge&>> neighbors() const
+        std::vector<std::pair<NodeHandle, const Weight&>> neighbors() const
         {
             const auto row = m_index;
-            std::vector<std::pair<NodeHandle, const Edge&>> result;
+            std::vector<std::pair<NodeHandle, const Weight&>> result;
 
             for (size_type col{0}; col < m_graph->m_edges.dimensions().second; ++col) {
-                if (const auto& edge = m_graph->m_edges[{row, col}]) {
-                    result.emplace_back(m_graph->m_nodes[col], *edge);
+                if (const std::optional<Weight>& weight = m_graph->m_edges[{row, col}]) {
+                    result.emplace_back(m_graph->m_nodes[col], *weight);
                 }
             }
             return result;
         }
 
-        Node& operator*() { return m_node; }
+        Node& operator*() noexcept { return m_node; }
 
-        const Node& operator*() const { return m_node; }
+        const Node& operator*() const noexcept { return m_node; }
+
+        Node* operator->() noexcept { return &m_node; }
+
+        const Node* operator->() const noexcept { return &m_node; }
 
         friend Graph;
     };
@@ -98,12 +102,12 @@ class Graph {
   private:
     std::vector<value_type> m_nodes;
 
-    Matrix<std::optional<Edge>> m_edges;
+    Matrix<std::optional<Weight>> m_edges;
 
   public:
 
     explicit Graph(std::vector<Node> nodes)
-        : m_edges(std::vector(nodes.size() * nodes.size(), std::optional<Edge>{}))
+        : m_edges(std::vector(nodes.size() * nodes.size(), std::optional<Weight>{}))
     {
         size_type counter{0};
         std::transform(
@@ -115,14 +119,14 @@ class Graph {
         m_edges.reshape({m_nodes.size(), m_nodes.size()});
     }
 
-    void connect_indices(size_type from, size_type to, const Edge& edge)
+    void connect_indices(size_type from, size_type to, const Weight& weight)
     {
-        m_edges[{from, to}] = edge;
+        m_edges[{from, to}] = weight;
     }
 
-    void connect_indices(size_type from, size_type to, Edge&& edge)
+    void connect_indices(size_type from, size_type to, Weight&& weight)
     {
-        m_edges[{from, to}] = std::make_optional(std::forward<Edge>(edge));
+        m_edges[{from, to}] = std::make_optional(std::forward<Weight>(weight));
     }
 
     /// Returns the number of nodes in this graph.

@@ -36,12 +36,13 @@ int main()
 //        }
 
         GraphWalker<Maze::Coordinate, Maze::PathWeight> walker;
-        auto path = walker.find_path_dfs(graph, *std::begin(graph), *(std::end(graph) - 1));
-        if (!path.empty()) {
+        auto result = walker.find_path_dfs(graph, *std::begin(graph), *(std::end(graph) - 1));
+        if (result) {
             std::cout << "Path: ";
-            for (const auto& node : path) {
-                std::cout << '(' << (*node).first << ',' << (*node).second << "), ";
+            for (const auto& node : result.path) {
+                std::cout << '(' << node->first << ',' << node->second << "), ";
             }
+            std::cout << "\nDistance: " << result.weight;
         } else {
             std::cout << "No path found.";
         }
