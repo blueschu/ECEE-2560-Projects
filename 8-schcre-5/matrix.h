@@ -21,13 +21,13 @@
 #include <vector>               // for std::vector
 
 /// Exception raised upon accessing a non-existant matrix entry.
-struct MatrixIndexError :  std::out_of_range {
+struct MatrixIndexError : std::out_of_range {
     // Use parent class constructor.
     using std::out_of_range::out_of_range;
 };
 
 /// Exception raised upon attempting to reshape a matrix to an incompatible shape.
-struct MatrixResizeError :  std::runtime_error {
+struct MatrixResizeError : std::runtime_error {
     // Use parent class constructor.
     using std::runtime_error::runtime_error;
 };
@@ -68,6 +68,9 @@ class Matrix {
     size_type m_cols;
 
   public:
+
+    /// Creates a 1 by 1 matrix with the given scalar value.
+    explicit Matrix(T scalar = T()) : m_entries{scalar}, m_rows{1}, m_cols{1} {};
 
     /// Creates a 1 by N matrix with the given elements.
     explicit Matrix(Storage entries)

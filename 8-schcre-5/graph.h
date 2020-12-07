@@ -35,7 +35,7 @@ class Graph {
 
     class NodeHandle {
         /// The graph this node is associated with.
-        Graph& m_graph;
+        Graph* m_graph;
 
         /// This node's index in its graph.
         size_type m_index;
@@ -46,7 +46,7 @@ class Graph {
         /// Creates a handle for the given node in the given graph, which is
         /// is located at the specified index in the graph.
         NodeHandle(Graph& graph, size_type index, Node node)
-            : m_graph(graph), m_index(index), m_node(std::move(node)) {}
+            : m_graph(&graph), m_index(index), m_node(std::move(node)) {}
 
       public:
         /// This node's index in its graph.
@@ -54,12 +54,12 @@ class Graph {
 
         void connect(const NodeHandle& other, const Edge& edge)
         {
-            m_graph.connect_indices(m_index, other.m_index, edge);
+            m_graph->connect_indices(m_index, other.m_index, edge);
         }
 
         void connect(const NodeHandle& other, Edge&& edge)
         {
-            m_graph.connect_indices(m_index, other.m_index, std::forward<Edge>(edge));
+            m_graph->connect_indices(m_index, other.m_index, std::forward<Edge>(edge));
         }
 
         std::vector<NodeHandle> neighbors() const
@@ -67,9 +67,9 @@ class Graph {
             const auto row = m_index;
             std::vector<NodeHandle> result;
 
-            for (size_type col{0}; col < m_graph.m_edges.dimensions().second; ++col) {
-                if (m_graph.m_edges[{row, col}]) {
-                    result.push_back(m_graph.m_nodes[col]);
+            for (size_type col{0}; col < m_graph->m_edges.dimensions().second; ++col) {
+                if (m_graph->m_edges[{row, col}]) {
+                    result.push_back(m_graph->m_nodes[col]);
                 }
             }
             return result;
