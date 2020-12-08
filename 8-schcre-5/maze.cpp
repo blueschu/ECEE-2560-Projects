@@ -125,23 +125,6 @@ std::string Maze::directions_string(const std::vector<Coordinate>& path) const
     }
 
     return stream.str();
-
-//    Matrix<char> maze_symbols = [this]() {
-//        std::vector<char> temp;
-//        std::transform(
-//            std::cbegin(m_tiles),
-//            std::cend(m_tiles),
-//            std::back_inserter(temp),
-//            [](Maze::Tile tile) { return tile = }
-//        );
-//        return Matrix(std::move(temp));
-//    }();
-//    maze_symbols.reshape(m_tiles.dimensions());
-//
-//    for (const auto& coord : path) {
-//        maze_symbols[coord] = '*';
-//    }
-//    return std::string(std::cbegin(maze_symbols), std::cend(maze_symbols));
 }
 
 std::istream& operator>>(std::istream& in, Maze::Tile& tile)

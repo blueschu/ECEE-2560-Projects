@@ -15,30 +15,42 @@
 #include "matrix.h"
 #include "graph.h"
 
+/**
+ * A two-dimensional maze consisting of walls and paths.
+ */
 class Maze {
 
   public:
-    // Avoid vector<bool>
+    /// The possible values for the maze tiles.
     enum class Tile { Path, Blocked };
 
+    /// Type used to represent a grid coordinate for the maze.
     using Coordinate = Matrix<Tile>::Coordinate;
 
+    /// Integral type used for edge weights in maze graphs.
     using PathWeight = int;
 
+    /// Edge weight for all maze paths.
     constexpr static PathWeight k_path_weight{1};
 
   private:
+    /// The tiles in this maze.
     Matrix<Tile> m_tiles;
 
   public:
+    /// Create a maze with the given tiles.
     explicit Maze(Matrix<Tile> tiles) : m_tiles(std::move(tiles)) {}
 
+    /// Reads a maze from the given file.
     static Maze read_file(const char* file_name);
 
+    /// Generate a graph representing the legal moves within this maze.
     [[nodiscard]] Graph<Coordinate, PathWeight> make_graph() const;
 
+    /// Returns all of the valid moves from the given position in the maze.
     [[nodiscard]] std::vector<Coordinate> paths_from(Coordinate pos) const;
 
+    /// Returns a string representing this maze with the given path overlaid.
     [[nodiscard]] std::string directions_string(const std::vector<Coordinate>& path) const;
 
 };

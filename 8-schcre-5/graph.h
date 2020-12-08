@@ -23,8 +23,8 @@
 /**
  * A directed graph that stores edges using an adjacency matrix.
  *
- * @tparam Node
- * @tparam Weight
+ * @tparam Node Type stored in the nodes of the graph.
+ * @tparam Weight Type used to represent edge weights in the graph.
  */
 template<typename Node, typename Weight>
 class Graph {
@@ -40,6 +40,10 @@ class Graph {
     using difference_type = std::ptrdiff_t;
     using size_type = std::size_t;
 
+    /**
+     * Wrapper around node values to provide graph-aware functionality, like
+     * accessing neighbors and adding new edges.
+     */
     class NodeHandle {
         /// The graph this node is associated with.
         Graph* m_graph;
@@ -59,11 +63,25 @@ class Graph {
         /// This node's index in its graph.
         [[nodiscard]] size_type index() const noexcept { return m_index; }
 
+        /**
+         * Creates an edge from this node to the given node with the specified
+         * edge weight.
+         *
+         * @param other New neighbor for this node.
+         * @param weight Edge weight for the new edge.
+         */
         void connect(const NodeHandle& other, const Weight& weight)
         {
             m_graph->connect_indices(m_index, other.m_index, weight);
         }
 
+        /**
+         * Creates an edge from this node to the given node with the specified
+         * edge weight.
+         *
+         * @param other New neighbor for this node.
+         * @param weight Edge weight for the new edge.
+         */
         void connect(const NodeHandle& other, Weight&& weight)
         {
             m_graph->connect_indices(m_index, other.m_index, std::forward<Weight>(weight));
@@ -101,12 +119,14 @@ class Graph {
     };
 
   private:
+    /// The nodes contained in this graph.
     std::vector<value_type> m_nodes;
 
+    /// Adjacency matrix representing the edges of this graph.
     Matrix<std::optional<Weight>> m_edges;
 
   public:
-
+    /// Creates a graph with the given nodes.
     explicit Graph(std::vector<Node> nodes)
         : m_edges(std::vector(nodes.size() * nodes.size(), std::optional<Weight>{}))
     {
@@ -120,11 +140,29 @@ class Graph {
         m_edges.reshape({m_nodes.size(), m_nodes.size()});
     }
 
+    /**
+     * Creates an edge between the nodes specified by the given node indices.
+     *
+     * If an edge already existing between the nodes, if will be overwritten.
+     *
+     * @param from Start node for the new edge.
+     * @param to End node for the new edge.
+     * @param weight Edge weight for the new edge.
+     */
     void connect_indices(size_type from, size_type to, const Weight& weight)
     {
         m_edges[{from, to}] = weight;
     }
 
+    /**
+     * Creates an edge between the nodes specified by the given node indices.
+     *
+     * If an edge already existing between the nodes, if will be overwritten.
+     *
+     * @param from Start node for the new edge.
+     * @param to End node for the new edge.
+     * @param weight Edge weight for the new edge.
+     */
     void connect_indices(size_type from, size_type to, Weight&& weight)
     {
         m_edges[{from, to}] = std::make_optional(std::forward<Weight>(weight));
