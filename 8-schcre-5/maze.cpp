@@ -12,6 +12,7 @@
 #include <algorithm>        // for std::find
 #include <fstream>          // for file I/O stream definitions
 #include <iterator>         // for std::istream_iterator
+#include <sstream>          // for std::ostringstream
 
 Maze Maze::read_file(const char* file_name)
 {
@@ -105,6 +106,42 @@ std::vector<Maze::Coordinate> Maze::paths_from(Maze::Coordinate pos) const
     }
 
     return result;
+}
+
+std::string Maze::directions_string(const std::vector<Coordinate>& path) const
+{
+    const auto[max_row, max_col] = m_tiles.dimensions();
+    std::ostringstream stream;
+
+    for (std::size_t row{0}; row < max_row; ++row) {
+        for (std::size_t col{0}; col < max_col; ++col) {
+            if (std::find(std::cbegin(path), std::cend(path), Coordinate{row, col}) != std::cend(path)) {
+                stream << 'o';
+            } else {
+                stream << (m_tiles[{row, col}] == Maze::Tile::Path ? '.' : '#');
+            }
+        }
+        stream << '\n';
+    }
+
+    return stream.str();
+
+//    Matrix<char> maze_symbols = [this]() {
+//        std::vector<char> temp;
+//        std::transform(
+//            std::cbegin(m_tiles),
+//            std::cend(m_tiles),
+//            std::back_inserter(temp),
+//            [](Maze::Tile tile) { return tile = }
+//        );
+//        return Matrix(std::move(temp));
+//    }();
+//    maze_symbols.reshape(m_tiles.dimensions());
+//
+//    for (const auto& coord : path) {
+//        maze_symbols[coord] = '*';
+//    }
+//    return std::string(std::cbegin(maze_symbols), std::cend(maze_symbols));
 }
 
 std::istream& operator>>(std::istream& in, Maze::Tile& tile)

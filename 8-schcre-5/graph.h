@@ -9,6 +9,7 @@
  * ===========
  *  [1] https://en.cppreference.com/w/cpp/named_req/Container
  *  [2] https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines
+ *  [3] https://stackoverflow.com/questions/856542/
  */
 
 #ifndef EECE_2560_PROJECTS_GRAPH_H
@@ -127,6 +128,19 @@ class Graph {
     void connect_indices(size_type from, size_type to, Weight&& weight)
     {
         m_edges[{from, to}] = std::make_optional(std::forward<Weight>(weight));
+    }
+
+    reference operator[](size_type index)
+    {
+        // Safely delegate to const implementation [3].
+        return const_cast<reference>(
+            static_cast<const Graph*>(this)->operator[](index)
+        );
+    }
+
+    const_reference operator[](size_type index) const
+    {
+        return m_nodes[index];
     }
 
     /// Returns the number of nodes in this graph.

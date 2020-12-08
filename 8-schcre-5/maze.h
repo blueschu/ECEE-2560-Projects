@@ -38,6 +38,9 @@ class Maze {
     [[nodiscard]] Graph<Coordinate, PathWeight> make_graph() const;
 
     [[nodiscard]] std::vector<Coordinate> paths_from(Coordinate pos) const;
+
+    [[nodiscard]] std::string directions_string(const std::vector<Coordinate>& path) const;
+
 };
 
 std::istream& operator>>(std::istream& in, Maze::Tile& tile);
