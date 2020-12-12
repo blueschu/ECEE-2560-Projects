@@ -52,7 +52,7 @@ class GraphWalker {
         /// The total weight of the path.
         Weight weight{};
 
-        explicit operator bool() const { return !path.empty(); }
+        explicit operator bool() const noexcept { return !path.empty(); }
     };
 
     GraphWalker() = default;
@@ -95,23 +95,28 @@ class GraphWalker {
     {
         init(graph);
 
+        /// The shortest path to a node in the graph from the `start` node.
         struct ShortestPath {
+            /// The total weight of the path between `start` and the end node.
             Weight total_weight;
+            /// The node preceding the end node in the shortest path to it.
             GraphIndex parent_index;
         };
 
         // Record of the shortest path to each node with the corresponding index
         // in the graph, if a path has been found.
         std::vector<std::optional<ShortestPath>> shortest_paths(graph.size(), std::nullopt);
+        // Make sure the start node begins with the shortest path so that it is
+        // the first node to be popped of the heap.
         shortest_paths[start.index()] = {0, start.index()};
 
-        // Heap of node indices ordered based on path weight.
+        // Heap of node indices ordered based on their shortest path weight.
         std::vector<GraphIndex> unvisited_indices(graph.size());
         std::iota(std::begin(unvisited_indices), std::end(unvisited_indices), 0);
 
-        // Lambda comparing graph indices by their shortest path length from the
-        // start node. Nodes which currently have no path leading are treated
-        // as though their path length was infinite
+        // Lambda comparing graph indices based on the shortest path length to
+        // them from the start node. Nodes which currently have no path leading
+        // to them are treated as though their path length was infinite.
         const auto compare_paths = [&](GraphIndex lhs, GraphIndex rhs) {
             const auto& lhs_path = shortest_paths[lhs];
             const auto& rhs_path = shortest_paths[rhs];
@@ -168,6 +173,8 @@ class GraphWalker {
                     retrace_index = shortest_paths[retrace_index]->parent_index;
                     path.push_back(retrace_index);
                 }
+                // The path vector currently contains {end, parent of end, ..., start}.
+                // Reverse the path so that it reads {start, ..., end}.
                 std::reverse(std::begin(path), std::end(path));
                 return {path, shortest_paths[current_index]->total_weight};
             }
@@ -179,11 +186,11 @@ class GraphWalker {
                     continue;
                 }
 
+                // Compute the new candidate shortest path length to the current neighbor node.
                 const Weight new_weight = shortest_paths[current_index]->total_weight + edge_weight;
 
-                // If the neighbor node has not associated path, or if the current shortest path
-                // to it is longer than the newly computed path, update the neighbor
-                // node's shortest path.
+                // If the neighbor node has no associated path, or if its current shortest path
+                // is longer than the newly computed path, update the neighbor node's shortest path.
                 if (const auto& nb_path = shortest_paths[nb_index];
                     !nb_path || new_weight < shortest_paths[nb_index]->total_weight) {
                     shortest_paths[nb_index] = {new_weight, current_index};
@@ -191,8 +198,7 @@ class GraphWalker {
 
             }
 
-            // Re-heapify the heap since the shortest paths to the nodes will
-            // have changed.
+            // Re-heapify the heap to account for changes in the shortest paths to the nodes.
             std::make_heap(heap_start, heap_end, std::not_fn(compare_paths));
         }
     }

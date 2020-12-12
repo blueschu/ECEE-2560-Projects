@@ -61,12 +61,29 @@ class Graph {
         /// This node's contents.
         Node m_node;
 
-        /// Creates a handle for the given node in the given graph, which is
-        /// is located at the specified index in the graph.
+        /**
+         * Creates a handle for the given node in the given graph, which is
+         * is located at the specified index in the graph.
+         *
+         * This constructor is private, and only intended to be used within the
+         * Graph class.
+         */
         NodeHandle(Graph& graph, size_type index, Node node)
             : m_graph(graph), m_index(index), m_node(std::move(node)) {}
 
       public:
+        // Disable copy construction
+        NodeHandle(const NodeHandle&) = delete;
+
+        // Allow move construction.
+        NodeHandle(NodeHandle&&) noexcept = default;
+
+        // Disable copy construction
+        NodeHandle& operator=(const NodeHandle&) = delete;
+
+        // Allow move assignment
+        NodeHandle& operator=(NodeHandle&&) noexcept = default;
+
         /// This node's index in its graph.
         [[nodiscard]] size_type index() const noexcept { return m_index; }
 
@@ -96,17 +113,17 @@ class Graph {
 
         /**
          * Returns a the neighbors of this node. Each neighbor is described by
-         * a pair containing 1) a handle for the neighboring node, and 2) a
+         * a pair containing 1) a reference to a neighboring node, and 2) a
          * reference to the weight value of the edge that connects the two nodes.
          *
          * @return The neighbors of this node.
          */
-        std::vector<std::pair<NodeHandle, const Weight&>> neighbors() const
+        std::vector<std::pair<NodeHandle&, const Weight&>> neighbors() const
         {
             const size_type row = m_index;
             const size_type max_col = m_graph.m_edges.dimensions().second;
 
-            std::vector<std::pair<NodeHandle, const Weight&>> result;
+            std::vector<std::pair<NodeHandle&, const Weight&>> result;
 
             for (size_type col{0}; col < max_col; ++col) {
                 if (const std::optional<Weight>& weight = m_graph.m_edges[{row, col}]) {
@@ -116,14 +133,19 @@ class Graph {
             return result;
         }
 
+        // Dereference operator for access to underlying node.
         Node& operator*() noexcept { return m_node; }
 
+        // Dereference operator for access to underlying node.
         const Node& operator*() const noexcept { return m_node; }
 
+        // Arrow operator for access to underlying node.
         Node* operator->() noexcept { return &m_node; }
 
+        // Arrow operator for access to underlying node.
         const Node* operator->() const noexcept { return &m_node; }
 
+        // Graph needs to access NodeHandle's private constructor.
         friend Graph;
     };
 
@@ -177,7 +199,8 @@ class Graph {
         m_edges[{from, to}] = std::make_optional(std::forward<Weight>(weight));
     }
 
-    reference operator[](size_type index)
+    // Subscript operator for accessing nodes by index.
+    reference operator[](size_type index) noexcept
     {
         // Safely delegate to const implementation [3].
         return const_cast<reference>(
@@ -185,7 +208,8 @@ class Graph {
         );
     }
 
-    const_reference operator[](size_type index) const
+    // Subscript operator for accessing nodes by index.
+    const_reference operator[](size_type index) const noexcept
     {
         return m_nodes[index];
     }
@@ -193,12 +217,16 @@ class Graph {
     /// Returns the number of nodes in this graph.
     [[nodiscard]] std::size_t size() const { return m_nodes.size(); }
 
+    /// Returns an iterator to the first node stored in this graph.
     iterator begin() noexcept { return std::begin(m_nodes); }
 
-    iterator end() noexcept { return std::end(m_nodes); }
-
+    /// Returns an iterator to the first node stored in this graph.
     const_iterator begin() const noexcept { return std::begin(m_nodes); }
 
+    /// Returns an iterator to the last node stored in this graph.
+    iterator end() noexcept { return std::end(m_nodes); }
+
+    /// Returns an iterator to the last node stored in this graph.
     const_iterator end() const noexcept { return std::end(m_nodes); }
 };
 
