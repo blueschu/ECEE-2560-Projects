@@ -10,6 +10,7 @@
  *  [1] https://en.cppreference.com/w/cpp/named_req/Container
  *  [2] https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines
  *  [3] https://stackoverflow.com/questions/856542/
+ *  [4] https://en.cppreference.com/w/cpp/iterator/make_move_iterator
  */
 
 #ifndef EECE_2560_PROJECTS_GRAPH_H
@@ -31,22 +32,28 @@ class Graph {
   public:
     class NodeHandle;
 
+    /// Container type used to store the nodes of this graph.
+    using NodeStorage = std::vector<NodeHandle>;
+
     // Type aliases for C++ container [1].
     using value_type = NodeHandle;
     using reference = NodeHandle&;
     using const_reference = const NodeHandle&;
-    using iterator = typename std::vector<value_type>::iterator;
-    using const_iterator = typename std::vector<value_type>::const_iterator;
-    using difference_type = std::ptrdiff_t;
-    using size_type = std::size_t;
+    using iterator = typename NodeStorage::iterator;
+    using const_iterator = typename NodeStorage::const_iterator;
+    using difference_type = typename NodeStorage::difference_type;
+    using size_type = typename NodeStorage::size_type;
 
     /**
      * Wrapper around node values to provide graph-aware functionality, like
      * accessing neighbors and adding new edges.
+     *
+     * A NodeHandle instance is only valid for the lifetime of its associated
+     * graph.
      */
     class NodeHandle {
         /// The graph this node is associated with.
-        Graph* m_graph;
+        Graph& m_graph;
 
         /// This node's index in its graph.
         size_type m_index;
@@ -57,7 +64,7 @@ class Graph {
         /// Creates a handle for the given node in the given graph, which is
         /// is located at the specified index in the graph.
         NodeHandle(Graph& graph, size_type index, Node node)
-            : m_graph(&graph), m_index(index), m_node(std::move(node)) {}
+            : m_graph(graph), m_index(index), m_node(std::move(node)) {}
 
       public:
         /// This node's index in its graph.
@@ -72,7 +79,7 @@ class Graph {
          */
         void connect(const NodeHandle& other, const Weight& weight)
         {
-            m_graph->connect_indices(m_index, other.m_index, weight);
+            m_graph.connect_indices(m_index, other.m_index, weight);
         }
 
         /**
@@ -84,7 +91,7 @@ class Graph {
          */
         void connect(const NodeHandle& other, Weight&& weight)
         {
-            m_graph->connect_indices(m_index, other.m_index, std::forward<Weight>(weight));
+            m_graph.connect_indices(m_index, other.m_index, std::forward<Weight>(weight));
         }
 
         /**
@@ -96,12 +103,14 @@ class Graph {
          */
         std::vector<std::pair<NodeHandle, const Weight&>> neighbors() const
         {
-            const auto row = m_index;
+            const size_type row = m_index;
+            const size_type max_col = m_graph.m_edges.dimensions().second;
+
             std::vector<std::pair<NodeHandle, const Weight&>> result;
 
-            for (size_type col{0}; col < m_graph->m_edges.dimensions().second; ++col) {
-                if (const std::optional<Weight>& weight = m_graph->m_edges[{row, col}]) {
-                    result.emplace_back(m_graph->m_nodes[col], *weight);
+            for (size_type col{0}; col < max_col; ++col) {
+                if (const std::optional<Weight>& weight = m_graph.m_edges[{row, col}]) {
+                    result.emplace_back(m_graph.m_nodes[col], *weight);
                 }
             }
             return result;
@@ -120,7 +129,7 @@ class Graph {
 
   private:
     /// The nodes contained in this graph.
-    std::vector<value_type> m_nodes;
+    NodeStorage m_nodes;
 
     /// Adjacency matrix representing the edges of this graph.
     Matrix<std::optional<Weight>> m_edges;

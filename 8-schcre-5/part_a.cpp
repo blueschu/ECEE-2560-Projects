@@ -25,7 +25,7 @@ constexpr auto k_maze_files = std::array{
 
 using MazeGraph = Graph<Maze::Coordinate, Maze::PathWeight>;
 
-using MazeGraherWalker = GraphWalker<Maze::Coordinate, Maze::PathWeight>;
+using MazeGraphWalker = GraphWalker<Maze::Coordinate, Maze::PathWeight>;
 
 std::vector<Maze::Coordinate> graph_path_to_directions(
     const MazeGraph& graph,
@@ -53,7 +53,7 @@ int main()
         const auto maze = Maze::read_file(file_name);
         MazeGraph graph = maze.make_graph();
 
-        MazeGraherWalker walker;
+        MazeGraphWalker walker;
 
         {
             const auto dfs_result = walker.find_path_dfs(graph, *std::begin(graph), *(std::end(graph) - 1));
