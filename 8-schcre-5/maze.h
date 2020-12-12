@@ -50,8 +50,20 @@ class Maze {
     /// Returns all of the valid moves from the given position in the maze.
     [[nodiscard]] std::vector<Coordinate> paths_from(Coordinate pos) const;
 
-    /// Returns a string representing this maze with the given path overlaid.
-    [[nodiscard]] std::string directions_string(const std::vector<Coordinate>& path) const;
+    /**
+     * Returns a pair representing human-readable directions for the given path
+     * through this maze.
+     *
+     * The returned pair consists of 1) a sequence of strings describing each
+     * move one must make in the maze, 2) a string containing a 2D ascii
+     * rendering of the path through the maze.
+     *
+     * @param path The path through this maze.
+     * @return Human readable directions for the given path.
+     */
+    [[nodiscard]]
+    std::pair<std::vector<std::string>, std::string>
+    human_directions(const std::vector<Coordinate>& path) const;
 
 };
 

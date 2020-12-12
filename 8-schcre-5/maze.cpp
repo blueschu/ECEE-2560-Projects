@@ -108,14 +108,52 @@ std::vector<Maze::Coordinate> Maze::paths_from(Maze::Coordinate pos) const
     return result;
 }
 
-std::string Maze::directions_string(const std::vector<Coordinate>& path) const
+std::pair<std::vector<std::string>, std::string>
+Maze::human_directions(const std::vector<Maze::Coordinate>& path) const
 {
     const auto[max_row, max_col] = m_tiles.dimensions();
-    std::ostringstream stream;
 
+    // Can't use Matrix<boo> since the vector<bool> specialization does not
+    // compile with Matrix do to vector<bool> not being a full C++ container.
+    Matrix<int> path_tiles{std::vector(max_row * max_col, 0)};
+    path_tiles.reshape({max_row, max_col});
+
+    std::vector<std::string> directions;
+
+    // Mark the tiles that are path of the path in the path_tiles matrix and
+    // compute the human-readable direction string for each step of the path.
+    {
+        auto it = std::cbegin(path);
+        auto prev = it++;
+        const auto end = std::cend(path);
+
+        path_tiles[*prev] = true;
+
+        while (it != end) {
+            path_tiles[*it] = true;
+
+            int delta_row = static_cast<int>(it->first) - static_cast<int>(prev->first);
+            int delta_col = static_cast<int>(it->second) - static_cast<int>(prev->second);
+            if (delta_row == -1 && delta_col == 0) {
+                directions.emplace_back("Go North");
+            } else if (delta_row == 1 && delta_col == 0) {
+                directions.emplace_back("Go South");
+            } else if (delta_row == 0 && delta_col == 1) {
+                directions.emplace_back("Go East");
+            } else if (delta_row == 0 && delta_col == -1) {
+                directions.emplace_back("Go West");
+            } else {
+                directions.emplace_back("Teleport");
+            }
+            prev = it++;
+        }
+    }
+
+    // Generate 2D ascii map.
+    std::ostringstream stream;
     for (std::size_t row{0}; row < max_row; ++row) {
         for (std::size_t col{0}; col < max_col; ++col) {
-            if (std::find(std::cbegin(path), std::cend(path), Coordinate{row, col}) != std::cend(path)) {
+            if (path_tiles[{row, col}]) {
                 stream << 'o';
             } else {
                 stream << (m_tiles[{row, col}] == Maze::Tile::Path ? '.' : '#');
@@ -124,7 +162,7 @@ std::string Maze::directions_string(const std::vector<Coordinate>& path) const
         stream << '\n';
     }
 
-    return stream.str();
+    return std::make_pair(std::move(directions), stream.str());
 }
 
 std::istream& operator>>(std::istream& in, Maze::Tile& tile)

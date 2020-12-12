@@ -24,6 +24,13 @@
 
 #include "graph.h"
 
+/**
+ * Helper class for performing various graph traversal algorithms on a Graph
+ * instance.
+ *
+ * @tparam Node Type stored in the nodes of the graph.
+ * @tparam Weight Type used to represent edge weights in the graph.
+ */
 template<typename Node, typename Weight>
 class GraphWalker {
 
