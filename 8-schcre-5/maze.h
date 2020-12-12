@@ -21,7 +21,8 @@
 class Maze {
 
   public:
-    /// The possible values for the maze tiles.
+    /// The possible values for the maze tiles. This enum was implemented
+    /// partly to avoid using vector<bool>.
     enum class Tile { Path, Blocked };
 
     /// Type used to represent a grid coordinate for the maze.
@@ -31,7 +32,7 @@ class Maze {
     using PathWeight = int;
 
     /// Edge weight for all maze paths.
-    constexpr static PathWeight k_path_weight{1};
+    constexpr static PathWeight k_path_weight{1};   // implicitly inline
 
   private:
     /// The tiles in this maze.

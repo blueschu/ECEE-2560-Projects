@@ -113,14 +113,14 @@ Maze::human_directions(const std::vector<Maze::Coordinate>& path) const
 {
     const auto[max_row, max_col] = m_tiles.dimensions();
 
-    // Can't use Matrix<boo> since the vector<bool> specialization does not
-    // compile with Matrix do to vector<bool> not being a full C++ container.
+    // Can't use Matrix<bool> since the vector<bool> specialization does not
+    // compile with Matrix do to vector<bool>::reference not being a reference type.
     Matrix<int> path_tiles{std::vector(max_row * max_col, 0)};
     path_tiles.reshape({max_row, max_col});
 
     std::vector<std::string> directions;
 
-    // Mark the tiles that are path of the path in the path_tiles matrix and
+    // Mark the tiles that are part of the path in the path_tiles matrix and
     // compute the human-readable direction string for each step of the path.
     {
         auto it = std::cbegin(path);
