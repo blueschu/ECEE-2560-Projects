@@ -47,8 +47,9 @@ std::vector<Maze::Coordinate> graph_path_to_directions(
 
 int main()
 {
+    const std::string k_maze_divider(52, '=');
     for (const auto file_name : k_maze_files) {
-        std::cout << file_name << ":\n";
+        std::cout << k_maze_divider << '\n' << file_name << ":\n" << k_maze_divider << '\n';
         const auto maze = Maze::read_file(file_name);
         const MazeGraph graph = maze.make_graph();
 
@@ -62,7 +63,7 @@ int main()
                 );
 
                 std::cout << "DFS Path (weight=" << dfs_result.weight << "):\n";
-                eece2560::print_sequence(std::cout, std::cbegin(directions), std::cend(directions));
+                eece2560::print_sequence(std::cout, std::cbegin(directions), std::cend(directions), "\n- ", "- ", "");
                 std::cout << '\n' << map;
             } else {
                 std::cout << "Failed to locate path with DFS\n";
@@ -77,7 +78,7 @@ int main()
                 );
 
                 std::cout << "Dijkstra Path (weight=" << dijkstra_result.weight << "):\n";
-                eece2560::print_sequence(std::cout, std::cbegin(directions), std::cend(directions));
+                eece2560::print_sequence(std::cout, std::cbegin(directions), std::cend(directions), "\n- ", "- ", "");
                 std::cout << '\n' << map;
             } else {
                 std::cout << "Failed to locate path with Dijkstra's algorithm\n";
