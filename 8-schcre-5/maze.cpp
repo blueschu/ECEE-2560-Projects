@@ -10,6 +10,8 @@
 #include "maze.h"
 
 #include <algorithm>        // for std::find
+#include <cstdint>          // for std::uint_8 (mimicking vector<bool>
+                            //      w/out incompatible specialization)
 #include <fstream>          // for file I/O stream definitions
 #include <iterator>         // for std::istream_iterator
 #include <sstream>          // for std::ostringstream
@@ -115,7 +117,7 @@ Maze::human_directions(const std::vector<Maze::Coordinate>& path) const
 
     // Can't use Matrix<bool> since the vector<bool> specialization does not
     // compile with Matrix do to vector<bool>::reference not being a reference type.
-    Matrix<int> path_tiles{std::vector(max_row * max_col, 0)};
+    Matrix<std::uint8_t> path_tiles{std::vector(max_row * max_col, static_cast<std::uint8_t>(0))};
     path_tiles.reshape({max_row, max_col});
 
     std::vector<std::string> directions;

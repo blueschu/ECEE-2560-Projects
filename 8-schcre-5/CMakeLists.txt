@@ -3,7 +3,7 @@
 include(${CMAKE_SOURCE_DIR}/cmake/eece2560_project_utils.cmake)
 
 eece2560_add_project_targets(5
-        LIB matrix.h graph.h maze.h maze.cpp
+        LIB matrix.h graph.h maze.h maze.cpp graph_walker.h
         PART_A part_a.cpp
         PART_B part_b.cpp
         RESOURCES resources)

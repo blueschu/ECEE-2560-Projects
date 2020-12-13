@@ -10,7 +10,6 @@
 #include <algorithm>            // for std::transform
 #include <array>                // for std::array
 #include <iostream>             // for I/O stream definitions
-#include <iterator>             // for std::back_inserter
 
 #include "maze.h"
 #include "graph_walker.h"
@@ -58,24 +57,28 @@ int main()
         {
             const auto dfs_result = walker.find_path_dfs(graph, *std::begin(graph), *(std::end(graph) - 1));
             if (dfs_result) {
-                const auto directions = maze.human_directions(graph_path_to_directions(graph, dfs_result.path));
+                const auto[directions, map] = maze.human_directions(
+                    graph_path_to_directions(graph, dfs_result.path)
+                );
 
                 std::cout << "DFS Path (weight=" << dfs_result.weight << "):\n";
-                eece2560::print_sequence(std::cout, std::cbegin(directions.first), std::cend(directions.first));
-                std::cout << '\n' << directions.second;
+                eece2560::print_sequence(std::cout, std::cbegin(directions), std::cend(directions));
+                std::cout << '\n' << map;
             } else {
                 std::cout << "Failed to locate path with DFS\n";
             }
         }
         std::cout << '\n';
         {
-            const auto dijkstra_result = walker.find_path_dfs(graph, *std::begin(graph), *(std::end(graph) - 1));
+            const auto dijkstra_result = walker.find_path_dijkstra(graph, *std::begin(graph), *(std::end(graph) - 1));
             if (dijkstra_result) {
-                const auto directions = maze.human_directions(graph_path_to_directions(graph, dijkstra_result.path));
+                const auto[directions, map] = maze.human_directions(
+                    graph_path_to_directions(graph, dijkstra_result.path)
+                );
 
                 std::cout << "Dijkstra Path (weight=" << dijkstra_result.weight << "):\n";
-                eece2560::print_sequence(std::cout, std::cbegin(directions.first), std::cend(directions.first));
-                std::cout << '\n' << directions.second;
+                eece2560::print_sequence(std::cout, std::cbegin(directions), std::cend(directions));
+                std::cout << '\n' << map;
             } else {
                 std::cout << "Failed to locate path with Dijkstra's algorithm\n";
             }
