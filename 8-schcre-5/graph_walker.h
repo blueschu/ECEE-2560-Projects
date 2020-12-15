@@ -18,6 +18,7 @@
 
 #include <algorithm>        // for std::fill, std::reverse
 #include <functional>       // for std::not_fn
+#include <queue>            // for std::queue
 #include <optional>         // for std::optional
 #include <numeric>          // for std::iota
 #include <vector>           // for std::vector
@@ -43,14 +44,6 @@ class GraphWalker {
     /// Type used to index the nodes of the graph.
     using GraphIndex = typename GraphType::size_type;
 
-    /**
-     * Whether each node in the graph being traversed has been visited.
-     *
-     * Note: be mindful of the fact that std::vector<bool> is not a complete
-     * C++ container; some usually container features may not be available.
-     */
-    std::vector<bool> m_visited;
-
   public:
     /// Convenience type for expressing the result of a graph search.
     struct PathSearchResult {
@@ -61,6 +54,35 @@ class GraphWalker {
 
         explicit operator bool() const noexcept { return !path.empty(); }
     };
+
+  private:
+
+    /// The shortest path to a node in the graph from the `start` node.
+    struct ShortestPath {
+        /// The total weight of the path between `start` and the end node.
+        Weight total_weight;
+        /// The node preceding the end node in the shortest path to it.
+        GraphIndex parent_index;
+    };
+
+    /**
+     * Whether each node in the graph being traversed has been visited.
+     *
+     * Note: be mindful of the fact that std::vector<bool> is not a complete
+     * C++ container; some usually container features may not be available.
+     */
+    std::vector<bool> m_visited;
+
+    /**
+     * Record of the shortest path to each node with the corresponding index
+      * in the graph, if a path has been found.
+      *
+      * The origin of these paths is determined by the algorithm being used
+      * to traverse to graph.
+     */
+    std::vector<std::optional<ShortestPath>> m_shortest_paths;
+
+  public:
 
     GraphWalker() = default;
 
@@ -95,6 +117,56 @@ class GraphWalker {
      * @param goal The desired end node to be navigated to.
      * @return Search result containing a path and its total weight, if a path was found.
      */
+    PathSearchResult find_path_bfs(
+        const GraphType& graph,
+        const NodeHandle& start,
+        const NodeHandle& goal)
+    {
+        init(graph);
+        // Set start node to have a path of weight. We use the fact that the start
+        // node is marked as its own parent node when reconstructing the shortest path.
+        m_shortest_paths[start.index()] = {0, start.index()};
+
+        std::queue<GraphIndex> next_nodes;
+        next_nodes.push(start.index());
+
+        while (!next_nodes.empty()) {
+            const GraphIndex& current_index = next_nodes.front();
+            next_nodes.pop();
+            m_visited[current_index] = true;
+
+            for (const auto[neighbor, edge_weight] : graph[current_index].neighbors()) {
+                const GraphIndex nb_index = neighbor.index();
+
+                if (m_visited[nb_index]) {
+                    continue;
+                }
+
+                const Weight new_weight = m_shortest_paths[current_index]->total_weight + edge_weight;
+
+                // If the neighbor node has no associated path, or if its current shortest path
+                // is longer than the newly computed path, update the neighbor node's shortest path.
+                if (const auto& nb_path = m_shortest_paths[nb_index];
+                    !nb_path || new_weight < m_shortest_paths[nb_index]->total_weight) {
+                    m_shortest_paths[nb_index] = {new_weight, current_index};
+                }
+                next_nodes.push(nb_index);
+            }
+        }
+
+        return reconstruct_shortest_path(goal.index());
+
+    }
+
+    /**
+     * Attempts to find the shortest path between start and goal using
+     * Dijkstra's searching algorithm.
+     *
+     * @param graph The graph being traversed.
+     * @param start The starting node in the graph.
+     * @param goal The desired end node to be navigated to.
+     * @return Search result containing a path and its total weight, if a path was found.
+     */
     PathSearchResult find_path_dijkstra(
         const GraphType& graph,
         const NodeHandle& start,
@@ -102,20 +174,9 @@ class GraphWalker {
     {
         init(graph);
 
-        /// The shortest path to a node in the graph from the `start` node.
-        struct ShortestPath {
-            /// The total weight of the path between `start` and the end node.
-            Weight total_weight;
-            /// The node preceding the end node in the shortest path to it.
-            GraphIndex parent_index;
-        };
-
-        // Record of the shortest path to each node with the corresponding index
-        // in the graph, if a path has been found.
-        std::vector<std::optional<ShortestPath>> shortest_paths(graph.size(), std::nullopt);
         // Make sure the start node begins with the shortest path so that it is
         // the first node to be popped of the heap.
-        shortest_paths[start.index()] = {0, start.index()};
+        m_shortest_paths[start.index()] = {0, start.index()};
 
         // Heap of node indices ordered based on their shortest path weight.
         std::vector<GraphIndex> unvisited_indices(graph.size());
@@ -125,8 +186,8 @@ class GraphWalker {
         // them from the start node. Nodes which currently have no path leading
         // to them are treated as though their path length was infinite.
         const auto compare_paths = [&](GraphIndex lhs, GraphIndex rhs) {
-            const auto& lhs_path = shortest_paths[lhs];
-            const auto& rhs_path = shortest_paths[rhs];
+            const auto& lhs_path = m_shortest_paths[lhs];
+            const auto& rhs_path = m_shortest_paths[rhs];
 
             // If there exists no path to the lhs node, we consider its path
             // length to be infinite, therefore lhs < rhs is false for all rhs.
@@ -163,7 +224,7 @@ class GraphWalker {
             m_visited[current_index] = true;
 
             if (current_index == goal.index()) {
-                if (!shortest_paths[current_index]) {
+                if (!m_shortest_paths[current_index]) {
                     // The current node has no path associated with it. This
                     // can only occur when we have exhausted all nodes that have
                     // paths between them and the start node. The goal node must
@@ -172,35 +233,24 @@ class GraphWalker {
                 }
 
                 // The target node has been found. Reconstruct the path.
-                std::vector<GraphIndex> path;
-                path.push_back(current_index);
-
-                GraphIndex retrace_index = current_index;
-                while (retrace_index != start.index()) {
-                    retrace_index = shortest_paths[retrace_index]->parent_index;
-                    path.push_back(retrace_index);
-                }
-                // The path vector currently contains {end, parent of end, ..., start}.
-                // Reverse the path so that it reads {start, ..., end}.
-                std::reverse(std::begin(path), std::end(path));
-                return {path, shortest_paths[current_index]->total_weight};
+                return reconstruct_shortest_path(current_index);
             }
 
             // Update the shortest paths to the neighbors of the current node.
-            for (const auto& [neighbor, edge_weight] : graph[current_index].neighbors()) {
+            for (const auto&[neighbor, edge_weight] : graph[current_index].neighbors()) {
                 const GraphIndex nb_index = neighbor.index();
                 if (m_visited[nb_index]) {
                     continue;
                 }
 
                 // Compute the new candidate shortest path length to the current neighbor node.
-                const Weight new_weight = shortest_paths[current_index]->total_weight + edge_weight;
+                const Weight new_weight = m_shortest_paths[current_index]->total_weight + edge_weight;
 
                 // If the neighbor node has no associated path, or if its current shortest path
                 // is longer than the newly computed path, update the neighbor node's shortest path.
-                if (const auto& nb_path = shortest_paths[nb_index];
-                    !nb_path || new_weight < shortest_paths[nb_index]->total_weight) {
-                    shortest_paths[nb_index] = {new_weight, current_index};
+                if (const auto& nb_path = m_shortest_paths[nb_index];
+                    !nb_path || new_weight < m_shortest_paths[nb_index]->total_weight) {
+                    m_shortest_paths[nb_index] = {new_weight, current_index};
                 }
 
             }
@@ -224,7 +274,38 @@ class GraphWalker {
     void init(const GraphType& graph)
     {
         m_visited.resize(graph.size());
+        m_shortest_paths.resize(graph.size());
         std::fill(std::begin(m_visited), std::end(m_visited), 0);
+        std::fill(std::begin(m_shortest_paths), std::end(m_shortest_paths), std::nullopt);
+    }
+
+    /**
+     * Returns the path leading from the start node to the node at the given
+     * index in the graph.
+     *
+     * @param end_index Index of final node in the path.
+     * @return Path from the start to `end_index`.
+     */
+    PathSearchResult reconstruct_shortest_path(GraphIndex end_index) const
+    {
+        if (!m_shortest_paths[end_index]) {
+            return {{}, {}};
+        }
+
+        std::vector<GraphIndex> path;
+        path.push_back(end_index);
+
+        GraphIndex retrace_index = end_index;
+        // Propagate backwards through the shortest path map until the start
+        // node is found. The start node will have itself as its parent index.
+        while (retrace_index != m_shortest_paths[retrace_index]->parent_index) {
+            retrace_index = m_shortest_paths[retrace_index]->parent_index;
+            path.push_back(retrace_index);
+        }
+        // The path vector currently contains {end, parent of end, ..., start}.
+        // Reverse the path so that it reads {start, ..., end}.
+        std::reverse(std::begin(path), std::end(path));
+        return {path, m_shortest_paths[end_index]->total_weight};
     }
 
     /**
