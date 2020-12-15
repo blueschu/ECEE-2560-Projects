@@ -11,9 +11,9 @@
 #include <array>                // for std::array
 #include <iostream>             // for I/O stream definitions
 
-#include "maze.h"
-#include "graph_walker.h"
 #include "eece2560_io.h"
+#include "graph_walker.h"
+#include "maze.h"
 
 namespace {
 constexpr auto k_maze_files = std::array{

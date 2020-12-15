@@ -77,8 +77,8 @@ class GraphWalker {
      * Record of the shortest path to each node with the corresponding index
       * in the graph, if a path has been found.
       *
-      * The origin of these paths is determined by the algorithm being used
-      * to traverse to graph.
+      * The starting node of the paths should be marked as being its own
+      * parent node.
      */
     std::vector<std::optional<ShortestPath>> m_shortest_paths;
 
