@@ -9,9 +9,7 @@
 
 #include "maze.h"
 
-#include <algorithm>        // for std::find
-#include <cstdint>          // for std::uint_8 (mimicking vector<bool>
-                            //      w/out incompatible specialization)
+#include <algorithm>        // for std::find_if
 #include <fstream>          // for file I/O stream definitions
 #include <iterator>         // for std::istream_iterator
 #include <sstream>          // for std::ostringstream
@@ -72,7 +70,7 @@ Graph<Maze::Coordinate, Maze::PathWeight> Maze::make_graph() const
     // Add an edge between each adjacent nodes in the maze.
     for (auto& node : graph) {
         for (const auto& neighbor : paths_from(*node)) {
-            // std::find is guaranteed to succeed here since all tiles
+            // std::find_if is guaranteed to succeed here since all tiles
             // containing a path will have an associated node in the graph.
             const auto connected_node = std::find_if(
                 std::cbegin(graph),
@@ -115,24 +113,55 @@ Maze::human_directions(const std::vector<Maze::Coordinate>& path) const
 {
     const auto[max_row, max_col] = m_tiles.dimensions();
 
-    // Can't use Matrix<bool> since the vector<bool> specialization does not
-    // compile with Matrix do to vector<bool>::reference not being a reference type.
-    Matrix<std::uint8_t> path_tiles{std::vector(max_row * max_col, static_cast<std::uint8_t>(0))};
-    path_tiles.reshape({max_row, max_col});
+    // 2D grid of ascii characters representing this maze.
+    Matrix<char> maze_map{std::vector(max_row * max_col, '?')};
+    maze_map.reshape({max_row, max_col});
 
+    // Fill the map with walls and empty tiles.
+    std::transform(
+        std::cbegin(m_tiles),
+        std::cend(m_tiles),
+        std::begin(maze_map),
+        [](auto tile) { return tile == Maze::Tile::Path ? '.' : '#'; }
+    );
+
+    char symbol = 'Z';
+    const auto generate_path_symbol = [&]() {
+        // We assume ASCII encoding for characters.
+        if (symbol == '9') {
+            symbol = 'a';
+        } else if (symbol == 'z') {
+            symbol = 'A';
+        } else if (symbol == 'Z') {
+            symbol = '0';
+        } else {
+            ++symbol;
+        }
+        return symbol;
+    };
+
+    // Add the provided path to the maze.
+    for (const auto& coord : path) {
+        maze_map[coord] = generate_path_symbol();
+    }
+
+    // Convert the maze map matrix to a string.
+    std::ostringstream stream;
+    for (std::size_t row{0}; row < max_row; ++row) {
+        for (std::size_t col{0}; col < max_col; ++col) {
+            stream << maze_map[{row, col}];
+        }
+        stream << '\n';
+    }
+
+    //Compute the human-readable direction string for each step of the path.
     std::vector<std::string> directions;
-
-    // Mark the tiles that are part of the path in the path_tiles matrix and
-    // compute the human-readable direction string for each step of the path.
     {
         auto it = std::cbegin(path);
         auto prev = it++;
         const auto end = std::cend(path);
 
-        path_tiles[*prev] = true;
-
         while (it != end) {
-            path_tiles[*it] = true;
 
             int delta_row = static_cast<int>(it->first) - static_cast<int>(prev->first);
             int delta_col = static_cast<int>(it->second) - static_cast<int>(prev->second);
@@ -149,19 +178,6 @@ Maze::human_directions(const std::vector<Maze::Coordinate>& path) const
             }
             prev = it++;
         }
-    }
-
-    // Generate 2D ascii map.
-    std::ostringstream stream;
-    for (std::size_t row{0}; row < max_row; ++row) {
-        for (std::size_t col{0}; col < max_col; ++col) {
-            if (path_tiles[{row, col}]) {
-                stream << 'o';
-            } else {
-                stream << (m_tiles[{row, col}] == Maze::Tile::Path ? '.' : '#');
-            }
-        }
-        stream << '\n';
     }
 
     return std::make_pair(std::move(directions), stream.str());
